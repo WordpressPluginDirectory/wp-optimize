@@ -614,6 +614,26 @@ if (!function_exists('wpo_is_using_webp_images_redirection')) :
 endif;
 
 /**
+ * Verify if the current request is related to the Activity Stream
+ *
+ * @return bool
+ */
+if (!function_exists('wpo_is_activity_stream_requested')) :
+	function wpo_is_activity_stream_requested() {
+		return (isset($_SERVER['HTTP_ACCEPT']) && false !== strpos($_SERVER['HTTP_ACCEPT'], 'application/activity+json'));
+	}
+endif;
+
+/**
+ * Verify if the current request is robots.txt
+ */
+if (!function_exists('wpo_is_robots_txt_requested')) :
+	function wpo_is_robots_txt_requested() {
+		return (isset($_SERVER['REQUEST_URI']) && 'robots.txt' === basename($_SERVER['REQUEST_URI']));
+	}
+endif;
+
+/**
  * Serves the cache and exits
  */
 if (!function_exists('wpo_serve_cache')) :
@@ -721,6 +741,9 @@ if (!function_exists('wpo_is_canonical_redirection_needed')) :
 	function wpo_is_canonical_redirection_needed() {
 		$permalink_structure = isset($GLOBALS['wpo_cache_config']['permalink_structure']) ? $GLOBALS['wpo_cache_config']['permalink_structure'] : '';
 		$site_url = wpo_site_url();
+
+		// Exit if server variables are not available.
+		if (!isset($_SERVER['HTTP_HOST'])) return false;
 		
 		$schema = isset($_SERVER['HTTPS']) && 'on' === $_SERVER['HTTPS'] ? "https" : "http";
 		$url_part = "://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];

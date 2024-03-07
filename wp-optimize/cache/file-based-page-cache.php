@@ -9,6 +9,12 @@ require_once(dirname(__FILE__) . '/file-based-page-cache-functions.php');
 
 if (!defined('WPO_CACHE_DIR')) define('WPO_CACHE_DIR', untrailingslashit(WP_CONTENT_DIR) . '/wpo-cache');
 
+if (wpo_is_activity_stream_requested()) return;
+if (wpo_is_robots_txt_requested()) return;
+
+// Fix for compatibility issue with Jetpack's infinity scroll feature
+if (isset($_GET['infinity']) && 'scrolling' === $_GET['infinity']) return;
+
 /**
  * Load extensions.
  */

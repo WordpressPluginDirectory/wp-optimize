@@ -3,7 +3,7 @@
 Plugin Name: WP-Optimize - Clean, Compress, Cache
 Plugin URI: https://getwpo.com
 Description: WP-Optimize makes your site fast and efficient. It cleans the database, compresses images and caches pages. Fast sites attract more traffic and users.
-Version: 3.3.0
+Version: 3.3.1
 Update URI: https://wordpress.org/plugins/wp-optimize/
 Author: David Anderson, Ruhani Rabin, Team Updraft
 Author URI: https://updraftplus.com
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) die('No direct access allowed');
 
 // Check to make sure if WP_Optimize is already call and returns.
 if (!class_exists('WP_Optimize')) :
-define('WPO_VERSION', '3.3.0');
+define('WPO_VERSION', '3.3.1');
 define('WPO_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('WPO_PLUGIN_MAIN_PATH', plugin_dir_path(__FILE__));
 define('WPO_PLUGIN_SLUG', plugin_basename(__FILE__));
@@ -101,6 +101,8 @@ class WP_Optimize {
 			add_action($hook, array($this, 'maybe_schedule_update_record_count_event'));
 		}
 		add_action('wpo_update_record_count_event', array($this->get_db_info(), 'wpo_update_record_count'));
+
+		$this->set_heartbeat_api_filters();
 	}
 
 	/**
@@ -380,9 +382,17 @@ class WP_Optimize {
 		wp_enqueue_script('jquery-serialize-json', WPO_PLUGIN_URL.'js/serialize-json/jquery.serializejson'.$min_or_not.'.js', array('jquery'), $enqueue_version);
 
 		wp_register_script('updraft-queue-js', WPO_PLUGIN_URL.'js/queue'.$min_or_not_internal.'.js', array(), $enqueue_version);
+
+		wp_enqueue_script('wp-optimize-heartbeat-js', WPO_PLUGIN_URL.'js/heartbeat'.$min_or_not_internal.'.js', array('jquery'), $enqueue_version);
+		wp_localize_script('wp-optimize-heartbeat-js', 'wpo_heartbeat_ajax', array(
+			'ajaxurl' => admin_url('admin-ajax.php'),
+			'nonce' => wp_create_nonce('heartbeat-nonce'),
+			'interval' => WPO_Ajax::HEARTBEAT_INTERVAL
+		));
+
 		wp_enqueue_script('wp-optimize-modal', WPO_PLUGIN_URL.'js/modal'.$min_or_not_internal.'.js', array('jquery', 'backbone', 'wp-util'), $enqueue_version);
-		wp_enqueue_script('wp-optimize-cache-js', WPO_PLUGIN_URL.'js/cache'.$min_or_not_internal.'.js', array('wp-optimize-send-command', 'smush-js'), $enqueue_version);
-		wp_enqueue_script('wp-optimize-admin-js', WPO_PLUGIN_URL.'js/wpoadmin'.$min_or_not_internal.'.js', array('jquery', 'updraft-queue-js', 'wp-optimize-send-command', 'smush-js', 'wp-optimize-modal', 'wp-optimize-cache-js'), $enqueue_version);
+		wp_enqueue_script('wp-optimize-cache-js', WPO_PLUGIN_URL.'js/cache'.$min_or_not_internal.'.js', array('wp-optimize-send-command', 'smush-js', 'wp-optimize-heartbeat-js'), $enqueue_version);
+		wp_enqueue_script('wp-optimize-admin-js', WPO_PLUGIN_URL.'js/wpoadmin'.$min_or_not_internal.'.js', array('jquery', 'updraft-queue-js', 'wp-optimize-send-command', 'smush-js', 'wp-optimize-modal', 'wp-optimize-cache-js', 'wp-optimize-heartbeat-js'), $enqueue_version);
 		wp_enqueue_style('wp-optimize-admin-css', WPO_PLUGIN_URL.'css/wp-optimize-admin'.$min_or_not_internal.'.css', array(), $enqueue_version);
 		// Using tablesorter to help with organising the DB size on Table Information
 		// https://github.com/Mottie/tablesorter
@@ -561,7 +571,7 @@ class WP_Optimize {
 		WP_Optimize_WebP_Images::get_instance();
 
 		// Include WebP
-		if (WP_Optimize_WebP::is_shell_functions_available() && WPO_USE_WEBP_CONVERSION) {
+		if (WPO_USE_WEBP_CONVERSION) {
 			$this->get_webp_instance();
 		}
 
@@ -704,7 +714,7 @@ class WP_Optimize {
 			}
 
 			if (($installed && time() > $dismissed_until && $installed_for > (14 * 86400) && !defined('WP_OPTIMIZE_NOADS_B')) || (defined('WP_OPTIMIZE_FORCE_DASHNOTICE') && WP_OPTIMIZE_FORCE_DASHNOTICE)) {
-				add_action('all_admin_notices', array($this, 'show_admin_notice_upgradead'));
+				add_action('all_admin_notices', array($this, 'show_admin_notice_upgraded'));
 			}
 		}
 
@@ -749,8 +759,13 @@ class WP_Optimize {
 		return $instance;
 	}
 
-	public function show_admin_notice_upgradead() {
-		$this->include_template('notices/thanks-for-using-main-dash.php');
+	/**
+	 * Display an admin notice for an upgraded version.
+	 */
+	public function show_admin_notice_upgraded() {
+		$this->include_template('notices/thanks-for-using-main-dash.php', false, array(
+			'is_premium' => WP_Optimize::is_premium()
+		));
 	}
 			
 	public function capability_required() {
@@ -1834,6 +1849,58 @@ class WP_Optimize {
 	 */
 	private function load_ajax_handler() {
 		WPO_Ajax::get_instance();
+	}
+
+	/**
+	 * Set custom heartbeat API interval
+	 *
+	 * @param array $settings Current WP settings
+	 * @return array
+	 */
+	public function set_heartbeat_time_interval($settings) {
+		$settings['interval'] = WPO_Ajax::HEARTBEAT_INTERVAL;
+		return $settings;
+	}
+
+	/**
+	 * Receive Heartbeat data and respond.
+	 *
+	 * Processes data received via a Heartbeat request, and returns additional data to pass back to the front end.
+	 *
+	 * @param array $response Heartbeat response data to pass back to front end.
+	 * @param array $data     Data received from the front end (unslashed).
+	 *
+	 * @return array
+	 */
+	public function receive_heartbeat($response, $data) {
+		foreach ($data as $uid => $command) {
+			$is_wpo_heartbeat = strpos($uid, 'wpo-heartbeat') === 0;
+
+			if ($is_wpo_heartbeat) {
+				$response['callbacks'][$uid] = apply_filters('wp_optimize_heartbeat', $command);
+			}
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Add heartbeat API filters if the page is enabled in the array
+	 *
+	 * @return void
+	 */
+	public function set_heartbeat_api_filters() {
+		$pages_enabled = array('WP-Optimize', 'wpo_images', 'wpo_cache', 'wpo_minify', 'wpo_settings', 'wpo_support', 'wpo_mayalso');
+
+		// Change heartbeat API frequency to 15 seconds to improve UI experience
+		// only for the pages that we enable in `$pages_enabled`
+		$query_page = isset($_GET['page']) ? sanitize_text_field(wp_unslash($_GET['page'])) : ''; // phpcs:ignore WordPress.Security.NonceVerification -- not processing form data
+		if (in_array($query_page, $pages_enabled)) {
+			add_filter('heartbeat_settings', array($this, 'set_heartbeat_time_interval'), PHP_INT_MAX);
+		}
+
+		// Handle heartbeat events
+		add_filter('heartbeat_received', array($this, 'receive_heartbeat'), 10, 2);
 	}
 }
 

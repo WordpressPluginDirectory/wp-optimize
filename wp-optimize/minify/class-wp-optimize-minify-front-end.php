@@ -1982,7 +1982,7 @@ class WP_Optimize_Minify_Front_End {
 		// get host with multisite support and query strings
 		$host = htmlentities($_SERVER['SERVER_NAME']);
 		if (empty($host)) {
-			$host = htmlentities($_SERVER['HTTP_HOST']);
+			$host = isset($_SERVER['HTTP_HOST']) ? htmlentities($_SERVER['HTTP_HOST']) : '';
 		}
 		$request_query = parse_url($_SERVER['REQUEST_URI'], PHP_URL_QUERY);
 		$request_uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
@@ -2110,7 +2110,7 @@ class WP_Optimize_Minify_Front_End {
 		// get host with multisite support and query strings
 		$host = htmlentities($_SERVER['SERVER_NAME']);
 		if (empty($host)) {
-			$host = htmlentities($_SERVER['HTTP_HOST']);
+			$host = isset($_SERVER['HTTP_HOST']) ? htmlentities($_SERVER['HTTP_HOST']) : '';
 		}
 		$request_query = parse_url($_SERVER['REQUEST_URI'], PHP_URL_QUERY);
 		$request_uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);

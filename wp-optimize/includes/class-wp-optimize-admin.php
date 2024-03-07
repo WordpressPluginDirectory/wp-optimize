@@ -497,12 +497,12 @@ class WP_Optimize_Admin {
 	 */
 	public function display_footer_review_message() {
 		$message = sprintf(
-			__('Enjoyed %s? Please leave us a %s rating.', 'wp-optimize'),
+			__('Enjoyed %s? Please leave us a %s rating on %s or %s.', 'wp-optimize').' '.__('We really appreciate your support!', 'wp-optimize'),
 			'<b>WP-Optimize</b>',
-			'<a href="https://www.g2.com/products/wp-optimize/reviews" target="_blank">&starf;&starf;&starf;&starf;&starf;</a>'
+			'<span style="color:#2271b1">&starf;&starf;&starf;&starf;&starf;</span>',
+			'<a href="https://uk.trustpilot.com/review/getwpo.com" target="_blank">Trustpilot</a>',
+			'<a href="https://www.g2.com/products/wp-optimize/reviews" target="_blank">G2.com</a>'
 		);
-		$message .= ' ';
-		$message .= __('We really appreciate your support!', 'wp-optimize');
 		return $message;
 	}
 

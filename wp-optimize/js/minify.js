@@ -2,6 +2,8 @@
 	var wp_optimize = window.wp_optimize || {};
 	var send_command = wp_optimize.send_command;
 	var refresh_frequency = wpoptimize.refresh_frequency || 30000;
+	var heartbeat = WP_Optimize_Heartbeat();
+	var heartbeat_agents = [];
 
 	if (!send_command) {
 		console.error('WP-Optimize Minify: wp_optimize.send_command is required.');
@@ -392,8 +394,7 @@
 		 * Minify Preloader functionality
 		 */
 		var run_minify_preload_btn = $('#wp_optimize_run_minify_preload'),
-			minify_preload_status_el = $('#wp_optimize_preload_minify_status'),
-			check_status_interval = null;
+			minify_preload_status_el = $('#wp_optimize_preload_minify_status');
 
 		run_minify_preload_btn.on('click', function() {
 			var btn = $(this),
@@ -404,8 +405,12 @@
 
 			if (is_running) {
 				btn.data('running', false);
-				clearInterval(check_status_interval);
-				check_status_interval = null;
+
+
+				while(agent_id = heartbeat_agents.shift()) {
+					heartbeat.cancel_agent(agent_id);
+				}
+				
 				send_command(
 					'cancel_minify_preload',
 					null,
@@ -470,16 +475,17 @@
 		}
 
 		/**
-		 * Create interval action for update preloader status.
+		 * Create heartbeat agent action for update preloader status.
 		 *
 		 * @return void
 		 */
 		function run_update_minify_preload_status() {
-			if (check_status_interval) return;
+			var agent = heartbeat.add_agent({
+				command: 'get_minify_preload_status',
+				callback: update_minify_preload_status
+			});
 
-			check_status_interval = setInterval(function() {
-				update_minify_preload_status();
-			}, 5000);
+			if (null !== agent) heartbeat_agents.push(agent);
 		}
 
 		/**
@@ -487,20 +493,17 @@
 		 *
 		 * @return void
 		 */
-		function update_minify_preload_status() {
-			send_command('get_minify_preload_status', null, function(response) {
-				if (response.done) {
-					run_minify_preload_btn.val(wpoptimize.run_now);
-					run_minify_preload_btn.data('running', false);
-					clearInterval(check_status_interval);
-					check_status_interval = null;
-				} else {
-					run_minify_preload_btn.val(wpoptimize.cancel);
-					run_minify_preload_btn.data('running', true);
-				}
-				minify_preload_status_el.text(response.message);
-				update_minify_size_information(response);
-			});
+		function update_minify_preload_status(response) {
+			if (response.done) {
+				run_minify_preload_btn.val(wpoptimize.run_now);
+				run_minify_preload_btn.data('running', false);
+			} else {
+				run_minify_preload_btn.val(wpoptimize.cancel);
+				run_minify_preload_btn.data('running', true);
+				run_update_minify_preload_status();
+			}
+			minify_preload_status_el.text(response.message);
+			update_minify_size_information(response);
 		}
 
 		/**

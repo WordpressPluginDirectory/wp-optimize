@@ -48,6 +48,7 @@ var WP_Optimize = function () {
 	var optimization_force = false;
 	var optimization_logged_warnings = false;
 	var force_single_table_optimization = false;
+	var heartbeat = WP_Optimize_Heartbeat();
 
 	/*
 	 * Enable select all checkbox for optimizations list.
@@ -1961,6 +1962,9 @@ var WP_Optimize = function () {
 			$.unblockUI();
 		}
 	}
+
+	// Attach heartbeat API events
+	heartbeat.setup();
 
 	return {
 		send_command: send_command,

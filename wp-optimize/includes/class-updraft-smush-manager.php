@@ -741,6 +741,8 @@ class Updraft_Smush_Manager extends Updraft_Task_Manager_1_4 {
 			'mark_all_images_uncompressed'	=> __('Do you really want to mark all the images as uncompressed?', 'wp-optimize') . ' ' . __('This action is irreversible.', 'wp-optimize'),
 			'restore_images_from_backup'	=> __('Do you want to restore the original images from the backup (where they exist?)', 'wp-optimize'),
 			'restore_all_compressed_images'	=> __('Do you really want to restore all the compressed images?', 'wp-optimize'),
+			'webp_conversion_tool_error' => __('No WebP conversion tools are available on your web-server.', 'wp-optimize'),
+			'webp_conversion_tool_how_to' => __('How to get the WebP conversion tools to work?', 'wp-optimize'),
 			'more' => __('More', 'wp-optimize'),
 			'less' => __('Less', 'wp-optimize'),
 			'converting_to_webp' => __('Converting image to WebP format, please wait', 'wp-optimize'),

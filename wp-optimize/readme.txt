@@ -5,7 +5,7 @@ Tags: cache, caching, image cache, minify, performance cache, page speed, image 
 Requires PHP: 5.6
 Requires at least: 4.5
 Tested up to: 6.4
-Stable tag: 3.3.0
+Stable tag: 3.3.1
 License: GPLv2+
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -394,6 +394,18 @@ If none of the above works, disable processing of JavaScript files in the minify
 
 
 == Changelog ==
+
+= 3.3.1 - 06/Mar/2024 =
+
+* FIX: Cache - Compatibility issue with Jetpack's infinity scroll feature
+* FIX: Cache - Don't cache activity stream (ActivityPub plugin compatibility)
+* FIX: Cache - Page not cached comment is added to `robots.txt`
+* TWEAK: Fix PHP warnings when server variables are not available
+* TWEAK: Fix Unexpected response alert and PHP warning when cache preloading is triggered manually
+* TWEAK: Migrate from setInterval to WP heartbeat API to refresh information about backend tasks
+* TWEAK: Optimization of the WebP Implementation
+* TWEAK: Update dashboard notice to include all of our plugins
+* TWEAK: Update the footer review prompt
 
 = 3.3.0 - 31/Jan/2024 =
 
@@ -1501,4 +1513,4 @@ If none of the above works, disable processing of JavaScript files in the minify
 * Fix Interface
 
 == Upgrade Notice ==
-* 3.3.0: Added ability to preload/purge caches of individual post/page feature (Premium). Using updated `matthiasmullie/minify` repository, various fixes, and tweaks - a recommended update for all
+* 3.3.1: Various fixes, and tweaks - a recommended update for all
