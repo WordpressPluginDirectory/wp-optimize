@@ -146,7 +146,7 @@ class Updraft_Smush_Manager_Commands extends Updraft_Task_Manager_Commands_1_0 {
 		$images = isset($data['selected_images']) ? $data['selected_images'] : array();
 
 		$ui_update = $this->get_ui_update($images);
-		$this->close_browser_connection(json_encode($ui_update));
+		WP_Optimize()->close_browser_connection(json_encode($ui_update));
 		$this->task_manager->process_bulk_smush($images);
 		// Since we already sent back data and closed the browser connection, we must not return (that would result in further sending back of JSON).
 		die();
@@ -519,32 +519,6 @@ class Updraft_Smush_Manager_Commands extends Updraft_Task_Manager_Commands_1_0 {
 		return array(
 			'status' => true,
 		);
-	}
-
-	/**
-	 * Close browser connection so that it can resume AJAX polling
-	 *
-	 * @param array $txt Response to browser; this must be JSON (or if not, alter the Content-Type header handling below)
-	 * @return void
-	 */
-	public function close_browser_connection($txt = '') {
-		header('Content-Length: '.((!empty($txt)) ? 4+strlen($txt) : '0'));
-		header('Content-Type: application/json');
-		header('Connection: close');
-		header('Content-Encoding: none');
-		if (session_id()) session_write_close();
-		echo "\r\n\r\n";
-		echo $txt;
-
-		$levels = ob_get_level();
-		
-		for ($i = 0; $i < $levels; $i++) {
-			ob_end_flush();
-		}
-
-		flush();
-		
-		if (function_exists('fastcgi_finish_request')) fastcgi_finish_request();
 	}
 
 	/**

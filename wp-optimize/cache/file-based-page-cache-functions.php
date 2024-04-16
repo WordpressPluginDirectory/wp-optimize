@@ -33,8 +33,13 @@ function wpo_cache($buffer, $flags) {
 	}
 
 	// Don't cache pages for logged in users.
-	if (!wpo_cache_loggedin_users() && (!function_exists('is_user_logged_in') || (function_exists('wp_get_current_user') && is_user_logged_in()))) {
-		$no_cache_because[] = __('User is logged in', 'wp-optimize');
+	if (!function_exists('is_user_logged_in') || (function_exists('wp_get_current_user') && is_user_logged_in())) {
+		if (!wpo_cache_loggedin_users()) {
+			$no_cache_because[] = __('User is logged in', 'wp-optimize');
+		} elseif (!empty($GLOBALS['wpo_cache_config']['enable_user_caching'])) {
+			// Will only run when "Serve cached pages to logged in users" is checked
+			$no_cache_because[] = __('User is logged in, this works only when the cache is preloaded', 'wp-optimize');
+		}
 	}
 
 	$restricted_page_type_cache = apply_filters('wpo_restricted_cache_page_type', false);
@@ -1383,13 +1388,28 @@ endif;
  */
 if (!function_exists('wpo_cache_add_nocache_http_header')) :
 	function wpo_cache_add_nocache_http_header($message = '') {
+		if (!headers_sent()) {
+			header('WPO-Cache-Status: not cached');
+			header('WPO-Cache-Message: '. trim(str_replace(array("\r", "\n", ':'), ' ', strip_tags($message))));
+		}
+	}
+endif;
+
+/**
+ * Add the headers indicating why the page is not cached or served from cache by integrating with the send_headers filter
+ *
+ * @param string $message - The headers
+ *
+ * @return void
+ */
+if (!function_exists('wpo_cache_add_nocache_http_header_with_send_headers_action')) :
+	function wpo_cache_add_nocache_http_header_with_send_headers_action($message = '') {
 		static $buffered_message = null;
 
 		if (function_exists('current_filter') && 'send_headers' === current_filter() && $buffered_message && !headers_sent()) {
-			header('WPO-Cache-Status: not cached');
-			header('WPO-Cache-Message: '. trim(str_replace(array("\r", "\n", ':'), ' ', strip_tags($buffered_message))));
+			wpo_cache_add_nocache_http_header($buffered_message);
 		} else {
-			if (!$buffered_message && function_exists('add_action')) add_action('send_headers', 'wpo_cache_add_nocache_http_header', 11);
+			if (!$buffered_message && function_exists('add_action')) add_action('send_headers', 'wpo_cache_add_nocache_http_header_with_send_headers_action', 11);
 			$buffered_message = $message;
 		}
 	}

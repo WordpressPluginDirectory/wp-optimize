@@ -14,7 +14,6 @@ var WP_Optimize_Smush = function() {
 		smush_images_optimization_message = $('#smush_info_images'),
 		smush_images_pending_tasks_container = $('#wpo_smush_images_pending_tasks_container'),
 		smush_images_pending_tasks_btn = $('#wpo_smush_images_pending_tasks_button'),
-		smush_images_save_options_btn = $('.wpo-fieldgroup #wpo_smush_images_save_options_button'),
 		smush_images_refresh_btn = $('#wpo_smush_images_refresh'),
 		smush_images_select_all_btn = $('#wpo_smush_images_select_all'),
 		smush_images_select_none_btn = $('#wpo_smush_images_select_none'),
@@ -354,13 +353,6 @@ var WP_Optimize_Smush = function() {
 	});
 
 	/**
-	 * Saves options
-	 */
-	smush_images_save_options_btn.off().on('click', function(e) {
-		save_options();
-	});
-
-	/**
 	 * Binds clear stats button
 	 */
 	smush_images_stats_clear_btn.off().on('click', function(e) {
@@ -585,10 +577,8 @@ var WP_Optimize_Smush = function() {
 			$('#wpo_smush_images_save_options_spinner').hide();
 			if (resp.hasOwnProperty('saved') && resp.saved) {
 				$('#wpo_smush_images_save_options_done').show().delay(3000).fadeOut();
-				smush_images_save_options_btn.hide();
 			} else {
 				$('#enable_webp_conversion').prop("checked", false);
-				smush_images_save_options_btn.show();
 				if ('update_failed_no_working_webp_converter' === resp.error_code) {
 					var html_msg = '<p>'
 						+ wposmush.webp_conversion_tool_error
@@ -703,10 +693,8 @@ var WP_Optimize_Smush = function() {
 			$('#wpo_smush_images_save_options_spinner').hide();
 			if (resp.hasOwnProperty('saved') && resp.saved) {
 				$('#wpo_smush_images_save_options_done').show().delay(3000).fadeOut();
-				smush_images_save_options_btn.hide();
 			} else {
 				$('#wpo_smush_images_save_options_fail').show().delay(3000).fadeOut();
-				smush_images_save_options_btn.show();
 			}
 		});
 	}
@@ -989,7 +977,6 @@ var WP_Optimize_Smush = function() {
 			smush_selected_images_btn,
 			smush_images_select_all_btn,
 			smush_images_select_none_btn,
-			smush_images_save_options_btn,
 			smush_images_refresh_btn,
 			smush_images_pending_tasks_btn,
 			smush_mark_as_compressed_btn,

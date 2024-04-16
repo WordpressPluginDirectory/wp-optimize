@@ -14,13 +14,17 @@ var WP_Optimize_Cache = function () {
 	 * Handle purge cache btn.
 	 */
 	purge_cache_btn.on('click', function() {
+
 		var btn = $(this),
 			spinner = btn.next(),
 			success_icon = spinner.next();
 
+		if (btn.prop('disabled')) return false;
+		btn.prop('disabled', true);
 		spinner.show();
 
 		send_command('purge_page_cache', {}, function(response) {
+			btn.prop('disabled', false);
 			spinner.hide();
 			success_icon.show();
 			setTimeout(function() {

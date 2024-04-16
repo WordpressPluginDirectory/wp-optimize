@@ -55,13 +55,10 @@ class WP_Optimize_WebP {
 	}
 
 	/**
-	 * If webp images should be used, then decide whether it is possible to server webp
-	 * using rewrite rules or using altered html method
+	 * If .htaccess redirection is not possible, attempts to use the alter_html method
 	 */
 	private function maybe_decide_webp_serve_method() {
-		$this->save_htaccess_rules();
 		if (!$this->is_webp_redirection_possible()) {
-			$this->empty_htaccess_file();
 			$this->maybe_use_alter_html();
 		}
 	}
@@ -152,6 +149,7 @@ class WP_Optimize_WebP {
 			'Register webp mime type',
 		);
 		foreach ($htaccess_comment_sections as $htaccess_comment_section) {
+			if (!$this->_htaccess->is_commented_section_exists($htaccess_comment_section)) continue;
 			$this->_htaccess->remove_commented_section($htaccess_comment_section);
 			$this->_htaccess->write_file();
 		}

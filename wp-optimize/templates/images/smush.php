@@ -145,7 +145,6 @@
 			</div>
 		</div>
 		<div class="save-options">
-			<input type="button" id="wpo_smush_images_save_options_button" style="display:none" class="wpo_primary_small button-primary" value="<?php esc_attr_e('Save options', 'wp-optimize'); ?>" />
 			<img id="wpo_smush_images_save_options_spinner" class="display-none" src="<?php echo esc_url(admin_url('images/spinner-2x.gif')); ?>" alt="...">
 			<span id="wpo_smush_images_save_options_done" class="display-none"><span class="dashicons dashicons-yes"></span> <?php esc_html_e('Saved options', 'wp-optimize');?></span>
 			<span id="wpo_smush_images_save_options_fail" class="display-none"><span class="dashicons dashicons-no"></span> <?php esc_html_e('Failed to save options', 'wp-optimize');?></span>
