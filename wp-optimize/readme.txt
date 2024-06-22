@@ -5,7 +5,7 @@ Tags: cache, caching, image cache, minify, performance cache, page speed, image 
 Requires PHP: 5.6
 Requires at least: 4.5
 Tested up to: 6.5
-Stable tag: 3.3.2
+Stable tag: 3.4.0
 License: GPLv2+
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -394,6 +394,27 @@ If none of the above works, disable processing of JavaScript files in the minify
 
 
 == Changelog ==
+
+= 3.4.0 - 25/Jun/2024 =
+
+* FEATURE: Premium - Smush - Bulk compress / restore from media library
+* FIX: Deactivate the form for minifying JS/CSS settings when the corresponding option is disabled
+* REFACTOR: The functionality for the 'Unused Images' feature in ACF has been moved to a separate class
+* TWEAK: Add UpdraftCentral commands for the latest WP-Optimize features
+* TWEAK: Adjusted the scheduled preload time for improved performance
+* TWEAK: Auto-update advanced-cache.php settings during site migration
+* TWEAK: Cache - Human-readable file names for the cache directory
+* TWEAK: Caching related cron jobs are activated even though cache is disabled
+* TWEAK: Image compression - Updated message for restoring images action
+* TWEAK: Implement Heartbeat API for image compression progress updates
+* TWEAK: Improving vendor autoload
+* TWEAK: Introduces a hook (`wpo_force_webp_serve_using_altered_html`) for changing WebP serving method
+* TWEAK: Minify - Exclude .min files from minification
+* TWEAK: Minify - Improve list of processed files UI
+* TWEAK: Optimization of the get_uncompressed_image query
+* TWEAK: Persist script loading strategy when minifying JS files
+* TWEAK: Premium - Compatibility with Curcy WooCommerce multi currency plugin
+* TWEAK: Premium - Unused Images - Added an option to delete original images when scaled versions exist
 
 = 3.3.2 - 16/Apr/2024 =
 
@@ -1528,4 +1549,4 @@ If none of the above works, disable processing of JavaScript files in the minify
 * Fix Interface
 
 == Upgrade Notice ==
-* 3.3.2: Various fixes, and tweaks - a recommended update for all
+* 3.4.0: Added bulk image compression and restore feature for premium users. Includes various fixes, and tweaks - a recommended update for all

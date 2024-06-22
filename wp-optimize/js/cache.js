@@ -392,9 +392,7 @@ var WP_Optimize_Cache = function () {
 		if (is_running) {
 			btn.data('running', false);
 			
-			while(agent_id = heartbeat_agents.shift()) {
-				heartbeat.cancel_agent(agent_id);
-			}
+			heartbeat.cancel_agents(heartbeat_agents);
 
 			send_command(
 				'cancel_cache_preload',
@@ -468,7 +466,8 @@ var WP_Optimize_Cache = function () {
 	function run_update_cache_preload_status() {
 		var agent = heartbeat.add_agent({
 			command: 'get_cache_preload_status',
-			callback: update_cache_preload_status
+			callback: update_cache_preload_status,
+			_keep: false
 		});
 
 		if (null !== agent) heartbeat_agents.push(agent);
