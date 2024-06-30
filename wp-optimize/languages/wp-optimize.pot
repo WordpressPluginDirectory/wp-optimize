@@ -8,7 +8,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language-Team: Team Updraft <mail@example.com>\n"
 "Last-Translator: John Doe <mail@example.com>\n"
-"POT-Creation-Date: 2024-06-21 11:45+0000\n"
+"POT-Creation-Date: 2024-06-29 17:20+0000\n"
 "Report-Msgid-Bugs-To: http://example.com\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-KeywordsList: __;_e;_ex:1,2c;_n:1,2;_n_noop:1,2;_nx:1,2,4c;_nx_noop:1,2,3c;_x:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c\n"
@@ -57,11 +57,11 @@ msgstr ""
 msgid "Add"
 msgstr ""
 
-#: src/wp-optimize.php:800, src/includes/class-updraft-smush-manager.php:1123, src/templates/admin-metabox-smush.php:117, src/templates/cache/page-cache-preload.php:7, src/templates/database/tables-list-after.php:58, src/templates/images/smush-popup.php:35, src/templates/images/smush-popup.php:68, src/templates/minify/preload-tab.php:26, src/templates/settings/settings-logging.php:52, src/templates/settings/settings-logging.php:52
+#: src/wp-optimize.php:800, src/includes/class-updraft-smush-manager.php:1124, src/templates/admin-metabox-smush.php:117, src/templates/cache/page-cache-preload.php:7, src/templates/database/tables-list-after.php:58, src/templates/images/smush-popup.php:35, src/templates/images/smush-popup.php:68, src/templates/minify/preload-tab.php:26, src/templates/settings/settings-logging.php:52, src/templates/settings/settings-logging.php:52
 msgid "Cancel"
 msgstr ""
 
-#: src/wp-optimize.php:801, src/includes/class-updraft-smush-manager.php:1124
+#: src/wp-optimize.php:801, src/includes/class-updraft-smush-manager.php:1125
 msgid "Cancelling..."
 msgstr ""
 
@@ -697,7 +697,7 @@ msgstr ""
 msgid "Image not found"
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:155, src/includes/class-updraft-smush-manager.php:1122, src/templates/admin-metabox-smush.php:82
+#: src/includes/class-updraft-smush-manager.php:155, src/includes/class-updraft-smush-manager.php:1123, src/templates/admin-metabox-smush.php:82
 msgid "Compress"
 msgstr ""
 
@@ -861,11 +861,11 @@ msgstr ""
 msgid "Compressing this file type extension is not supported"
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:1125
+#: src/includes/class-updraft-smush-manager.php:1126
 msgid "The images were restored successfully"
 msgstr ""
 
-#: src/includes/class-updraft-smush-manager.php:1579
+#: src/includes/class-updraft-smush-manager.php:1580
 msgid "Compress image"
 msgstr ""
 

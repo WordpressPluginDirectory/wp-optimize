@@ -1105,8 +1105,9 @@ class Updraft_Smush_Manager extends Updraft_Task_Manager_1_4 {
 	 */
 	public function admin_enqueue_scripts() {
 		$current_screen = get_current_screen();
-		// load scripts and styles only on WP-Optimize pages or if show_smush_metabox option enabled.
-		if (!preg_match('/wp\-optimize|attachment|upload/i', $current_screen->id) && 'show' != $this->options->get_option('show_smush_metabox', 'show')) return;
+		if (null === $current_screen) return;
+		// load scripts and styles only on WP-Optimize pages
+		if (!preg_match('/wp\-optimize|attachment|upload/i', $current_screen->id)) return;
 
 		$enqueue_version = WP_Optimize()->get_enqueue_version();
 		$min_or_not = WP_Optimize()->get_min_or_not_string();

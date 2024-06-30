@@ -4,8 +4,8 @@ Donate link: https://david.dw-perspective.org.uk/donate
 Tags: cache, caching, image cache, minify, performance cache, page speed, image optimizer, compress images, optimize database, clean database
 Requires PHP: 5.6
 Requires at least: 4.5
-Tested up to: 6.5
-Stable tag: 3.4.0
+Tested up to: 6.6
+Stable tag: 3.4.1
 License: GPLv2+
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -394,6 +394,10 @@ If none of the above works, disable processing of JavaScript files in the minify
 
 
 == Changelog ==
+
+= 3.4.1 - 26/Jun/2024 =
+
+* FIX: Issue with bulk editing on the posts and pages edit screen
 
 = 3.4.0 - 25/Jun/2024 =
 
@@ -1549,4 +1553,4 @@ If none of the above works, disable processing of JavaScript files in the minify
 * Fix Interface
 
 == Upgrade Notice ==
-* 3.4.0: Added bulk image compression and restore feature for premium users. Includes various fixes, and tweaks - a recommended update for all
+* 3.4.1: Fixed issue with bulk editing on the posts and pages edit screen - a recommended update for all
