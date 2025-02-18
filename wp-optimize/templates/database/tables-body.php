@@ -71,14 +71,14 @@
 
 		echo "</td>\n";
 
-		echo '<td data-colname="'.esc_attr__('Records', 'wp-optimize').'" data-raw_value="'.esc_attr(intval($tablestatus->Rows)).'">'.esc_html(number_format_i18n($tablestatus->Rows)).'</td>'."\n";
-		echo '<td data-colname="'.esc_attr__('Data Size', 'wp-optimize').'" data-raw_value="'.esc_attr(intval($tablestatus->Data_length)).'">'. esc_html($wp_optimize->format_size($tablestatus->Data_length)).'</td>'."\n";
-		echo '<td data-colname="'.esc_attr__('Index Size', 'wp-optimize').'" data-raw_value="'.esc_attr(intval($tablestatus->Index_length)).'">'. esc_html($wp_optimize->format_size($tablestatus->Index_length)).'</td>'."\n";
+		echo '<td data-colname="'.esc_attr__('Records', 'wp-optimize').'" data-sort="'.esc_attr(intval($tablestatus->Rows)).'">'.esc_html(number_format_i18n($tablestatus->Rows)).'</td>'."\n";
+		echo '<td data-colname="'.esc_attr__('Data Size', 'wp-optimize').'" data-sort="'.esc_attr(intval($tablestatus->Data_length)).'">'. esc_html($wp_optimize->format_size($tablestatus->Data_length)).'</td>'."\n";
+		echo '<td data-colname="'.esc_attr__('Index Size', 'wp-optimize').'" data-sort="'.esc_attr(intval($tablestatus->Index_length)).'">'. esc_html($wp_optimize->format_size($tablestatus->Index_length)).'</td>'."\n";
 
 		if ($tablestatus->is_optimizable) {
 			echo '<td data-colname="'.esc_attr__('Type', 'wp-optimize').'" data-optimizable="1">'.esc_html($tablestatus->Engine).'</td>'."\n";
 
-			echo '<td data-colname="'.esc_attr__('Overhead', 'wp-optimize').'" data-raw_value="'.esc_attr(intval($tablestatus->Data_free)).'">';
+			echo '<td data-colname="'.esc_attr__('Overhead', 'wp-optimize').'" data-sort="'.esc_attr(intval($tablestatus->Data_free)).'">';
 			$font_colour = ($optimize_db ? (($tablestatus->Data_free > $small_overhead_size) ? '#0000FF' : '#004600') : (($tablestatus->Data_free > $small_overhead_size) ? '#9B0000' : '#004600'));
 			echo '<span style="color:'. esc_attr($font_colour) .';">';
 			echo esc_html($wp_optimize->format_size($tablestatus->Data_free));
@@ -106,10 +106,8 @@
 		echo '</tr>'."\n";
 	}
 
-	// THis extra tbody with class of tablesorter-no-sort
-	// Is for tablesorter and it will not allow the total bar
-	// At the bottom of the table information to be sorted with the rest of the data
-	echo '<tbody class="tablesorter-no-sort">'."\n";
+	echo '</tbody>';
+	echo '<tfoot>'."\n";
 
 	echo '<tr class="thead">'."\n";
 	echo '<th>'.esc_html__('Total:', 'wp-optimize').'</th>'."\n";
@@ -128,4 +126,4 @@
 	</th>
 	<th><?php esc_html_e('Actions', 'wp-optimize'); ?></th>
 	</tr>
-</tbody>
+</tfoot>

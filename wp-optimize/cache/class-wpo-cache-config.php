@@ -172,16 +172,17 @@ class WPO_Cache_Config {
 		// we write the cache config in a new format.
 		if (($advanced_cache_version && (version_compare($advanced_cache_version, '3.0.17', '>='))) || !$advanced_cache_version) {
 			// Apply the encoding required for placing within PHP single quotes - https://www.php.net/manual/en/language.types.string.php#language.types.string.syntax.single
-			$json_encoded_string = str_replace(array('\\', "'"), array('\\\\', '\\\''), json_encode($this->config));
+			$json_encoded_string = str_replace(array('\\', "'"), array('\\\\', '\\\''), wp_json_encode($this->config));
 
 			$config_content = '<?php' . "\n"
 				. 'if (!defined(\'ABSPATH\')) die(\'No direct access allowed\');' . "\n\n"
 				. '$GLOBALS[\'wpo_cache_config\'] = json_decode(\'' . $json_encoded_string . '\', true);' . "\n";
 		} else {
-			$config_content = json_encode($this->config);
+			$config_content = wp_json_encode($this->config);
 		}
 
-		if ((!$only_if_present || file_exists($config_file)) && (!is_writable(WPO_CACHE_CONFIG_DIR) || !file_put_contents($config_file, $config_content))) {
+		if ((!$only_if_present || file_exists($config_file)) && (!wp_is_writable(WPO_CACHE_CONFIG_DIR) || !file_put_contents($config_file, $config_content))) {
+			// translators: %s is the path to the cache config file
 			return new WP_Error('write_cache_config', sprintf(__('The cache configuration file could not be saved to the disk; please check the file/folder permissions of %s .', 'wp-optimize'), $config_file));
 		}
 
@@ -240,7 +241,7 @@ class WPO_Cache_Config {
 	 * @return string
 	 */
 	public function get_cache_config_filename() {
-		$url = parse_url(network_site_url());
+		$url = wp_parse_url(network_site_url());
 
 		if (isset($url['port']) && '' != $url['port'] && 80 != $url['port']) {
 			return 'config-'.strtolower($url['host']).'-port'.$url['port'].'.php';

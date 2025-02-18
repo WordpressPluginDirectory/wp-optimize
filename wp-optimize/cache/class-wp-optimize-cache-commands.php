@@ -135,7 +135,9 @@ class WP_Optimize_Cache_Commands {
 		$status[] = WPO_Page_Cache::instance()->is_enabled() ? __('Caching is enabled', 'wp-optimize') : __('Caching is disabled', 'wp-optimize');
 
 		$preloader_status = WP_Optimize_Page_Cache_Preloader::instance()->get_status_info();
+		// translators: %s: The current cache size
 		$status[] = sprintf(__('Current cache size: %s', 'wp-optimize'), $preloader_status['size']);
+		// translators: %s: The number of files in the cache
 		$status[] = sprintf(__('Number of files: %s', 'wp-optimize'), $preloader_status['file_count']);
 
 		if (array_key_exists('message', $preloader_status)) $status[] = $preloader_status['message'];

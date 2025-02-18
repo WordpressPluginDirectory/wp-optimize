@@ -21,7 +21,7 @@ class WPO_Uninstall {
 		
 		$htaccess_file = self::get_upload_basedir() . '.htaccess';
 		if (is_file($htaccess_file) && 0 === filesize($htaccess_file)) {
-			unlink($htaccess_file);
+			wp_delete_file($htaccess_file);
 		}
 		
 		wp_clear_scheduled_hook('process_smush_tasks');

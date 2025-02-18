@@ -33,7 +33,7 @@ if (!$table_prefix) {
 }
 ?>
 
-<table id="wpoptimize_table_list" class="wp-list-table widefat striped tablesorter wp-list-table-mobile-labels">
+<table id="wpoptimize_table_list" class="wp-list-table widefat striped wp-list-table-mobile-labels sortable">
 	<thead>
 		<tr>
 			<th><?php esc_html_e('No.', 'wp-optimize'); ?></th>
@@ -43,7 +43,7 @@ if (!$table_prefix) {
 			<th><?php esc_html_e('Index Size', 'wp-optimize'); ?></th>
 			<th><?php esc_html_e('Type', 'wp-optimize'); ?></th>
 			<th><?php esc_html_e('Overhead', 'wp-optimize'); ?></th>
-			<th><?php esc_html_e('Actions', 'wp-optimize'); ?></th>
+			<th class="no-sort"><?php esc_html_e('Actions', 'wp-optimize'); ?></th>
 		</tr>
 	</thead>
 	<?php

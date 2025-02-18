@@ -139,7 +139,7 @@ class WPO_Cache_Rules {
 			if (!$add_cookie) return;
 
 			$url = get_permalink($comment->comment_post_ID);
-			$url_info = parse_url($url);
+			$url_info = wp_parse_url($url);
 			setcookie('wpo_commented_post', 1, time() + WEEK_IN_SECONDS, isset($url_info['path']) ? $url_info['path'] : '/');
 		}
 	}
@@ -336,7 +336,7 @@ class WPO_Cache_Rules {
 
 				$term_permalink = get_term_link($term['term_id']);
 				if (!is_wp_error($term_permalink)) {
-					$url = parse_url($term_permalink);
+					$url = wp_parse_url($term_permalink);
 					// Check if the permalink contains a valid path, to avoid deleting the whole cache.
 					if (!isset($url['path']) || '/' === $url['path']) return;
 					WPO_Page_Cache::delete_cache_by_url($term_permalink, true);

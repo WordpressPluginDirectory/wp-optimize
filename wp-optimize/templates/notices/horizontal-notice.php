@@ -63,6 +63,8 @@
 						$button_text = __('Get UpdraftCentral', 'wp-optimize');
 					} elseif ('updraftplus' == $button_meta) {
 						$button_text = __('Get UpdraftPlus', 'wp-optimize');
+					} elseif ('subscriben' == $button_meta) {
+						$button_text = __('Get Subscriben', 'wp-optimize');
 					} elseif ('signup' == $button_meta) {
 						$button_text = __('Sign up', 'wp-optimize');
 					} elseif ('go_there' == $button_meta) {
