@@ -1,5 +1,10 @@
 == Changelog ==
 
+= 4.1.0 - 03/Mar/2025 =
+
+* FEATURE: Premium - Improve performance by caching Gravatar images locally.
+* FIX: Premium - Unused images - Fixed warnings when moving non existing image to trash
+
 = 4.0.1 - 17/Feb/2025 =
 
 * FIX: File system usage issue

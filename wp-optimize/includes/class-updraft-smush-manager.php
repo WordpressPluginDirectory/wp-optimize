@@ -681,7 +681,7 @@ class Updraft_Smush_Manager extends Updraft_Task_Manager_1_4 {
 			return;
 		}
 
-		if (false === $completed_task_count) {
+		if (empty($completed_task_count)) {
 			$completed_task_count = $total_bytes_saved = 0;
 		}
 

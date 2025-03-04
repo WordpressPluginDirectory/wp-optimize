@@ -155,9 +155,10 @@
 							   $message = '(';
 							   $message .= esc_html__('Asynchronous loading.', 'wp-optimize');
 							   $message .= ' ';
-							   $message .= sprintf(esc_html__('Use this method if you require support for %solder browsers%s.', 'wp-optimize'), '<a href="https://www.w3schools.com/tags/att_script_defer.asp" target="_blank">', '</a>');
+							   // translators: %1$s is a opening anchor tag, %2$s is a closing anchor tag
+							   $message .= sprintf(esc_html__('Use this method if you require support for %1$solder browsers%2$s.', 'wp-optimize'), '<a href="https://www.w3schools.com/tags/att_script_defer.asp" target="_blank">', '</a>');
 							   $message .= ')';
-							   echo strip_tags($message, '<a>');
+							   echo wp_kses_post($message);
 							?>
 						</em>
 					</label>
@@ -232,7 +233,7 @@
 				type="submit"
 				value="<?php esc_attr_e('Save settings', 'wp-optimize'); ?>"
 			>
-			<img class="wpo_spinner" src="<?php echo esc_url(admin_url('images/spinner-2x.gif')); ?>" alt="...">
+			<img class="wpo_spinner" src="<?php echo esc_url(admin_url('images/spinner-2x.gif')); // phpcs:ignore PluginCheck.CodeAnalysis.ImageFunctions.NonEnqueuedImage -- N/A ?>" alt="...">
 			<span class="save-done dashicons dashicons-yes display-none"></span>
 		</p>
 	</form>

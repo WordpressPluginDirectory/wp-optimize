@@ -187,7 +187,7 @@ trait WP_Optimize_HTTP_Error_Codes_Trait {
 			$this->set_codes();
 		}
 
-		return $code . " " . !empty($this->http_codes[$code]) ? $this->http_codes[$code] : esc_html__("HTTP Code", "wp-optimize");
+		return $code . " " . empty($this->http_codes[$code]) ? esc_html__("HTTP Code", "wp-optimize") : $this->http_codes[$code];
 	}
 }
 endif;

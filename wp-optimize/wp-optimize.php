@@ -3,7 +3,7 @@
 Plugin Name: WP-Optimize - Clean, Compress, Cache
 Plugin URI: https://getwpo.com
 Description: WP-Optimize makes your site fast and efficient. It cleans the database, compresses images and caches pages. Fast sites attract more traffic and users.
-Version: 4.0.1
+Version: 4.1.0
 Requires at least: 4.9
 Requires PHP: 7.2
 Update URI: https://wordpress.org/plugins/wp-optimize/
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) die('No direct access allowed');
 
 // Check to make sure if WP_Optimize is already call and returns.
 if (!class_exists('WP_Optimize')) :
-define('WPO_VERSION', '4.0.1');
+define('WPO_VERSION', '4.1.0');
 define('WPO_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('WPO_PLUGIN_MAIN_PATH', plugin_dir_path(__FILE__));
 define('WPO_PLUGIN_SLUG', plugin_basename(__FILE__));
@@ -200,6 +200,7 @@ class WP_Optimize {
 			'includes',
 			'includes/tables',
 			'includes/list-tables',
+			'includes/gravatars',
 			'minify',
 			'optimizations',
 			'webp',
@@ -1018,7 +1019,7 @@ class WP_Optimize {
 		if ($table_info->is_needing_repair) {
 			$content .= '<div class="wpo_button_wrap">'
 				. '<button class="button button-secondary run-single-table-repair" data-table="' . esc_attr($table_info->Name) . '">' . __('Repair', 'wp-optimize') . '</button>'
-				. '<img class="optimization_spinner visibility-hidden" src="' . esc_attr(admin_url('images/spinner-2x.gif')) . '" width="20" height="20" alt="...">'
+				. '<img class="optimization_spinner visibility-hidden" src="' . esc_attr(admin_url('images/spinner-2x.gif')) . '" width="20" height="20" alt="...">' // phpcs:ignore PluginCheck.CodeAnalysis.ImageFunctions.NonEnqueuedImage -- N/A
 				. '<span class="optimization_done_icon dashicons dashicons-yes visibility-hidden"></span>'
 				. '</div>';
 		}
@@ -1027,7 +1028,7 @@ class WP_Optimize {
 		if ($table_info->can_be_removed) {
 			$content .= '<div>'
 				. '<button class="button button-secondary run-single-table-delete" data-table="' . esc_attr($table_info->Name) . '">' . __('Remove', 'wp-optimize') . '</button>'
-				. '<img class="optimization_spinner visibility-hidden" src="' . esc_attr(admin_url('images/spinner-2x.gif')) . '" width="20" height="20" alt="...">'
+				. '<img class="optimization_spinner visibility-hidden" src="' . esc_attr(admin_url('images/spinner-2x.gif')) . '" width="20" height="20" alt="...">' // phpcs:ignore PluginCheck.CodeAnalysis.ImageFunctions.NonEnqueuedImage -- N/A
 				. '<span class="optimization_done_icon dashicons dashicons-yes visibility-hidden"></span>'
 				. '</div>';
 		}
@@ -1036,7 +1037,7 @@ class WP_Optimize {
 		if ('MyISAM' == $table_info->Engine) {
 			$content .= '<div class="wpo_button_convert wpo_button_wrap">'
 				. '<button class="button button-secondary toinnodb" data-table="' . esc_attr($table_info->Name) . '">' . __('Convert to InnoDB', 'wp-optimize') . '</button>'
-				. '<img class="optimization_spinner visibility-hidden" src="' . esc_attr(admin_url('images/spinner-2x.gif')) . '" width="20" height="20" alt="...">'
+				. '<img class="optimization_spinner visibility-hidden" src="' . esc_attr(admin_url('images/spinner-2x.gif')) . '" width="20" height="20" alt="...">' // phpcs:ignore PluginCheck.CodeAnalysis.ImageFunctions.NonEnqueuedImage -- N/A
 				. '<span class="optimization_done_icon dashicons dashicons-yes visibility-hidden"></span>'
 				. '</div>';
 						
@@ -1686,11 +1687,8 @@ class WP_Optimize {
 	 */
 	public function get_sites() {
 		$sites = array();
-		// check if function get_sites exists (since 4.6.0) else use wp_get_sites.
 		if (function_exists('get_sites')) {
 			$sites = get_sites(array('network_id' => null, 'deleted' => 0, 'number' => 999999));
-		} elseif (function_exists('wp_get_sites')) {
-			$sites = wp_get_sites(array('network_id' => null, 'deleted' => 0, 'limit' => 999999));
 		}
 		return $sites;
 	}

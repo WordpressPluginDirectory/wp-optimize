@@ -756,7 +756,7 @@ class WP_Optimize_Minify_Front_End {
 			if (!isset($header[$i]['handle'])) {
 
 				$handle_str = is_array($header[$i]['handles']) ? $this->array_to_string_conversion($header[$i]['handles']) : strval($header[$i]['handles']);
-				$last_modified_str = is_array($header[$i]['last_modified']) ? $this->array_to_string_conversion($header[$i]['last_modified']) : strval($header[$i]['last_modified']);
+				$last_modified_str = empty($header[$i]['last_modified']) ? '' : (is_array($header[$i]['last_modified']) ? $this->array_to_string_conversion($header[$i]['last_modified']) : strval($header[$i]['last_modified']));
 
 				if ($merge_css) {
 					// get hash for the inline css in this group
@@ -1045,7 +1045,7 @@ class WP_Optimize_Minify_Front_End {
 			if (!isset($footer[$i]['handle'])) {
 
 				$handles_str = is_array($footer[$i]['handles']) ? $this->array_to_string_conversion($footer[$i]['handles']) : strval($footer[$i]['handles']);
-				$last_modified_str = is_array($footer[$i]['last_modified']) ? $this->array_to_string_conversion($footer[$i]['last_modified']) : strval($footer[$i]['last_modified']);
+				$last_modified_str = empty($footer[$i]['last_modified']) ? '' : (is_array($footer[$i]['last_modified']) ? $this->array_to_string_conversion($footer[$i]['last_modified']) : strval($footer[$i]['last_modified']));
 
 				if ($merge_js) {
 					// Change the hash based on last modified timestamp
@@ -1405,7 +1405,7 @@ class WP_Optimize_Minify_Front_End {
 			if (!isset($header[$i]['handle'])) {
 
 				$handles_str = is_array($header[$i]['handles']) ? $this->array_to_string_conversion($header[$i]['handles']) : strval($header[$i]['handles']);
-				$last_modified_str = is_array($header[$i]['last_modified']) ? $this->array_to_string_conversion($header[$i]['last_modified']) : strval($header[$i]['last_modified']);
+				$last_modified_str = empty($header[$i]['last_modified']) ? '' : (is_array($header[$i]['last_modified']) ? $this->array_to_string_conversion($header[$i]['last_modified']) : strval($header[$i]['last_modified']));
 
 				if ($merge_js) {
 					$hash = hash('adler32', $handles_str . $last_modified_str);
@@ -1857,7 +1857,7 @@ class WP_Optimize_Minify_Front_End {
 			if (!isset($footer[$i]['handle'])) {
 
 				$handles_str = is_array($footer[$i]['handles']) ? $this->array_to_string_conversion($footer[$i]['handles']) : strval($footer[$i]['handles']);
-				$last_modified_str = is_array($footer[$i]['last_modified']) ? $this->array_to_string_conversion($footer[$i]['last_modified']) : strval($footer[$i]['last_modified']);
+				$last_modified_str = empty($footer[$i]['last_modified']) ? '' : (is_array($footer[$i]['last_modified']) ? $this->array_to_string_conversion($footer[$i]['last_modified']) : strval($footer[$i]['last_modified']));
 
 				if ($merge_css) {
 					// get hash for the inline css in this group

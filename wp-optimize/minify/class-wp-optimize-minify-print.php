@@ -47,11 +47,13 @@ class WP_Optimize_Minify_Print {
 	 * @return void
 	 */
 	public static function async_style($href, $media = 'all') {
+		// phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- Not applicable for this function
 		echo '<link rel="preload" href="'.esc_url($href).'" as="style" media="'.esc_attr($media).'" onload="this.onload=null;this.rel=\'stylesheet\'">' . "\n";
 		// fix for firefox not supporting preload
-		echo '<link rel="stylesheet" href="'.esc_url($href).'" media="'.esc_attr($media).'">' . "\n"; // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- N/A
-		echo '<noscript><link rel="stylesheet" href="'.esc_url($href).'" media="'.esc_attr($media).'"></noscript>' . "\n"; // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- N/A
-		echo '<!--[if IE]><link rel="stylesheet" href="'.esc_url($href).'" media="'.esc_attr($media).'"><![endif]-->' . "\n"; // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- N/A
+		echo '<link rel="stylesheet" href="'.esc_url($href).'" media="'.esc_attr($media).'">' . "\n";
+		echo '<noscript><link rel="stylesheet" href="'.esc_url($href).'" media="'.esc_attr($media).'"></noscript>' . "\n";
+		echo '<!--[if IE]><link rel="stylesheet" href="'.esc_url($href).'" media="'.esc_attr($media).'"><![endif]-->' . "\n";
+		// phpcs:enable
 	}
 
 	/**
@@ -127,7 +129,7 @@ class WP_Optimize_Minify_Print {
 	 * @return void
 	 */
 	public static function style($href) {
-		echo '<link rel="stylesheet" href="'.esc_url($href).'" media="all">' . "\n"; // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- N/A
+		echo '<link rel="stylesheet" href="'.esc_url($href).'" media="all">' . "\n"; // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- Not applicable here
 	}
 
 	/**

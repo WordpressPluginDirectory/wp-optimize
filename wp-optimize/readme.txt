@@ -5,7 +5,7 @@ Tags: cache, caching, image cache, minify, performance cache, page speed, image 
 Requires PHP: 7.2
 Requires at least: 4.9
 Tested up to: 6.7
-Stable tag: 4.0.1
+Stable tag: 4.1.0
 License: GPLv2+
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -394,6 +394,11 @@ If none of the above works, disable processing of JavaScript files in the minify
 
 
 == Changelog ==
+
+= 4.1.0 - 03/Mar/2025 =
+
+* FEATURE: Premium - Improve performance by caching Gravatar images locally.
+* FIX: Premium - Unused images - Fixed warnings when moving non existing image to trash
 
 = 4.0.1 - 17/Feb/2025 =
 
@@ -809,4 +814,4 @@ If none of the above works, disable processing of JavaScript files in the minify
 [See changelog for all versions](https://plugins.svn.wordpress.org/wp-optimize/trunk/changelog.txt).
 
 == Upgrade Notice ==
-* 4.0.1: Fixes file system usage issue - a recommended update for all
+* 4.1.0: Added a feature to cache gravatar images locally, a lot of fixes and tweaks - a recommended update for all

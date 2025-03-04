@@ -103,7 +103,7 @@ abstract class WP_Optimization {
 	protected function query($sql) {
 		$this->sql_commands[] = $sql;
 		do_action('wp_optimize_optimization_query', $sql, $this);
-		$result = $this->wpdb->query($sql); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Already prepared query
+		$result = $this->wpdb->query($sql); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- SQL is already prepared
 		return apply_filters('wp_optimize_optimization_query_result', $result, $sql, $this);
 	}
 

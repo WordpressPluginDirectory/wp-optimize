@@ -97,7 +97,7 @@
 			$inno_db_tables++;
 		}
 
-		echo '<td data-colname="'.esc_attr__('Actions', 'wp-optimize').'">'. apply_filters('wpo_tables_list_additional_column_data', '', $tablestatus) .'</td>';
+		echo '<td data-colname="'.esc_attr__('Actions', 'wp-optimize').'">'. wp_kses_post(apply_filters('wpo_tables_list_additional_column_data', '', $tablestatus)) .'</td>';
 
 		$row_usage += $tablestatus->Rows;
 		$data_usage += $tablestatus->Data_length;
@@ -105,12 +105,13 @@
 
 		echo '</tr>'."\n";
 	}
-
-	echo '</tbody>';
-	echo '<tfoot>'."\n";
-
+?>
+</tbody>
+<tfoot>
+<?php
 	echo '<tr class="thead">'."\n";
 	echo '<th>'.esc_html__('Total:', 'wp-optimize').'</th>'."\n";
+	// translators: %s is the number of tables
 	echo '<th>'.esc_html(sprintf(_n('%s Table', '%s Tables', $no, 'wp-optimize'), number_format_i18n($no))).'</th>'."\n";
 	echo '<th>'.esc_html(number_format_i18n($row_usage)).'</th>'."\n";
 	echo '<th>'.esc_html($wp_optimize->format_size($data_usage)).'</th>'."\n";
@@ -122,7 +123,7 @@
 	
 	echo '<span style="color:'.esc_attr($font_colour).'">'.esc_html($wp_optimize->format_size($overhead_usage)).'</span>';
 	
-	?>
+?>
 	</th>
 	<th><?php esc_html_e('Actions', 'wp-optimize'); ?></th>
 	</tr>

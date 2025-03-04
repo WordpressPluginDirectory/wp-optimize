@@ -131,7 +131,7 @@ class WP_Optimize_Admin {
 	 */
 	public function display_admin_page($page) {
 		
-		$active_page = !empty($_REQUEST['page']) ? $_REQUEST['page'] : '';
+		$active_page = empty($_REQUEST['page']) ? '' : $_REQUEST['page'];
 		
 		echo '<div class="wpo-page' . ($active_page == $page ? ' active' : '') . '" data-whichpage="'.esc_attr($page).'">';
 		
