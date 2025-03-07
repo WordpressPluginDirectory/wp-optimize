@@ -43,8 +43,8 @@ class WP_Optimize_Delay_JS {
 	 *
 	 * @return bool
 	 */
-	private function should_process() {
-		return $this->options['enabled'] && $this->options['enable_js'] && ($this->is_delay_js_enabled() || $this->is_preload_js_enabled());
+	private function should_process(): bool {
+		return $this->options['enabled'] && $this->options['enable_js'] && ($this->is_delay_js_enabled() || $this->is_preload_js_enabled()) && !$this->is_edit_mode();
 	}
 
 	/**
@@ -404,6 +404,16 @@ class WP_Optimize_Delay_JS {
 	 */
 	private function register_callback_to_output_delay_js_script() {
 		add_action('wp_footer', array($this, 'output_delay_js_script'));
+	}
+	
+	/**
+	 * Determines whether the page is in edit mode using page builders
+	 * Beaver Builder, Divi Theme, Elementor, and Oxygen Builder
+	 *
+	 * @return bool
+	 */
+	private function is_edit_mode(): bool {
+		return isset($_GET['fl_builder']) || isset($_GET['et_fb']) || isset($_GET['elementor-preview']) || isset($_GET['oxygen']) || isset($_GET['ct_builder']);
 	}
 }
 

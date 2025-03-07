@@ -5,7 +5,7 @@ Tags: cache, caching, image cache, minify, performance cache, page speed, image 
 Requires PHP: 7.2
 Requires at least: 4.9
 Tested up to: 6.7
-Stable tag: 4.1.0
+Stable tag: 4.1.1
 License: GPLv2+
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -394,6 +394,10 @@ If none of the above works, disable processing of JavaScript files in the minify
 
 
 == Changelog ==
+
+= 4.1.1 - 05/Mar/2025 =
+
+* FIX: Page builders not working with Delay JS option enabled
 
 = 4.1.0 - 03/Mar/2025 =
 
@@ -814,4 +818,4 @@ If none of the above works, disable processing of JavaScript files in the minify
 [See changelog for all versions](https://plugins.svn.wordpress.org/wp-optimize/trunk/changelog.txt).
 
 == Upgrade Notice ==
-* 4.1.0: Added a feature to cache gravatar images locally, a lot of fixes and tweaks - a recommended update for all
+* 4.1.1: A fix for page builders with Delay JS option - a recommended update for all

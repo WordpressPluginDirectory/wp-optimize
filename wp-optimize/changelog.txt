@@ -1,5 +1,9 @@
 == Changelog ==
 
+= 4.1.1 - 05/Mar/2025 =
+
+* FIX: Page builders not working with Delay JS option enabled
+
 = 4.1.0 - 03/Mar/2025 =
 
 * FEATURE: Premium - Improve performance by caching Gravatar images locally.
