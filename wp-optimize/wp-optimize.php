@@ -1,14 +1,14 @@
 <?php
 /**
 Plugin Name: WP-Optimize - Clean, Compress, Cache
-Plugin URI: https://getwpo.com
+Plugin URI: https://teamupdraft.com/wp-optimize
 Description: WP-Optimize makes your site fast and efficient. It cleans the database, compresses images and caches pages. Fast sites attract more traffic and users.
-Version: 4.1.1
+Version: 4.2.0
 Requires at least: 4.9
 Requires PHP: 7.2
 Update URI: https://wordpress.org/plugins/wp-optimize/
 Author: TeamUpdraft, DavidAnderson
-Author URI: https://updraftplus.com
+Author URI: https://teamupdraft.com
 Text Domain: wp-optimize
 Domain Path: /languages
 License: GPLv2 or later
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) die('No direct access allowed');
 
 // Check to make sure if WP_Optimize is already call and returns.
 if (!class_exists('WP_Optimize')) :
-define('WPO_VERSION', '4.1.1');
+define('WPO_VERSION', '4.2.0');
 define('WPO_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('WPO_PLUGIN_MAIN_PATH', plugin_dir_path(__FILE__));
 define('WPO_PLUGIN_SLUG', plugin_basename(__FILE__));
@@ -279,8 +279,9 @@ class WP_Optimize {
 		$options = Updraft_Smush_Manager()->get_smush_options();
 		$custom = 90 >= $options['image_quality'] && 65 <= $options['image_quality'];
 		$sites = WP_Optimize()->get_sites();
-		$this->include_template('images/smush.php', false, array('smush_options' => $options, 'custom' => $custom, 'sites' => $sites, 'does_server_allows_local_webp_conversion' => $this->does_server_allows_local_webp_conversion()));
-		$this->include_template('images/smush-popup.php');
+		$compression_server_hint = Updraft_Smush_Manager()->get_compression_server_hint();
+		$this->include_template('images/smush.php', false, array('smush_options' => $options, 'custom' => $custom, 'sites' => $sites, 'does_server_allows_local_webp_conversion' => $this->does_server_allows_local_webp_conversion(), 'compression_server_hint' => $compression_server_hint));
+		$this->add_smush_popup_template();
 	}
 
 	public static function instance() {
@@ -330,6 +331,15 @@ class WP_Optimize {
 	 */
 	private function get_delay_js() {
 		return WP_Optimize_Delay_JS::instance();
+	}
+
+	/**
+	 * Returns instance of WPO_Page_Optimizer class.
+	 *
+	 * @return WPO_Page_Optimizer
+	 */
+	public function get_page_optimizer(): WPO_Page_Optimizer {
+		return WPO_Page_Optimizer::instance();
 	}
 
 	/**
@@ -639,6 +649,8 @@ class WP_Optimize {
 		// Load 3rd party plugin compatibilities.
 		$this->load_compatibilities();
 
+		// Load page optimizer
+		$this->get_page_optimizer();
 		// Load page cache.
 		$this->get_page_cache();
 		// We use the init hook to avoid the _load_textdomain_just_in_time warning,
@@ -1869,7 +1881,8 @@ class WP_Optimize {
 	 */
 	public function add_smush_popup_template() {
 		if (current_user_can($this->capability_required())) {
-			$this->include_template('images/smush-popup.php');
+			$compression_server_hint = Updraft_Smush_Manager()->get_compression_server_hint();
+			$this->include_template('images/smush-popup.php', false, array('compression_server_hint' => $compression_server_hint));
 		}
 	}
 
