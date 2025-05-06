@@ -5,7 +5,7 @@ Tags: cache, caching, image cache, minify, performance cache, page speed, image 
 Requires PHP: 7.2
 Requires at least: 4.9
 Tested up to: 6.8
-Stable tag: 4.2.0
+Stable tag: 4.2.1
 License: GPLv2+
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -394,6 +394,10 @@ If none of the above works, disable processing of JavaScript files in the minify
 
 
 == Changelog ==
+
+= 4.2.1 - 05/May/2025 =
+
+* FIX: Cache - Compatibility issue with other plugins due to late start of output buffering
 
 = 4.2.0 - 01/May/2025 =
 
@@ -836,4 +840,4 @@ If none of the above works, disable processing of JavaScript files in the minify
 [See changelog for all versions](https://plugins.svn.wordpress.org/wp-optimize/trunk/changelog.txt).
 
 == Upgrade Notice ==
-* 4.2.0: Added replace YouTube iframes with preview images to improve page speed premium feature, lot of fixes and tweaks, incl - a recommended update for all
+* 4.2.1: Cache - Fixed compatibility issues with other plugins - a recommended update for all

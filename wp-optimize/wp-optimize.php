@@ -3,7 +3,7 @@
 Plugin Name: WP-Optimize - Clean, Compress, Cache
 Plugin URI: https://teamupdraft.com/wp-optimize
 Description: WP-Optimize makes your site fast and efficient. It cleans the database, compresses images and caches pages. Fast sites attract more traffic and users.
-Version: 4.2.0
+Version: 4.2.1
 Requires at least: 4.9
 Requires PHP: 7.2
 Update URI: https://wordpress.org/plugins/wp-optimize/
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) die('No direct access allowed');
 
 // Check to make sure if WP_Optimize is already call and returns.
 if (!class_exists('WP_Optimize')) :
-define('WPO_VERSION', '4.2.0');
+define('WPO_VERSION', '4.2.1');
 define('WPO_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('WPO_PLUGIN_MAIN_PATH', plugin_dir_path(__FILE__));
 define('WPO_PLUGIN_SLUG', plugin_basename(__FILE__));
@@ -50,7 +50,10 @@ class WP_Optimize {
 		register_activation_hook(__FILE__, array('WPO_Activation', 'actions'));
 		register_deactivation_hook(__FILE__, array('WPO_Deactivation', 'actions'));
 		register_uninstall_hook(__FILE__, array('WPO_Uninstall', 'actions'));
-		
+		if (!is_admin()) {
+			WPO_Page_Optimizer::instance()->initialise();
+		}
+
 		$this->load_admin();
 		add_action('admin_init', array($this, 'admin_init'));
 		add_action('admin_bar_menu', array($this, 'cache_admin_bar'), 100, 1);
@@ -331,15 +334,6 @@ class WP_Optimize {
 	 */
 	private function get_delay_js() {
 		return WP_Optimize_Delay_JS::instance();
-	}
-
-	/**
-	 * Returns instance of WPO_Page_Optimizer class.
-	 *
-	 * @return WPO_Page_Optimizer
-	 */
-	public function get_page_optimizer(): WPO_Page_Optimizer {
-		return WPO_Page_Optimizer::instance();
 	}
 
 	/**
@@ -648,11 +642,10 @@ class WP_Optimize {
 
 		// Load 3rd party plugin compatibilities.
 		$this->load_compatibilities();
-
-		// Load page optimizer
-		$this->get_page_optimizer();
+		
 		// Load page cache.
 		$this->get_page_cache();
+
 		// We use the init hook to avoid the _load_textdomain_just_in_time warning,
 		// which is triggered because we use translations during cache initialization
 		add_action('init', array($this, 'init_page_cache'), 1);
@@ -741,7 +734,7 @@ class WP_Optimize {
 	private function get_active_plugins() {
 
 		// Gets all active plugins on the current site
-		$active_plugins = get_option('active_plugins');
+		$active_plugins = (array) get_option('active_plugins', array());
 
 		if (is_multisite()) {
 			$network_active_plugins = get_site_option('active_sitewide_plugins');

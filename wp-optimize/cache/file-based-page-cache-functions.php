@@ -1196,6 +1196,8 @@ endif;
 if (!function_exists('wpo_is_accepted_user_agent')) :
 	function wpo_is_accepted_user_agent($user_agent) {
 		
+		if (empty($GLOBALS['wpo_cache_config'])) return true;
+
 		$exceptions = is_array($GLOBALS['wpo_cache_config']['cache_exception_browser_agents']) ? $GLOBALS['wpo_cache_config']['cache_exception_browser_agents'] : preg_split('#(\n|\r)#', $GLOBALS['wpo_cache_config']['cache_exception_browser_agents']);
 		
 		if (!empty($exceptions)) {

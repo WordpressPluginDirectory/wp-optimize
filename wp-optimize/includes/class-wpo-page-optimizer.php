@@ -13,21 +13,6 @@ class WPO_Page_Optimizer {
 	private static $instance = null;
 
 	/**
-	 * Instance of WPO_Page_Cache
-	 *
-	 * @var WPO_Page_Cache
-	 */
-	private $page_cache;
-
-	/**
-	 * WPO_Page_Optimizer constructor
-	 */
-	private function __construct() {
-		$this->page_cache = WP_Optimize()->get_page_cache();
-		add_action('template_redirect', array($this, 'initialise'));
-	}
-
-	/**
 	 * Get the buffer and perform tasks related to page optimization
 	 *
 	 * @param  string $buffer Page HTML.
@@ -36,7 +21,8 @@ class WPO_Page_Optimizer {
 	 * @return string
 	 */
 	private function optimize(string $buffer, int $flags): string {
-	
+		$buffer = apply_filters('wp_optimize_buffer', $buffer);
+		
 		$buffer = $this->maybe_cache_page($buffer, $flags);
 	
 		return $buffer;
@@ -51,7 +37,7 @@ class WPO_Page_Optimizer {
 	 * @return string
 	 */
 	private function maybe_cache_page(string $buffer, int $flags): string {
-		if ($this->page_cache->should_cache_page()) {
+		if (WP_Optimize()->get_page_cache()->should_cache_page()) {
 			return wpo_cache($buffer, $flags);
 		}
 
@@ -73,7 +59,7 @@ class WPO_Page_Optimizer {
 	 * @return WPO_Page_Optimizer
 	 */
 	public static function instance(): WPO_Page_Optimizer {
-		if (is_null(self::$instance)) {
+		if (null === self::$instance) {
 			self::$instance = new self();
 		}
 		return self::$instance;

@@ -99,6 +99,13 @@ class WPO_Page_Cache {
 	 */
 	public function __construct() {
 		$this->config = WPO_Cache_Config::instance();
+		if (empty($GLOBALS['wpo_cache_config'])) {
+			$config_file_path = $this->config->get_config_file_path();
+			if (file_exists($config_file_path)) {
+				include_once($config_file_path);
+			}
+		}
+
 		WPO_Cache_Rules::instance();
 		WP_Optimize_Page_Cache_Preloader::instance();
 		$this->logger = new Updraft_PHP_Logger();
@@ -157,6 +164,9 @@ class WPO_Page_Cache {
 
 		// Check serve cache rules, to identify if we need to cache the page.
 		$can_serve_from_cache = wpo_can_serve_from_cache();
+		
+		if (false === $can_serve_from_cache) return false;
+
 		if (is_array($can_serve_from_cache)) $no_cache_because = $can_serve_from_cache;
 	
 		if (!empty($no_cache_because)) {

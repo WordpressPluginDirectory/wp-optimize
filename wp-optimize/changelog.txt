@@ -1,5 +1,9 @@
 == Changelog ==
 
+= 4.2.1 - 05/May/2025 =
+
+* FIX: Cache - Compatibility issue with other plugins due to late start of output buffering
+
 = 4.2.0 - 01/May/2025 =
 
 * FEATURE: Premium - Replace YouTube Iframes with preview images to improve page speed
