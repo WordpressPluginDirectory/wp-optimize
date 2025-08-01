@@ -22,7 +22,7 @@
 	<?php endforeach; ?>
 	<p class="wpo-header-links__mobile">
 		<span class="wpo-header-links__label"><?php esc_html_e('Useful links', 'wp-optimize'); ?></span>
-		<?php $wp_optimize->wp_optimize_url('https://getwpo.com/', __('Home', 'wp-optimize')); ?> |
+		<?php $wp_optimize->wp_optimize_url('https://teamupdraft.com/wp-optimize/', __('Home', 'wp-optimize')); ?> |
 
 		<?php $wp_optimize->wp_optimize_url('https://updraftplus.com/', 'UpdraftPlus'); ?> |
 		
@@ -36,7 +36,7 @@
 
 		<?php $wp_optimize->wp_optimize_url('https://david.dw-perspective.org.uk', __("Team lead", 'wp-optimize')); ?> |
 		
-		<?php $wp_optimize->wp_optimize_url('https://getwpo.com/faqs/', __("FAQs", 'wp-optimize')); ?> |
+		<?php $wp_optimize->wp_optimize_url('https://teamupdraft.com/documentation/wp-optimize/faqs/', __("FAQs", 'wp-optimize')); ?> |
 
 		<?php $wp_optimize->wp_optimize_url('https://www.simbahosting.co.uk/s3/shop/', __("More plugins", 'wp-optimize')); ?>
 	</p>

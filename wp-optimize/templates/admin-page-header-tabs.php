@@ -33,9 +33,9 @@
 			<span><?php esc_html_e('Feedback', 'wp-optimize'); ?></span>
 		</a>
 		<span class="wpo-feedback-box">
-			<a href="<?php echo esc_url(WP_Optimize()->maybe_add_affiliate_params('https://getwpo.com/feature-request/?utm_source=wp-optimize&utm_medium=quick_feedback&utm_campaign=feature_request')); ?>" target="_blank"><?php esc_html_e('I have an idea to improve WP-Optimize', 'wp-optimize'); ?></a>
+			<a href="<?php echo esc_url(WP_Optimize()->maybe_add_affiliate_params('https://teamupdraft.com/support/feature-requests/?utm_source=wpo-plugin&utm_medium=referral&utm_campaign=paac&utm_content=improve-wp-optimize&utm_creative_format=text')); ?>" target="_blank"><?php esc_html_e('I have an idea to improve WP-Optimize', 'wp-optimize'); ?></a>
 			<?php if ($wpo_is_premium) : ?>
-				<a href="<?php echo esc_url(WP_Optimize()->maybe_add_affiliate_params('https://getwpo.com/premium-support/?utm_source=wp-optimize&utm_medium=quick_feedback&utm_campaign=help_or_bug_report')); ?>" target="_blank"><?php esc_html_e('I need help / something is not working', 'wp-optimize'); ?></a>
+				<a href="<?php echo esc_url(WP_Optimize()->maybe_add_affiliate_params('https://teamupdraft.com/support/premium-support-form/?utm_source=wp-optimize&utm_medium=quick_feedback&utm_campaign=help_or_bug_report')); ?>" target="_blank"><?php esc_html_e('I need help / something is not working', 'wp-optimize'); ?></a>
 			<?php else : ?>
 				<?php $wp_optimize->wp_optimize_url('https://wordpress.org/support/plugin/wp-optimize/', __('I need help / something is not working', 'wp-optimize')); ?>
 			<?php endif; ?>

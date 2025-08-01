@@ -129,24 +129,12 @@ class WP_Optimize_WebP {
 	}
 
 	/**
-	 * Decide whether the browser requesting the URL can accept webp images or not
-	 *
-	 * @return bool
-	 */
-	private function is_browser_accepting_webp(): bool {
-		return false !== strpos(sanitize_text_field(wp_unslash($_SERVER['HTTP_ACCEPT'] ?? '')), 'image/webp');
-	}
-	
-	/**
 	 * Detect whether using alter HTML method is possible or not
 	 *
 	 * @return bool
 	 */
 	private function is_alter_html_possible() {
-		if ($this->is_browser_accepting_webp()) {
-			return true;
-		}
-		return false;
+		return WPO_WebP_Utils::is_browser_accepting_webp();
 	}
 
 	/**

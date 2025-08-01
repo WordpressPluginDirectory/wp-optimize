@@ -291,7 +291,7 @@ abstract class WP_Optimize_Preloader extends Updraft_Task_Manager_1_4 {
 	public function preload_desktop($url) {
 		$desktop_args = array(
 			'httpversion' => '1.1',
-			'user-agent'  => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.89 Safari/537.36',
+			'user-agent'  => WP_Optimize_Utils::get_user_agent(),
 			'timeout'     => 10,
 			'headers'     => apply_filters('wpo_preload_headers', array()),
 		);
@@ -315,7 +315,7 @@ abstract class WP_Optimize_Preloader extends Updraft_Task_Manager_1_4 {
 
 		$amp_args = array(
 			'httpversion' => '1.1',
-			'user-agent'  => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.89 Safari/537.36',
+			'user-agent'  => WP_Optimize_Utils::get_user_agent(),
 			'timeout'     => 10,
 			'headers'     => apply_filters('wpo_preload_headers', array()),
 		);

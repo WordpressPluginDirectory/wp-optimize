@@ -13,6 +13,8 @@ class WPO_Page_Builder_Compatibility {
 	 */
 	private function __construct() {
 		$this->disable_webp_alter_html_in_edit_mode();
+		
+		add_filter('wpo_minify_file_modification_time', array($this, 'use_file_hash_for_divi_assets'), 10, 2);
 	}
 
 	/**
@@ -25,6 +27,24 @@ class WPO_Page_Builder_Compatibility {
 		}
 
 		return $instance;
+	}
+
+	/**
+	 * Replaces the modification time of Divi assets with the file hash for WPO Minify
+	 *
+	 * @param string $modification_time The original modification time.
+	 * @param string $file_path         The absolute path to the file.
+	 * @return string
+	 */
+	public function use_file_hash_for_divi_assets(string $modification_time, string $file_path): string {
+		if (false !== strpos($file_path, 'et-cache')) {
+			$hash = hash_file('adler32', $file_path);
+			if ($hash) {
+				return $hash . '-h';
+			}
+		}
+		
+		return $modification_time;
 	}
 
 	/**

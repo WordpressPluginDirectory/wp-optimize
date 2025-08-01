@@ -78,6 +78,13 @@ class WPO_Cache_Config {
 
 		$config['page_cache_length_value'] = intval($config['page_cache_length_value']);
 		$config['page_cache_length'] = $this->calculate_page_cache_length($config['page_cache_length_value'], $config['page_cache_length_unit']);
+		
+		$fields_to_trim = array('cache_exception_conditional_tags', 'cache_exception_urls', 'cache_ignore_query_variables', 'cache_exception_cookies', 'cache_exception_browser_agents');
+		foreach ($fields_to_trim as $field) {
+			if (!empty($config[$field]) && is_array($config[$field])) {
+				$config[$field] = array_map('trim', $config[$field]);
+			}
+		}
 
 		/**
 		 * Filters the cookies used to set cache file names
@@ -212,6 +219,7 @@ class WPO_Cache_Config {
 			'page_cache_length'                => 86400,
 			'cache_exception_conditional_tags' => array(),
 			'cache_exception_urls'             => array(),
+			'cache_ignore_query_variables' 	   => array(),
 			'cache_exception_cookies'          => array(),
 			'cache_exception_browser_agents'   => array(),
 			'enable_sitemap_preload'           => false,

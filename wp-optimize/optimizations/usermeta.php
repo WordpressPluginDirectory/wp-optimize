@@ -54,7 +54,7 @@ class WP_Optimization_usermeta extends WP_Optimization {
 			'limit' => $params['limit'],
 			'total' => $total,
 			'data' => $this->htmlentities_array($users, array('ID')),
-			'message' => $total > 0 ? '' : __('No orphaned user meta data in your database', 'wp-optimize'),
+			'message' => $total > 0 ? '' : __('No orphaned user metadata in your database', 'wp-optimize'),
 		);
 	}
 
@@ -63,7 +63,7 @@ class WP_Optimization_usermeta extends WP_Optimization {
 	 */
 	public function after_optimize() {
 		// translators: %s is the number of orphaned user metadata deleted
-		$message = sprintf(_n('%s orphaned user meta data deleted', '%s orphaned user meta data deleted', $this->processed_count, 'wp-optimize'), number_format_i18n($this->processed_count));
+		$message = sprintf(_n('%s orphaned user metadata deleted', '%s orphaned user metadata deleted', $this->processed_count, 'wp-optimize'), number_format_i18n($this->processed_count));
 
 		if ($this->is_multisite_mode()) {
 			// translators: %s is the number sites
@@ -97,9 +97,9 @@ class WP_Optimization_usermeta extends WP_Optimization {
 	public function after_get_info() {
 		if ($this->found_count) {
 			// translators: %s is the number of orphaned user metadata
-			$message = sprintf(_n('%s orphaned user meta data in your database', '%s orphaned user meta data in your database', $this->found_count, 'wp-optimize'), number_format_i18n($this->found_count));
+			$message = sprintf(_n('%s orphaned user metadata in your database', '%s orphaned user metadata in your database', $this->found_count, 'wp-optimize'), number_format_i18n($this->found_count));
 		} else {
-			$message = __('No orphaned user meta data in your database', 'wp-optimize');
+			$message = __('No orphaned user metadata in your database', 'wp-optimize');
 		}
 
 		if ($this->is_multisite_mode()) {
@@ -129,7 +129,7 @@ class WP_Optimization_usermeta extends WP_Optimization {
 	 * Get settings label.
 	 */
 	public function settings_label() {
-		return __('Clean user meta data', 'wp-optimize');
+		return __('Clean user metadata', 'wp-optimize');
 	}
 
 	/**

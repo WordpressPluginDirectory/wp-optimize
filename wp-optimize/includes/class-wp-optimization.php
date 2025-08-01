@@ -276,7 +276,9 @@ abstract class WP_Optimization {
 			$objects[] = 1;
 		}
 
-		return apply_filters('get_optimization_blogs', $objects);
+		$filtered_objects = apply_filters('get_optimization_blogs', $objects);
+		if (is_array($filtered_objects)) return $filtered_objects;
+		return $objects;
 	}
 
 	/**

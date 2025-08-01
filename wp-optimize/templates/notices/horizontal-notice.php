@@ -56,8 +56,8 @@
 					echo wp_kses_post($text);
 					$button_text = '';
 					if (isset($discount_code)) echo ' <b>' . esc_html($discount_code) . '</b>';
-
-					if (!empty($button_link) && !empty($button_meta)) {
+				
+				if (!empty($button_link) && !empty($button_meta) && 'no-button' !== $button_meta) {
 					// Check which Message is going to be used.
 					if ('updraftcentral' == $button_meta) {
 						$button_text = __('Get UpdraftCentral', 'wp-optimize');
@@ -79,7 +79,7 @@
 						$button_text = __('Translate', 'wp-optimize');
 					}
 					$wp_optimize->wp_optimize_url($button_link, $button_text, null, 'class="updraft_notice_link"');
-					}
+				}
 				?>
 			</p>
 		</div>

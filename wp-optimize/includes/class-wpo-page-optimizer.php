@@ -37,7 +37,8 @@ class WPO_Page_Optimizer {
 	 * @return string
 	 */
 	private function maybe_cache_page(string $buffer, int $flags): string {
-		if (WP_Optimize()->get_page_cache()->should_cache_page()) {
+		
+		if (!$this->is_wp_cli() && WP_Optimize()->get_page_cache()->should_cache_page()) {
 			return wpo_cache($buffer, $flags);
 		}
 
@@ -51,6 +52,15 @@ class WPO_Page_Optimizer {
 	 */
 	public function initialise() {
 		ob_start(array(self::$instance, 'optimize'));
+	}
+
+	/**
+	 * Checks if the current execution context is WP-CLI.
+	 *
+	 * @return bool
+	 */
+	public function is_wp_cli(): bool {
+		return defined( 'WP_CLI' ) && WP_CLI;
 	}
 
 	/**

@@ -244,7 +244,7 @@ class WP_Optimize_Page_Cache_Preloader extends WP_Optimize_Preloader {
 
 		$mobile_args = array(
 			'httpversion' => '1.1',
-			'user-agent'  => 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1',
+			'user-agent'  => WP_Optimize_Utils::get_user_agent('mobile'),
 			'timeout'     => 10,
 			'headers'     => apply_filters('wpo_preload_headers', array()),
 		);
@@ -268,7 +268,7 @@ class WP_Optimize_Page_Cache_Preloader extends WP_Optimize_Preloader {
 
 		$amp_args = array(
 			'httpversion' => '1.1',
-			'user-agent'  => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.89 Safari/537.36',
+			'user-agent'  => WP_Optimize_Utils::get_user_agent(),
 			'timeout'     => 10,
 			'headers'     => array(
 				'X-WP-Optimize-Cache-Preload' => 'Yes',

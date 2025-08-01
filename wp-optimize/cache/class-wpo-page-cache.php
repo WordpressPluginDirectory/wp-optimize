@@ -95,6 +95,13 @@ class WPO_Page_Cache {
 	public $should_purge;
 
 	/**
+	 * Flag to decide whether to purge or not
+	 *
+	 * @var bool
+	 */
+	private $files_to_ignore = array('index.php','.htaccess');
+	
+	/**
 	 * Set everything up here
 	 */
 	public function __construct() {
@@ -746,7 +753,7 @@ class WPO_Page_Cache {
 		$cache_files_path = '/cache/wpo-cache';
 		$cache_extensions_path = WPO_CACHE_EXT_DIR;
 		$wpo_version = WPO_VERSION;
-		$wpo_home_url = trailingslashit(home_url());
+		$wpo_home_url = trailingslashit(network_home_url());
 		$abspath = ABSPATH;
 
 		// CS does not like heredoc
@@ -900,7 +907,7 @@ EOF;
 		if (false === $content) return false;
 
 		if (preg_match('/WP\-Optimize advanced\-cache\.php \(written by version\: (.+)\) (\(homeurl: (.+)\)) (\(abspath: (.+)\)) \(do not change/Ui', $content, $match)) {
-			$wpo_home_url = trailingslashit(home_url());
+			$wpo_home_url = trailingslashit(network_home_url());
 			$abspath = ABSPATH;
 			return ($wpo_home_url != $match[3] || $abspath != $match[5]);
 		} elseif (preg_match('/WP\-Optimize advanced\-cache\.php \(written by version\: (.+)\)/Ui', $content, $match)) {
@@ -1081,7 +1088,9 @@ EOF;
 	 * Delete information about cache size.
 	 */
 	public function delete_cache_size_information() {
+		//not removing delete_transient so it clear this key from option table
 		delete_transient('wpo_get_cache_size');
+		delete_site_transient('wpo_get_cache_size');
 	}
 
 	/**
@@ -1090,7 +1099,7 @@ EOF;
 	 * @return array
 	 */
 	public function get_cache_size() {
-		$cache_size = get_transient('wpo_get_cache_size');
+		$cache_size = get_site_transient('wpo_get_cache_size');
 
 		if (!empty($cache_size)) return $cache_size;
 
@@ -1100,7 +1109,9 @@ EOF;
 			'file_count' => $infos['file_count']
 		);
 
-		set_transient('wpo_get_cache_size', $cache_size);
+		$expiration = apply_filters('wpo_cache_size_expiration', DAY_IN_SECONDS);
+		$expiration = is_numeric($expiration) ? (int) $expiration : DAY_IN_SECONDS;
+		set_site_transient('wpo_get_cache_size', $cache_size, $expiration);
 
 		return $cache_size;
 	}
@@ -1121,6 +1132,9 @@ EOF;
 			return array('size' => 0, 'file_count' => 0);
 		}
 
+		$filtered = apply_filters('wpo_cache_size_files_to_ignore', $this->files_to_ignore);
+		$this->files_to_ignore = is_array($filtered) ? $filtered : array();
+		
 		$file = readdir($handle);
 
 		while (false !== $file) {
@@ -1133,8 +1147,10 @@ EOF;
 					$dir_size += $sub_dir_infos['size'];
 					$file_count += $sub_dir_infos['file_count'];
 				} elseif (is_file($current_file)) {
-					$dir_size += filesize($current_file);
-					$file_count++;
+					if (!in_array($file, $this->files_to_ignore)) {
+						$dir_size += filesize($current_file);
+						$file_count++;
+					}
 				}
 			}
 
@@ -1675,6 +1691,9 @@ EOF;
 	 * @return bool
 	 */
 	public function should_auto_preload_purged_contents() {
+		
+		if (!$this->is_enabled()) return false; // as Page Cache is not enabled we should not auto preload purged content.
+		
 		$wpo_cache = WP_Optimize()->get_page_cache();
 		$wpo_cache_options = $wpo_cache->config->get();
 

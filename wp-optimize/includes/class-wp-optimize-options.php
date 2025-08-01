@@ -256,7 +256,7 @@ class WP_Optimize_Options {
 			$this->update_option('wpo-sites-cron', $settings['wpo-sites-cron']);
 		}
 
-		if (isset($settings['wpo-sites'])) {
+		if (isset($settings['wpo-sites']) && is_array($settings['wpo-sites'])) {
 			$this->save_wpo_sites_option($settings['wpo-sites']);
 		}
 

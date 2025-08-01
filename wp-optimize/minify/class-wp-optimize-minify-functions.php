@@ -1013,7 +1013,7 @@ class WP_Optimize_Minify_Functions {
 		
 		$args = array(
 			// info (needed for google fonts woff files + hinted fonts) as well as to bypass some security filters
-			'user-agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36',
+			'user-agent' => WP_Optimize_Utils::get_user_agent(),
 			'timeout' => 7
 		);
 
@@ -1131,7 +1131,7 @@ class WP_Optimize_Minify_Functions {
 	public static function get_remote_file_size($url) {
 		$args = array(
 			// info (needed for google fonts woff files + hinted fonts) as well as to bypass some security filters
-			'user-agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36',
+			'user-agent' => WP_Optimize_Utils::get_user_agent(),
 			'timeout' => 7
 		);
 
@@ -1225,8 +1225,10 @@ class WP_Optimize_Minify_Functions {
 		$abs_file_path = WP_Optimize_Utils::get_file_path($hurl);
 		if (empty($abs_file_path)) return '';
 
-		$modification_time = @filemtime($abs_file_path); // phpcs:ignore Generic.PHP.NoSilencedErrors.Discouraged -- Suppress E-Warning on failure
-		return strval($modification_time);
+		$modification_time = strval(@filemtime($abs_file_path)); // phpcs:ignore Generic.PHP.NoSilencedErrors.Discouraged -- Suppress E-Warning on failure
+		$filtered_modification_time = apply_filters('wpo_minify_file_modification_time', $modification_time, $abs_file_path);
+		
+		return is_string($filtered_modification_time) ? $filtered_modification_time : $modification_time;
 	}
 
 	/**

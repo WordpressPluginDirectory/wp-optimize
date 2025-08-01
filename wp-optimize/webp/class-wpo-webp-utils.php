@@ -82,6 +82,29 @@ class WPO_WebP_Utils {
 		// For other PHP warnings, use the default PHP error handler by returning false
 		return false;
 	}
+	
+	/**
+	 * Decide whether the browser requesting the URL can accept webp images or not
+	 *
+	 * @return bool
+	 */
+	public static function is_browser_accepting_webp(): bool {
+		$http_accept =  sanitize_text_field(wp_unslash($_SERVER['HTTP_ACCEPT'] ?? ''));
+		if (false !== strpos($http_accept, 'image/webp')) {
+			return true;
+		}
+		
+		// Link to compatibility site - https://caniuse.com/webp
+		$user_agent = sanitize_text_field(wp_unslash($_SERVER['HTTP_USER_AGENT'] ?? ''));
+		if (empty($user_agent)) return false;
+		
+		// Check Firefox version number
+		if (preg_match('/Firefox\/([\d\.]+[a-z\d]*)/', $user_agent, $matches)) {
+			if (version_compare('65.0.0', $matches[1], '<=')) return true;
+		}
+		
+		return false;
+	}
 }
 
 endif;

@@ -274,17 +274,12 @@ class Updraft_Smush_Manager extends Updraft_Task_Manager_1_4 {
 		if ($this->task_exists($post_id))
 			return;
 		
-		$options = array(
-			'attachment_id' => $post_id,
-			'blog_id'	   => get_current_blog_id(),
-			'image_quality' => $this->options->get_option('image_quality', 92),
-			'keep_original' => $this->options->get_option('back_up_original', true),
-			'preserve_exif' => $this->options->get_option('preserve_exif', true),
-			'lossy_compression' => $this->options->get_option('lossy_compression', false)
-		);
+		
+		$task_options = $this->get_smush_options();
+		$task_options = array_merge(array('attachment_id' => $post_id, 'blog_id' => get_current_blog_id()), $task_options);
 
 		if (filesize($file) > 5242880) {
-			$options['request_timeout'] = 180;
+			$task_options['request_timeout'] = 180;
 		}
 
 		$server = $this->options->get_option('compression_server', $this->webservice);
@@ -293,7 +288,7 @@ class Updraft_Smush_Manager extends Updraft_Task_Manager_1_4 {
 		$blog_info   = is_multisite() ? ', blog ID : '.get_current_blog_id() : '';
 		$description = "$task_name with attachment ID : ".$post_id . $blog_info .", autocreated on : ".gmdate("F d, Y h:i:s", time());
 
-		$task = call_user_func(array($task_name, 'create_task'), 'smush', $description, $options, $task_name);
+		$task = call_user_func(array($task_name, 'create_task'), 'smush', $description, $task_options, $task_name);
 
 		if ($task) $this->set_task_logger($task);
 		$this->log($description);
@@ -598,25 +593,19 @@ class Updraft_Smush_Manager extends Updraft_Task_Manager_1_4 {
 			}
 		}
 
+		$task_options  = $this->get_smush_options();
 		foreach ($images as $image) {
 			// Skip if already in the queue
 			if (in_array($image, $queued_images)) continue;
 
-			$options = array(
-				'attachment_id' => intval($image['attachment_id']),
-				'blog_id'	   => intval($image['blog_id']),
-				'image_quality' => $this->options->get_option('image_quality', 92),
-				'keep_original' => $this->options->get_option('back_up_original', true),
-				'preserve_exif' => $this->options->get_option('preserve_exif', true),
-				'lossy_compression' => $this->options->get_option('lossy_compression', false)
-			);
+			$task_options = array_merge(array('attachment_id' => intval($image['attachment_id']), 'blog_id' => intval($image['blog_id'])), $task_options);
 
 			$server = $this->options->get_option('compression_server', $this->webservice);
 			$task_name = $this->get_associated_task($server);
 
 			$blog_info = is_multisite() ? ', Blog ID : '.intval($image['blog_id']) : '';
 			$description = "$task_name - Attachment ID : ". intval($image['attachment_id']) . $blog_info . ", Started on : ". gmdate("F d, Y h:i:s", time());
-			$task = call_user_func(array($task_name, 'create_task'), 'smush', $description, $options, $task_name);
+			$task = call_user_func(array($task_name, 'create_task'), 'smush', $description, $task_options, $task_name);
 			if ($task) $this->set_task_logger($task);
 		}
 
@@ -737,6 +726,7 @@ class Updraft_Smush_Manager extends Updraft_Task_Manager_1_4 {
 				'compression_server' => $this->options->get_option('compression_server', $this->get_default_webservice()),
 				'image_quality' => $this->options->get_option('image_quality', 92),
 				'lossy_compression' => $this->options->get_option('lossy_compression', false),
+				'keep_original' => $this->options->get_option('back_up_original', true), // repeated below
 				'back_up_original' => $this->options->get_option('back_up_original', true),
 				'back_up_delete_after' => $this->options->get_option('back_up_delete_after', true),
 				'back_up_delete_after_days' => $this->options->get_option('back_up_delete_after_days', 50),
@@ -962,7 +952,7 @@ class Updraft_Smush_Manager extends Updraft_Task_Manager_1_4 {
 	public function get_uncompressed_images($use_cache = "true") {
 		if ("true" == $use_cache) {
 			$uncompressed_images = $this->get_from_cache('uncompressed_images');
-			if ($uncompressed_images) return $uncompressed_images;
+			if ($uncompressed_images && is_array($uncompressed_images)) return $uncompressed_images;
 		}
 
 		$uncompressed_images = array();

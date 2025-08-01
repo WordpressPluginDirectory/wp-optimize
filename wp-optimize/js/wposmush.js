@@ -724,7 +724,7 @@ var WP_Optimize_Smush = function() {
 				if ('update_failed_no_working_webp_converter' === resp.error_code) {
 					var html_msg = '<p>'
 						+ wposmush.webp_conversion_tool_error
-						+ ' <a href="https://getwpo.com/faqs/#How-can-I-get-WebP-conversion-tools-to-work-" target="_blank">'
+						+ ' <a href="https://teamupdraft.com/documentation/wp-optimize/topics/image-compression/troubleshooting/the-webp-conversion-tool-is-not-working/" target="_blank">'
 						+ wposmush.webp_conversion_tool_how_to
 						+ '</a></p>';
 					$('#smush-information-modal .smush-information').html(html_msg);
@@ -927,7 +927,7 @@ var WP_Optimize_Smush = function() {
 	/**
 	 * Update images optimization tab view with data returned from images optimization.
 	 *
-	 * @param {Object} data - meta data returned from task manager
+	 * @param {Object} data - metadata returned from task manager
 	 *
 	 * @return void
 	 */
