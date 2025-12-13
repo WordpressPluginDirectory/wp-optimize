@@ -28,7 +28,7 @@ abstract class Updraft_Smush_Task extends Updraft_Task_1_2 {
 	/**
 	 * Initialise the task
 	 *
-	 * @param Array $options - options to use
+	 * @param array $options - options to use
 	 */
 	public function initialise($options = array()) {
 		parent::initialise($options);
@@ -62,7 +62,7 @@ abstract class Updraft_Smush_Task extends Updraft_Task_1_2 {
 		$api_endpoint = $this->get_option('api_endpoint');
 
 		if (false === filter_var($api_endpoint, FILTER_VALIDATE_URL)) {
-			$this->fail('invalid_api_url', "The API endpoint supplied {$api_endpoint} is invalid");
+			$this->fail('invalid_api_url', "The API endpoint supplied $api_endpoint is invalid");
 			return false;
 		}
 
@@ -75,7 +75,13 @@ abstract class Updraft_Smush_Task extends Updraft_Task_1_2 {
 		$this->update_option('original_filesize', filesize($file_path));
 
 		// build list of files for smush.
-		$files = array_merge(array('full' => $file_path), WPO_Image_Utils::get_attachment_files($attachment_id));
+		if (is_multisite()) {
+			switch_to_blog($this->get_option('blog_id', 1));
+			$files = array_merge(array('full' => $file_path), WPO_Image_Utils::get_attachment_files($attachment_id));
+			restore_current_blog();
+		} else {
+			$files = array_merge(array('full' => $file_path), WPO_Image_Utils::get_attachment_files($attachment_id));
+		}
 
 		$sizes_info = array();
 		$webp_tools_available = true;
@@ -86,7 +92,7 @@ abstract class Updraft_Smush_Task extends Updraft_Task_1_2 {
 			$quality = 92;
 		}
 		$this->log($this->get_description());
-		$this->log("File: " . basename($file_path) . ", Compression quality: {$quality}");
+		$this->log("File: " . basename($file_path) . ", Compression quality: $quality");
 
 		foreach ($files as $size => $file_path) {
 
@@ -112,7 +118,7 @@ abstract class Updraft_Smush_Task extends Updraft_Task_1_2 {
 
 			/**
 			 * Filters the options for a single image to compress.
-			 * Currently supports:
+			 * Currently, supports:
 			 * - 'quality': Will use the image quality set in this filter, instead of the one defined in the settings.
 			 *
 			 * @param array   $options       - The options (default: empty array)
@@ -128,7 +134,7 @@ abstract class Updraft_Smush_Task extends Updraft_Task_1_2 {
 			$optimised_image = $this->process_server_response($response);
 
 			if ($optimised_image) {
-				$backup_image = ($original_image == $file_path) ? $backup_original_image : false;
+				$backup_image = ($original_image === $file_path) ? $backup_original_image : false;
 				$this->save_optimised_image($file_path, $optimised_image, $backup_image);
 
 				clearstatcache($file_path);
@@ -147,15 +153,27 @@ abstract class Updraft_Smush_Task extends Updraft_Task_1_2 {
 			$this->log('There were no WebP conversion tools found on your server.');
 		}
 
+		$webp_converter = new WPO_WebP_Convert();
+		$destination = $webp_converter->get_destination_path($file_path);
+		if ($webp_tools_available && file_exists($destination)) {
+			if (is_multisite()) {
+				switch_to_blog($this->get_option('blog_id', 1));
+				update_post_meta($attachment_id, 'wpo-webp-conversion-complete', true);
+				restore_current_blog();
+			} else {
+				update_post_meta($attachment_id, 'wpo-webp-conversion-complete', true);
+			}
+		}
+
 		return $this->success;
 	}
 
 	/**
 	 * Posts the supplied data to the API url and returns a response
 	 *
-	 * @param String $api_endpoint - the url to post the form to
-	 * @param String $post_data	   - the post data as specified by the server
-	 * @return mixed - the response
+	 * @param string $api_endpoint - the url to post the form to
+	 * @param array  $post_data	   - the post data as specified by the server
+	 * @return array|false|WP_Error - the response
 	 */
 	public function post_to_remote_server($api_endpoint, $post_data) {
 
@@ -184,7 +202,7 @@ abstract class Updraft_Smush_Task extends Updraft_Task_1_2 {
 	/**
 	 * Checks if a file is valid and capable of being smushed
 	 *
-	 * @param String $file_path - the path of the original image
+	 * @param string $file_path - the path of the original image
 	 * @return bool - true on success, false otherwise
 	 */
 	public function validate_file($file_path) {
@@ -212,7 +230,7 @@ abstract class Updraft_Smush_Task extends Updraft_Task_1_2 {
 	/**
 	 * Creates a backup of the original image
 	 *
-	 * @param String $file_path - the path of the original image
+	 * @param string $file_path - the path of the original image
 	 * @return bool - true on success, false otherwise
 	 */
 	public function backup_original_image($file_path) {
@@ -236,7 +254,7 @@ abstract class Updraft_Smush_Task extends Updraft_Task_1_2 {
 			restore_current_blog();
 		}
 
-		$this->log("Backing up the original image - {$back_up_relative_path}");
+		$this->log("Backing up the original image - $back_up_relative_path");
 
 		return copy($file_path, $back_up);
 	}
@@ -244,8 +262,8 @@ abstract class Updraft_Smush_Task extends Updraft_Task_1_2 {
 	/**
 	 * Creates a backup of the original image
 	 *
-	 * @param String $file_path 	  - the path of the original image
-	 * @param Mixes  $optimised_image - the contents of the image
+	 * @param string $file_path 	  - the path of the original image
+	 * @param mixed  $optimised_image - the contents of the image
 	 * @param bool   $backup_original - backup original image
 	 *
 	 * @return bool - true on success, false otherwise
@@ -281,11 +299,11 @@ abstract class Updraft_Smush_Task extends Updraft_Task_1_2 {
 			$file_path = get_attached_file($attachment_id);
 		}
 
-		$original_size = $this->get_option('original_filesize');
+		$original_size = (int) $this->get_option('original_filesize');
 		$this->set_current_stage('completed');
 
 		clearstatcache(true, $file_path);
-		if (0 == $original_size) {
+		if (0 === $original_size) {
 			$saved = '';
 			// translators: %s is a file size
 			$info = sprintf(__("The file was compressed to %s using WP-Optimize", 'wp-optimize'), WP_Optimize()->format_size(filesize($file_path)));
@@ -315,7 +333,7 @@ abstract class Updraft_Smush_Task extends Updraft_Task_1_2 {
 			update_post_meta($attachment_id, 'smush-stats', $stats);
 		}
 
-		$this->log("Successfully optimized the image - {$file_path}." . $info);
+		$this->log("Successfully optimized the image - $file_path." . $info);
 		$this->set_status('complete');
 
 		return parent::complete();
@@ -324,8 +342,8 @@ abstract class Updraft_Smush_Task extends Updraft_Task_1_2 {
 	/**
 	 * Fires if the task fails, any clean up code and logging goes here
 	 *
-	 * @param String $error_code	- A code for the failure
-	 * @param String $error_message - A description for the failure
+	 * @param string $error_code	- A code for the failure
+	 * @param string $error_message - A description for the failure
 	 */
 	public function fail($error_code = "Unknown", $error_message = "Unknown") {
 
@@ -366,14 +384,16 @@ abstract class Updraft_Smush_Task extends Updraft_Task_1_2 {
 			'completed' => __('Successful', 'wp-optimize'),
 		);
 
-		return apply_filters('allowed_task_stages', $stages);
+		$filtered_stages = apply_filters('allowed_task_stages', $stages);
+		if (!empty($filtered_stages) && is_array($filtered_stages)) return $filtered_stages;
+		return $stages;
 	}
 
 	/**
 	 * Retrieve default options for this task.
 	 * This method should normally be over-ridden by the child.
 	 *
-	 * @return Array - an array of options
+	 * @return array - an array of options
 	 */
 	public function get_default_options() {
 
@@ -388,14 +408,14 @@ abstract class Updraft_Smush_Task extends Updraft_Task_1_2 {
 	/**
 	 * Sets the task stage.
 	 *
-	 * @param String $stage - the current stage of the task
+	 * @param string $stage - the current stage of the task
 	 * @return bool - the result of the  update
 	 */
 	public function set_current_stage($stage) {
 		
 		if (array_key_exists($stage, self::get_allowed_stages())) {
 			$this->stage = $stage;
-			return $this->update_option('current_stage', $this->stage);
+			return (bool) $this->update_option('current_stage', $this->stage);
 		}
 		
 		return false;
@@ -404,16 +424,14 @@ abstract class Updraft_Smush_Task extends Updraft_Task_1_2 {
 	/**
 	 * Gets the task stage
 	 *
-	 * @return String $stage - the current stage of the task
+	 * @return string $stage - the current stage of the task
 	 */
 	public function get_current_stage() {
-		if (isset($this->stage))
-			return $this->stage;
-		else return $this->get_option('current_stage');
+		return $this->stage ?? $this->get_option('current_stage');
 	}
 
 	/**
-	 * Check the mime type of a downloaded file, returns true if it is a valid image mime type.
+	 * Check the mime type of downloaded file, returns true if it is a valid image mime type.
 	 *
 	 * @param string $file_buffer The buffer string downloaded from the compression service
 	 * @return boolean

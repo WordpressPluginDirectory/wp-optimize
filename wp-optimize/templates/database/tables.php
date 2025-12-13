@@ -48,7 +48,7 @@ if (!$table_prefix) {
 	</thead>
 	<?php
 	if ($load_data) {
-		WP_Optimize()->include_template('database/tables-body.php', false, array('optimize_db' => $optimize_db));
+		WP_Optimize()->include_template('database/tables-body.php', false, $table_list_data);
 	} else {
 	?>
 		<tbody>

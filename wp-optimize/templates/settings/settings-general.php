@@ -4,7 +4,7 @@
 <div class="wpo-fieldgroup">
 	<p>
 		<label>
-			<input name="enable-admin-bar" id="enable-admin-bar" type="checkbox" value ="true" <?php echo ($options->get_option('enable-admin-menu', 'false') == 'true') ? 'checked="checked"' : ''; ?> />
+			<input name="enable-admin-bar" id="enable-admin-bar" type="checkbox" value ="true" <?php echo ($options->get_option('enable-admin-menu', 'false') === 'true') ? 'checked="checked"' : ''; ?> />
 			<?php esc_html_e('Enable admin bar menu', 'wp-optimize'); ?>
 		</label>
 		<br>

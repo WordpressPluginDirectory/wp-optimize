@@ -8,6 +8,11 @@ if (!defined('ABSPATH')) die('No direct access allowed');
 if (!defined('WPO_CACHE_EXT_DIR')) define('WPO_CACHE_EXT_DIR', dirname(__FILE__).'/extensions');
 
 /**
+ * Directory that stores the cache, including gzipped files and mobile specific cache
+ */
+if (!defined('WPO_CACHE_FILES_DIR')) define('WPO_CACHE_FILES_DIR', untrailingslashit(WP_CONTENT_DIR).'/cache/wpo-cache');
+
+/**
  * Holds utility functions used by file based cache
  */
 
@@ -31,6 +36,15 @@ if (!function_exists('wpo_cache')) :
 		if (strlen($buffer) < 255) {
 			// translators: %s is the number of bytes
 			$no_cache_because[] = sprintf(__('Output is too small (less than %d bytes) to be worth caching', 'wp-optimize'), 255);
+		}
+
+		if (defined('REST_REQUEST') && REST_REQUEST) {
+			if (!wpo_rest_caching_enabled()) {
+				$no_cache_because[] = __('This is a REST API request (identified by REST_REQUEST constant) and you have not enabled REST API caching', 'wp-optimize');
+			} else {
+				// Don't process REST requests here
+				return $buffer;
+			}
 		}
 		
 		$restricted_page_type_cache = apply_filters('wpo_restricted_cache_page_type', false);
@@ -71,7 +85,7 @@ if (!function_exists('wpo_cache')) :
 		if (function_exists('comments_open') && function_exists('get_post') && get_post() && comments_open()) {
 			$commenter = wp_get_current_commenter();
 			// if any of the fields contain something, do not save to cache
-			if ('' != $commenter['comment_author'] || '' != $commenter['comment_author_email'] || '' != $commenter['comment_author_url']) {
+			if ('' !== $commenter['comment_author'] || '' !== $commenter['comment_author_email'] || '' !== $commenter['comment_author_url']) {
 				$no_cache_because[] = __('Comments are opened and the visitor saved his information.', 'wp-optimize');
 			}
 		}
@@ -98,13 +112,9 @@ if (!function_exists('wpo_cache')) :
 			}
 		}
 		
-		if (defined('REST_REQUEST') && REST_REQUEST) {
-			$no_cache_because[] = __('This is a REST API request (identified by REST_REQUEST constant)', 'wp-optimize');
-		}
-		
 		// Don't cache with fatal error pages.
 		$last_error = error_get_last();
-		if (is_array($last_error) && E_ERROR == $last_error['type']) {
+		if (is_array($last_error) && E_ERROR === $last_error['type']) {
 			$no_cache_because[] = __('This page has a fatal error', 'wp-optimize');
 		}
 		
@@ -115,13 +125,28 @@ if (!function_exists('wpo_cache')) :
 			// translators: %s is the HTTP response code for unauthorised access
 			$no_cache_because[] = sprintf(__('This page returned an HTTP unauthorised response code (%s)', 'wp-optimize'), http_response_code());
 		}
+
+		// Get cache file name
+		$file_ext = '.html';
+			
+		if (wpo_feeds_caching_enabled()) {
+			if (is_feed()) {
+				$file_ext = '.rss-xml';
+			}
+		}
+		
+		$cache_filename = wpo_cache_filename($file_ext);
+
+		if (defined('WPO_CACHE_DONT_PROCESS_THIS_PAGE') && WPO_CACHE_DONT_PROCESS_THIS_PAGE) {
+			$no_cache_because[] = __('The WPO_CACHE_DONT_PROCESS_THIS_PAGE constant is set.', 'wp-optimize');
+		}
 		
 		if (empty($no_cache_because)) {
 			
 			$buffer = apply_filters('wpo_pre_cache_buffer', $buffer, $flags);
 			
 			$url_path = wpo_get_url_path();
-			
+
 			$path = WPO_CACHE_FILES_DIR . '/' .$url_path;
 			
 			if (!wp_mkdir_p($path)) {
@@ -131,6 +156,9 @@ if (!function_exists('wpo_cache')) :
 		
 		if (!empty($no_cache_because)) {
 			
+			if (function_exists('do_action')) {
+				do_action('wpo_page_not_cached', $no_cache_because);
+			}
 			$message = implode(', ', $no_cache_because);
 			
 			// Add http headers
@@ -140,7 +168,7 @@ if (!function_exists('wpo_cache')) :
 				$not_cached_details = "";
 				
 				// Output the reason only when the user has turned on debugging
-				if (((defined('WP_DEBUG') && WP_DEBUG) || isset($_GET['wpo_cache_debug']))) {
+				if (((defined('WP_DEBUG') && WP_DEBUG) || isset($_GET['wpo_cache_debug']))) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Not using the value, only checks for existence
 					$not_cached_details = "because: ".htmlspecialchars($message) . " ";
 				}
 				
@@ -202,15 +230,7 @@ if (!function_exists('wpo_cache')) :
 			/**
 			 * Save $buffer into cache file.
 			 */
-			$file_ext = '.html';
-			
-			if (wpo_feeds_caching_enabled()) {
-				if (is_feed()) {
-					$file_ext = '.rss-xml';
-				}
-			}
-			
-			$cache_filename = wpo_cache_filename($file_ext);
+
 			$cache_file = $path . '/' .$cache_filename;
 			
 			if (defined('WPO_CACHE_FILENAME_DEBUG') && WPO_CACHE_FILENAME_DEBUG) {
@@ -235,6 +255,8 @@ if (!function_exists('wpo_cache')) :
 				// If the shutdown occurs before plugins are loaded,
 				// then this will trigger a fatal error, so, we check first
 				if (!doing_action('shutdown')) {
+					// phpcs:disable
+					// Edge case handling for debugging purpose
 					error_log('[WPO_CACHE] WP_Optimize() is not callable.');
 					$message = 'Please report this to WP-O support: ';
 					if (function_exists('wp_debug_backtrace_summary')) {
@@ -243,21 +265,28 @@ if (!function_exists('wpo_cache')) :
 						$message .= wpo_debug_backtrace_summary();
 					}
 					error_log($message);
+					// phpcs:enable
 				}
 			}
 			
 			header('Cache-Control: no-cache'); // Check back every time to see if re-download is necessary.
 			header('Last-Modified: ' . gmdate('D, d M Y H:i:s', $modified_time) . ' GMT');
 			header('WPO-Cache-Status: saving to cache');
+
+			// Enable gzipped output only if it is supported and the output buffer level is ≤2
+			// (i.e., no extra handlers beyond default and WPO_Page_Optimizer::optimize() are active)
+			$wpo_cache_can_output_gzip_content = wpo_cache_can_output_gzip_content() && ob_get_level() <= 2;
+
+			// Allow to override gzip output via the 'wpo_cache_can_output_gzip_content' filter
+			$wpo_cache_can_output_gzip_content = apply_filters('wpo_cache_can_output_gzip_content', $wpo_cache_can_output_gzip_content);
 			
-			if (wpo_cache_can_output_gzip_content()) {
+			if ($wpo_cache_can_output_gzip_content) {
 				
 				if (!wpo_cache_is_in_response_headers_list('Content-Encoding', 'gzip')) {
 					header('Content-Encoding: gzip');
 				}
 				
-				// Disable php gzip to avoid double compression.
-				ini_set('zlib.output_compression', 'Off');
+				ini_set('zlib.output_compression', 'Off'); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged -- disabling php gzip to avoid double compression.
 				
 				return ob_gzhandler($buffer, $flags);
 			} else {
@@ -303,8 +332,9 @@ if (!function_exists('wpo_restricted_cache_page_type')) {
 		}
 		
 		// Don't cache htacesss. Remember to properly escape any output to prevent injection.
-		if (strpos($_SERVER['REQUEST_URI'], '.htaccess') !== false) {
-			$restricted = 'The file path is unsuitable for caching ('.$_SERVER['REQUEST_URI'].')';
+		$request_uri = isset($_SERVER['REQUEST_URI']) ? htmlspecialchars($_SERVER['REQUEST_URI'], ENT_QUOTES, 'UTF-8') : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- WP functions may not be available, so using php native functions. only outputting to browser
+		if (strpos($request_uri, '.htaccess') !== false) {
+			$restricted = 'The file path is unsuitable for caching ('.$request_uri.')';
 		}
 		
 		// Don't cache feeds.
@@ -361,7 +391,8 @@ if (!function_exists('wpo_cache_filename')) :
 				if (is_array($cookie_name) && isset($_COOKIE[$key])) {
 					foreach ($cookie_name as $cookie_key) {
 						if (isset($_COOKIE[$key][$cookie_key]) && '' !== $_COOKIE[$key][$cookie_key]) {
-							$_cache_key = $cookie_key.'='.$_COOKIE[$key][$cookie_key];
+							$cookie_value = $_COOKIE[$key][$cookie_key]; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- WP functions may not available, also removing everything except letters, numbers, hyphens and equal signs below
+							$_cache_key = $cookie_key.'='.$cookie_value;
 							$_cache_key = preg_replace('/[^a-z0-9_\-\=]/i', '-', $_cache_key);
 							$cache_key .= '-' . $_cache_key;
 							$wpo_cache_filename_debug[] = 'Cookie: name: ' . $key . '[' . $cookie_key . '], value: *** , cache_key:' . $_cache_key;
@@ -371,7 +402,7 @@ if (!function_exists('wpo_cache_filename')) :
 				}
 				
 				if (isset($_COOKIE[$cookie_name]) && '' !== $_COOKIE[$cookie_name]) {
-					$_cache_key = $cookie_name.'='.$_COOKIE[$cookie_name];
+					$_cache_key = $cookie_name.'='. $_COOKIE[$cookie_name]; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- WP functions may not available, also removing everything except letters, numbers, hyphens and equal signs below
 					$_cache_key = preg_replace('/[^a-z0-9_\-\=]/i', '-', $_cache_key);
 					$cache_key .= '-' . $_cache_key;
 					$wpo_cache_filename_debug[] = 'Cookie: name: ' . $cookie_name . ', value: *** , cache_key:' . $_cache_key;
@@ -386,35 +417,76 @@ if (!function_exists('wpo_cache_filename')) :
 		 */
 		if (!empty($query_variables)) {
 			foreach ($query_variables as $variable) {
-				if (isset($_GET[$variable]) && !empty($_GET[$variable])) {
-					$_cache_key = $variable.'='.$_GET[$variable];
+				if (isset($_GET[$variable]) && '' !== $_GET[$variable]) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Executes before WP fully loads, Nonce not available
+					$query_variable_value = $_GET[$variable]; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- WP functions may not available, also removing everything except letters, numbers, hyphens and equal signs below
+					$_cache_key = $variable.'='.$query_variable_value;
 					$_cache_key = preg_replace('/[^a-z0-9_\-\=]/i', '-', $_cache_key);
 					$cache_key .= '-' . $_cache_key;
-					$wpo_cache_filename_debug[] = 'GET parameter: name: ' . $variable . ', value:' . htmlentities($_GET[$variable]) . ', cache_key:' . $_cache_key;
+					$wpo_cache_filename_debug[] = 'GET parameter: name: ' . $variable . ', value:' . htmlentities($query_variable_value) . ', cache_key:' . $_cache_key;
 				}
 			}
 		}
 		
-		// Adding cache key with queried cookies and variables to the cache file name.
-		if ('' !== $cache_key) {
-			// Add human-readable cache key to the filename
-			$filename .= str_replace('--', '-', '-'.$cache_key);
-		}
-		
+		$filename = wpo_build_cache_filename($filename, $cache_key);
 		$filename = apply_filters('wpo_cache_filename', $filename);
-		
-		// Trimming filename if it exceeds 240 characters due to filesystem limitations
-		if (strlen($filename) > 240) {
-			$filename = substr($filename, 0, 199) . '-' . sha1($filename);
-		}
-		
+
 		$wpo_cache_filename_debug[] = 'Extension: ' . $ext;
-		$wpo_cache_filename_debug[] = 'Filename: ' . $filename.$ext;
+		$wpo_cache_filename_debug[] = 'Filename: ' . $filename;
 		
 		$GLOBALS['wpo_cache_filename_debug'] = $wpo_cache_filename_debug;
 		
 		return $filename . $ext;
 	}
+endif;
+
+
+if (!function_exists('wpo_build_cache_filename')) :
+/**
+ * Builds a cache filename using the original filename, cache key,
+ * and trims it if it exceeds the file system limit.
+ *
+ * @param string $filename
+ * @param string $cache_key
+ * @return string
+ */
+function wpo_build_cache_filename($filename, $cache_key) {
+	if ('' !== $cache_key) {
+		// Add human-readable cache key to the filename
+		$filename .= preg_replace('/\-+/', '-', '-'.$cache_key);
+	}
+
+	// Trimming filename if it exceeds 240 characters due to filesystem limitations
+	if (strlen($filename) > 240) {
+		$filename = substr($filename, 0, 199) . '-' . sha1($filename);
+	}
+
+	return $filename;
+}
+endif;
+
+
+if (!function_exists('wpo_rest_cache_filename')) :
+/**
+ * Builds the rest cache filename, uses passed params.
+ *
+ * @param array $params
+ * @return string
+ */
+function wpo_rest_cache_filename($params) {
+	$filename = 'index';
+	$cache_key = '';
+
+	if (!empty($params)) {
+		foreach ($params as $key => $value) {
+			if (is_array($value)) $value = serialize($value);
+			$_cache_key = $key.'_'.$value;
+			$_cache_key = preg_replace('/[^a-z0-9_\-]/i', '-', $_cache_key);
+			$cache_key .= '-' . $_cache_key;
+		}
+	}
+
+	return wpo_build_cache_filename($filename, $cache_key) . '.json';
+}
 endif;
 
 /**
@@ -449,7 +521,7 @@ endif;
 if (!function_exists('wpo_cache_query_variables')) :
 	function wpo_cache_query_variables() {
 		if (defined('WPO_CACHE_URL_PARAMS') && WPO_CACHE_URL_PARAMS) {
-			$variables = array_keys($_GET);
+			$variables = array_keys($_GET); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Executes early, nonce not available
 		} else {
 			$variables = empty($GLOBALS['wpo_cache_config']['wpo_cache_query_variables']) ? array() : $GLOBALS['wpo_cache_config']['wpo_cache_query_variables'];
 		}
@@ -485,11 +557,11 @@ if (!function_exists('wpo_get_http_headers')) :
 				
 				$key = strtolower($key);
 				
-				if ('HTTP_' == substr($key, 0, 5)) {
+				if ('HTTP_' === substr($key, 0, 5)) {
 					$headers[str_replace(' ', '-', ucwords(str_replace('_', ' ', substr($key, 5))))] = $value;
-				} elseif ('content_type' == $key) {
+				} elseif ('content_type' === $key) {
 					$headers["Content-Type"] = $value;
-				} elseif ('content_length' == $key) {
+				} elseif ('content_length' === $key) {
 					$headers["Content-Length"] = $value;
 				}
 			}
@@ -544,7 +616,7 @@ if (!function_exists('wpo_cache_is_in_response_headers_list')) :
 			foreach ($headers_list as $value) {
 				$value = explode(':', $value);
 				
-				if (strtolower($value[0]) == $header_name) {
+				if (strtolower($value[0]) === $header_name) {
 					if (preg_match('/'.$header_value.'/', $value[1])) {
 						return true;
 					} else {
@@ -589,7 +661,7 @@ endif;
  */
 if (!function_exists('wpo_is_using_alter_html')) :
 	function wpo_is_using_alter_html() {
-		return (isset($_SERVER['HTTP_ACCEPT']) && false !== strpos($_SERVER['HTTP_ACCEPT'], 'image/webp'));
+		return (isset($_SERVER['HTTP_ACCEPT']) && false !== strpos($_SERVER['HTTP_ACCEPT'], 'image/webp')); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Executes before WP fully loads, only doing string comparison
 	}
 endif;
 
@@ -623,7 +695,7 @@ endif;
  */
 if (!function_exists('wpo_is_activity_stream_requested')) :
 	function wpo_is_activity_stream_requested() {
-		return (isset($_SERVER['HTTP_ACCEPT']) && preg_match('/(application\/(ld\+json|activity\+json|json))/i', $_SERVER['HTTP_ACCEPT'] ));
+		return (isset($_SERVER['HTTP_ACCEPT']) && preg_match('/(application\/(ld\+json|activity\+json|json))/i', $_SERVER['HTTP_ACCEPT'])); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Executes before WP fully loads, only doing string comparison
 	}
 endif;
 
@@ -632,24 +704,29 @@ endif;
  */
 if (!function_exists('wpo_is_robots_txt_requested')) :
 	function wpo_is_robots_txt_requested() {
-		return (isset($_SERVER['REQUEST_URI']) && 'robots.txt' === basename($_SERVER['REQUEST_URI']));
+		return (isset($_SERVER['REQUEST_URI']) && 'robots.txt' === basename($_SERVER['REQUEST_URI'])); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Recommended -- Executes before WP fully loads, only doing string comparison
 	}
 endif;
 
 /**
  * Serves the cache and exits
+ *
+ * @return void
  */
 if (!function_exists('wpo_serve_cache')) :
 	function wpo_serve_cache() {
-		
 		// Do not serve cache for cron requests.
 		if (defined('DOING_CRON') && DOING_CRON) return;
 		
 		$file_name = wpo_cache_filename();
+
+		if (defined('WPO_CACHE_DONT_PROCESS_THIS_PAGE') && WPO_CACHE_DONT_PROCESS_THIS_PAGE) return;
 		
 		$file_name_rss_xml = wpo_cache_filename('.rss-xml');
 		$send_as_feed = false;
-		
+		$send_as_rest_response = false;
+		$headers_file = '';
+
 		$path_dir = WPO_CACHE_FILES_DIR . '/' . wpo_get_url_path() . '/';
 		$path = $path_dir . $file_name;
 		
@@ -661,14 +738,23 @@ if (!function_exists('wpo_serve_cache')) :
 			}
 		}
 		
-		$use_gzip = false;
-		
-		// if we can use gzip and gzipped file exist in cache we use it.
-		// if headers already sent we don't use gzipped file content.
-		if (!headers_sent() && wpo_cache_gzip_accepted() && file_exists($path . '.gz')) {
-			$path .= '.gz';
-			$use_gzip = true;
+		if (wpo_rest_caching_enabled()) {
+			$file_name_rest_json = wpo_rest_cache_filename($_GET); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Executes early, nonce not available
+
+			if (is_file($path_dir . $file_name_rest_json)) {
+				$path = $path_dir . $file_name_rest_json;
+
+				if (is_file($path . '.headers')) {
+					$headers_file = $path . '.headers';
+				}
+
+				$send_as_rest_response = true;
+			}
 		}
+		
+		$use_gzip = wpo_serve_cache_should_use_gzip($path);
+
+		if ($use_gzip) $path .= '.gz';
 		
 		$modified_time = file_exists($path) ? (int) filemtime($path) : time();
 		
@@ -682,36 +768,45 @@ if (!function_exists('wpo_serve_cache')) :
 		
 		if ($use_gzip) {
 			// Disable zlib output compression to avoid double content compression
-			ini_set('zlib.output_compression', 'Off');
+			ini_set('zlib.output_compression', 'Off'); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged -- disabling php gzip to avoid double compression.
 		}
-		
-		$gzip_header_already_sent = wpo_cache_is_in_response_headers_list('Content-Encoding', 'gzip');
 		
 		header('Cache-Control: no-cache'); // Check back later
 		
-		if (!empty($modified_time) && !empty($_SERVER['HTTP_IF_MODIFIED_SINCE']) && strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']) === $modified_time) {
-			if ($use_gzip && !$gzip_header_already_sent) {
-				header('Content-Encoding: gzip');
-			}
+		if (!empty($modified_time) && !empty($_SERVER['HTTP_IF_MODIFIED_SINCE']) && strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']) === $modified_time) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- `strtotime` ensures that the value is an integer
+			
+			if ($use_gzip) wpo_send_gzip_header();
 			
 			if ($send_as_feed) {
 				header('Content-type: application/rss+xml');
 			}
 			
+			$allowed_protocols = array('HTTP/1.0', 'HTTP/1.1', 'HTTP/2', 'HTTP/3');
+			$protocol = $_SERVER['SERVER_PROTOCOL'] ?? 'HTTP/1.1'; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Header value
+			if (in_array($protocol, $allowed_protocols, true)) {
+				$safe_protocol = $protocol;
+			} else {
+				$safe_protocol = 'HTTP/1.1';
+			}
+			
 			header('WPO-Cache-Status: cached');
 			header('Last-Modified: ' . gmdate('D, d M Y H:i:s', $modified_time) . ' GMT');
-			header($_SERVER['SERVER_PROTOCOL'] . ' 304 Not Modified', true, 304);
+			header( $safe_protocol. ' 304 Not Modified', true, 304);
 			exit;
 		}
 		
 		if (file_exists($path) && is_readable($path)) {
 			
-			if (wpo_is_canonical_redirection_needed()) return;
+			if (!$send_as_rest_response && wpo_is_canonical_redirection_needed()) return;
 			
-			if ($use_gzip && !$gzip_header_already_sent) {
-				header('Content-Encoding: gzip');
+			if ($use_gzip) wpo_send_gzip_header();
+
+			header('WPO-Cache-Status: cached');
+
+			if ($send_as_rest_response) {
+				wpo_send_rest_cache_headers($headers_file);
 			}
-			
+
 			// send correct headers for xml and txt files
 			$filename = basename(dirname($path));
 			
@@ -726,14 +821,66 @@ if (!function_exists('wpo_serve_cache')) :
 			if ($send_as_feed) {
 				header('Content-type: application/rss+xml');
 			}
-			
-			header('WPO-Cache-Status: cached');
+
 			if (!empty($modified_time)) {
 				header('Last-Modified: ' . gmdate('D, d M Y H:i:s', $modified_time) . ' GMT');
 			}
 			
 			readfile($path); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile -- If we use `get_contents` we need to echo it, it will result in not escaped error
 			exit;
+			
+		}
+	}
+endif;
+
+/**
+ * Checks if we should use gzip in response when serve cache
+ *
+ * @param string $path - path to the cached file
+ * @return bool
+ */
+if (!function_exists('wpo_serve_cache_should_use_gzip')) :
+	function wpo_serve_cache_should_use_gzip($path) {
+		// if we can use gzip and gzipped file exist in cache we use it.
+		// if headers already sent we don't use gzipped file content.
+		return !headers_sent() && wpo_cache_gzip_accepted() && file_exists($path . '.gz');
+	}
+endif;
+
+/**
+ * Sends the Content-Encoding: gzip header if it has not already been sent
+ *
+ * @return void
+ */
+if (!function_exists('wpo_send_gzip_header')) :
+	function wpo_send_gzip_header() {
+		$gzip_header_already_sent = wpo_cache_is_in_response_headers_list('Content-Encoding', 'gzip');
+		if (!$gzip_header_already_sent) header('Content-Encoding: gzip');
+	}
+endif;
+
+/**
+ * Sends the necessary and cached headers for the REST response.
+ *
+ * @param string $headers_file file with cached headers
+ * @return void
+ */
+if (!function_exists('wpo_send_rest_cache_headers')) :
+	function wpo_send_rest_cache_headers($headers_file) {
+		header('Content-type: application/json');
+		header('Cache-Control: no-store');
+		header('X-Content-Type-Options: nosniff');
+		header('X-Robots-Tag: noindex');
+		
+		if ('' !== $headers_file) {
+			$headers_json = file_get_contents($headers_file);
+			$headers_to_send = json_decode($headers_json, true);
+			
+			if (!empty($headers_to_send) && is_array($headers_to_send)) {
+				foreach ($headers_to_send as $header => $value) {
+					header($header.': '.$value);
+				}
+			}
 		}
 	}
 endif;
@@ -757,36 +904,28 @@ function wpo_can_serve_from_cache() {
 	}
 
 	// Fix for compatibility issue with Jetpack's infinity scroll feature
-	if (isset($_GET['infinity']) && 'scrolling' === $_GET['infinity']) {
+	if (isset($_GET['infinity']) && 'scrolling' === $_GET['infinity']) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Executes early, nonce not available
 		return false;
 	}
 
 	// check in not disabled current user agent
-	if (!empty($_SERVER['HTTP_USER_AGENT']) && false === wpo_is_accepted_user_agent($_SERVER['HTTP_USER_AGENT'])) {
+	if (!empty($_SERVER['HTTP_USER_AGENT']) && false === wpo_is_accepted_user_agent($_SERVER['HTTP_USER_AGENT'])) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- `wpo_is_accepted_user_agent` compares strings and return true or false
 		$no_cache_because[] = "In the settings, caching is disabled for matches for this request's user agent";
 	}
 
 	$is_cache_page_forced = function_exists('apply_filters') ? apply_filters('wpo_cache_page_force', false) : false;
-	$is_get_request = isset($_SERVER['REQUEST_METHOD']) && 'GET' === $_SERVER['REQUEST_METHOD'];
+	$is_get_request = isset($_SERVER['REQUEST_METHOD']) && 'GET' === $_SERVER['REQUEST_METHOD']; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Not needed only comparing value against literal string
 
 	// Don't cache non-GET requests.
 	if (!$is_cache_page_forced && !$is_get_request) {
-		$no_cache_because[] = 'The request method was not GET ('.(isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : '-').')';
+		$no_cache_because[] = 'The request method was not GET ('.(isset($_SERVER['REQUEST_METHOD']) ? htmlspecialchars($_SERVER['REQUEST_METHOD'], ENT_QUOTES, 'UTF-8') : '-').')'; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Not needed only using it to display
 	}
 
 	// Don't cache if logged in.
 	if (!empty($_COOKIE)) {
-		$wp_cookies = array('wordpressuser_', 'wordpresspass_', 'wordpress_sec_', 'wordpress_logged_in_');
 	
-		if (!wpo_cache_loggedin_users()) {
-			foreach ($_COOKIE as $key => $value) {
-				foreach ($wp_cookies as $cookie) {
-					if (false !== strpos($key, $cookie)) {
-						$no_cache_because[] = 'WordPress login cookies were detected';
-						break(2);
-					}
-				}
-			}
+		if (!wpo_cache_loggedin_users() && wpo_is_wp_user_cookies_exist()) {
+			$no_cache_because[] = 'WordPress login cookies were detected';
 		}
 	
 		if (!empty($_COOKIE['wpo_commented_post'])) {
@@ -800,7 +939,7 @@ function wpo_can_serve_from_cache() {
 		if (!empty($cache_exception_cookies)) {
 			foreach ($_COOKIE as $key => $value) {
 				foreach ($cache_exception_cookies as $cookie) {
-					if ('' != trim($cookie) && false !== strpos($key, $cookie)) {
+					if ('' !== trim($cookie) && false !== strpos($key, $cookie)) {
 						$no_cache_because[] = 'An excepted cookie was set ('.$key.')';
 						break 2;
 					}
@@ -814,10 +953,10 @@ function wpo_can_serve_from_cache() {
 		$no_cache_because[] = 'In the settings, caching is disabled for matches for the current URL';
 	}
 	
-	if (!empty($_GET)) {
+	if (!empty($_GET)) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Executes early, nonce not available
 		$get_variable_names = wpo_cache_query_variables();
 	
-		$get_variables = wpo_cache_maybe_ignore_query_variables(array_keys($_GET));
+		$get_variables = wpo_cache_maybe_ignore_query_variables(array_keys($_GET)); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Executes early, nonce not available. Value only used for comparison
 	
 		// if GET variables include one or more undefined variable names then we don't cache.
 		$get_variables_diff = array_diff($get_variables, $get_variable_names);
@@ -826,12 +965,11 @@ function wpo_can_serve_from_cache() {
 		}
 	}
 
-	$file_extension = $_SERVER['REQUEST_URI'];
-	$file_extension = preg_replace('#^(.*?)\?.*$#', '$1', $file_extension);
-	$file_extension = trim(preg_replace('#^.*\.(.*)$#', '$1', $file_extension));
+	$request_uri = isset($_SERVER['REQUEST_URI']) ? strval(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)) : ''; // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url, WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Executes before WP fully loads
+	$file_extension = strtolower(pathinfo($request_uri, PATHINFO_EXTENSION));
 
 	// Don't cache disallowed extensions. Prevents wp-cron.php, xmlrpc.php, etc.
-	if (!preg_match('#index\.php$#i', $_SERVER['REQUEST_URI']) && preg_match('#sitemap([a-zA-Z0-9_-]+)?\.xml$#i', $_SERVER['REQUEST_URI']) && in_array($file_extension, array('php', 'xml', 'xsl'))) {
+	if (!preg_match('#index\.php$#i', $request_uri) && preg_match('#sitemap([a-zA-Z0-9_-]+)?\.xml$#i', $request_uri) && in_array($file_extension, array('php', 'xml', 'xsl'))) {
 		$no_cache_because[] = 'The request extension is not suitable for caching';
 	}
 		
@@ -839,6 +977,29 @@ function wpo_can_serve_from_cache() {
 	
 	return true;
 }
+endif;
+
+/**
+ * Checks if WordPress user cookies are set.
+ *
+ * @return bool
+ */
+if (!function_exists('wpo_is_wp_user_cookies_exist')) :
+	function wpo_is_wp_user_cookies_exist(): bool {
+		if (empty($_COOKIE)) return false;
+
+		$wp_user_cookies = array('wordpress_sec_', 'wordpress_logged_in_');
+		
+		foreach (array_keys($_COOKIE) as $cookie_name) {
+			foreach ($wp_user_cookies as $user_cookie_name) {
+				if (0 === strpos($cookie_name, $user_cookie_name)) {
+					return true;
+				}
+			}
+		}
+	
+		return false;
+	}
 endif;
 
 /**
@@ -855,14 +1016,15 @@ if (!function_exists('wpo_is_canonical_redirection_needed')) :
 		if (!isset($_SERVER['HTTP_HOST'])) return false;
 		
 		$schema = isset($_SERVER['HTTPS']) && 'on' === $_SERVER['HTTPS'] ? "https" : "http";
-		$url_part = "://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+		$request_uri = isset($_SERVER['REQUEST_URI']) ? strval(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)) : ''; // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url, WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Executes before WP fully loads, only using return value of parse_url
+		$url_part = "://" . $_SERVER['HTTP_HOST'] . $request_uri;  // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Executes before WP fully loads, only using return value of parse_url
 		$requested_url = $schema . $url_part;
 		$url_parts = parse_url($requested_url); // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- wp_parse_url not available this early
-		$extension = pathinfo($url_parts['path'], PATHINFO_EXTENSION);
+		$extension = isset($url_parts['path']) ? pathinfo($url_parts['path'], PATHINFO_EXTENSION) : '';
 		
-		if (!empty($permalink_structure) && $requested_url != $site_url && ((isset($url_parts['path']) && '/' !== $url_parts['path']) || isset($url_parts['query']))) {
-			$request_uri = rtrim($_SERVER['REQUEST_URI'], '?');
-			if ('/' == substr($permalink_structure, -1) && empty($extension) && empty($url_parts['query']) && empty($url_parts['fragment'])) {
+		if (!empty($permalink_structure) && $requested_url !== $site_url && ((isset($url_parts['path']) && '/' !== $url_parts['path']) || isset($url_parts['query']))) {
+			$request_uri = rtrim($request_uri, '?');
+			if ('/' === substr($permalink_structure, -1) && empty($extension) && empty($url_parts['query']) && empty($url_parts['fragment'])) {
 				$url = preg_replace('/(.+?)([\/]*)(\[\?\#][^\/]+|$)/', '$1/$3', $request_uri);
 				if (0 !== strcmp($request_uri, $url)) return true;
 			} else {
@@ -880,7 +1042,7 @@ endif;
 if (!function_exists('wpo_cache_flush')) :
 	function wpo_cache_flush() {
 		
-		if (defined('WPO_CACHE_FILES_DIR') && '' != WPO_CACHE_FILES_DIR) wpo_delete_files(WPO_CACHE_FILES_DIR);
+		if (defined('WPO_CACHE_FILES_DIR') && '' !== WPO_CACHE_FILES_DIR) wpo_delete_files(WPO_CACHE_FILES_DIR);
 		
 		if (function_exists('wp_cache_flush')) {
 			wp_cache_flush();
@@ -898,11 +1060,12 @@ endif;
  */
 if (!function_exists('wpo_get_url_path')) :
 	function wpo_get_url_path($url = '') {
-		$url = '' == $url ? wpo_current_url() : $url;
+		$url = '' === $url ? wpo_current_url() : $url;
 		$url_parts = parse_url($url); // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- wp_parse_url not available this early
-		
-		if (isset($url_parts['path']) && false !== stripos($url_parts['path'], '/index.php')) {
-			$url_parts['path'] = preg_replace('/(.*?)index\.php(\/.+)/i', '$1index-php$2', $url_parts['path']);
+
+		if (isset($url_parts['path']) && false !== stripos($url_parts['path'], '/index.')) {
+			$url_parts['path'] = preg_replace('/(.*?)index\.(php|html)(\/.+)/i', '$1index-$2$3', $url_parts['path']);
+			$url_parts['path'] = preg_replace('/index\.(php|html)/i', 'index-$1', $url_parts['path']);
 		}
 		
 		/*
@@ -932,12 +1095,14 @@ if (!function_exists('wpo_current_url')) :
 		// Note: We use `static $url` to save the first value we retrieve, as some plugins change $_SERVER later on in the process (e.g. Weglot).
 		// Otherwise this function would return a different URL at the beginning and end of the cache process.
 		static $url = '';
-		if ('' != $url) return $url;
-		$http_host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
-		$url = rtrim('http' . ((isset($_SERVER['HTTPS']) && ('on' == $_SERVER['HTTPS'] || 1 == $_SERVER['HTTPS']) ||
-				isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && 'https' == $_SERVER['HTTP_X_FORWARDED_PROTO']) ? 's' : '' )
-			. '://' . $http_host.$_SERVER['REQUEST_URI'], '/');
-		return $url;
+		if ('' !== $url) return $url;
+		$http_host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Executes before WP fully loads
+		$request_uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Executes before WP fully loads
+		$url = rtrim('http' . ((isset($_SERVER['HTTPS']) && ('on' === $_SERVER['HTTPS'] || 1 === (int) $_SERVER['HTTPS']) ||
+				isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && 'https' === $_SERVER['HTTP_X_FORWARDED_PROTO']) ? 's' : '' )
+			. '://' . $http_host.$request_uri, '/');
+		$filtered_url = filter_var($url, FILTER_VALIDATE_URL);
+		return false !== $filtered_url ? $filtered_url : preg_replace('/[^a-z0-9\-._~:\/?#\[\]@!$&\'()*+,;=%]/i', '', $url);
 	}
 endif;
 
@@ -1052,7 +1217,7 @@ if (!function_exists('wpo_url_in_conditional_tags_exceptions')) :
 			foreach ($exceptions as $exception) {
 				if (false !== strpos($exception, 'is_')) {
 					$exception_function = $exception;
-					if ('()' == substr($exception, -2)) {
+					if ('()' === substr($exception, -2)) {
 						$exception_function = substr($exception, 0, -2);
 					}
 					
@@ -1083,7 +1248,7 @@ if (!function_exists('wpo_url_in_exceptions')) :
 			foreach ($exceptions as $exception) {
 				
 				// don't check / - front page using regexp, we handle it in wpo_restricted_cache_page_type()
-				if ('/' == $exception) continue;
+				if ('/' === $exception) continue;
 				
 				if (wpo_url_exception_match($url, $exception)) {
 					// Exception match.
@@ -1122,7 +1287,7 @@ if (!function_exists('wpo_url_exception_match')) :
 			// get site sub directory.
 			$sub_dir = preg_replace('#^(http|https):\/\/.*\/#Ui', '', wpo_site_url());
 			// add prefix slash and remove slash.
-			$sub_dir = ('' == $sub_dir) ? '' : '/' . rtrim($sub_dir, '/');
+			$sub_dir = ('' === $sub_dir || null === $sub_dir) ? '' : '/' . rtrim($sub_dir, '/');
 			// get relative path
 			$url = preg_replace('#^(http|https):\/\/.*\/#Ui', '/', $url);
 		}
@@ -1157,16 +1322,17 @@ endif;
  */
 if (!function_exists('wpo_is_mobile')) :
 	function wpo_is_mobile() {
-		if (empty($_SERVER['HTTP_USER_AGENT'])) {
+		$user_agent = empty($_SERVER['HTTP_USER_AGENT']) ? null : $_SERVER['HTTP_USER_AGENT']; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Only used for string comparison
+		if (empty($user_agent)) {
 			$is_mobile = false;
 			// many mobile devices (all iPhone, iPad, etc.)
-		} elseif (strpos($_SERVER['HTTP_USER_AGENT'], 'Mobile') !== false
-			|| strpos($_SERVER['HTTP_USER_AGENT'], 'Android') !== false
-			|| strpos($_SERVER['HTTP_USER_AGENT'], 'Silk/') !== false
-			|| strpos($_SERVER['HTTP_USER_AGENT'], 'Kindle') !== false
-			|| strpos($_SERVER['HTTP_USER_AGENT'], 'BlackBerry') !== false
-			|| strpos($_SERVER['HTTP_USER_AGENT'], 'Opera Mini') !== false
-			|| strpos($_SERVER['HTTP_USER_AGENT'], 'Opera Mobi') !== false
+		} elseif (strpos($user_agent, 'Mobile') !== false
+			|| strpos($user_agent, 'Android') !== false
+			|| strpos($user_agent, 'Silk/') !== false
+			|| strpos($user_agent, 'Kindle') !== false
+			|| strpos($user_agent, 'BlackBerry') !== false
+			|| strpos($user_agent, 'Opera Mini') !== false
+			|| strpos($user_agent, 'Opera Mobi') !== false
 		) {
 			$is_mobile = true;
 		} else {
@@ -1191,7 +1357,7 @@ if (!function_exists('wpo_is_accepted_user_agent')) :
 		
 		if (!empty($exceptions)) {
 			foreach ($exceptions as $exception) {
-				if ('' == trim($exception)) continue;
+				if ('' === trim($exception)) continue;
 				
 				if (preg_match('#'.$exception.'#i', $user_agent)) return false;
 			}
@@ -1255,11 +1421,11 @@ if (!function_exists('wpo_delete_files')) :
 			if (false !== $dir_handle) {
 				
 				while (false !== ($file = readdir($dir_handle))) {
-					if ('.' == $file || '..' == $file) {
+					if ('.' === $file || '..' === $file) {
 						continue;
 					}
-					
-					$full_path = $src . '/' . $file;
+
+					$full_path = rtrim($src, '/\\') . DIRECTORY_SEPARATOR . $file;
 					
 					// If it's a file, delete it
 					if (is_file($full_path)) {
@@ -1289,11 +1455,11 @@ if (!function_exists('wpo_delete_files')) :
 		if (false !== $dir_handle) {
 			
 			while (false !== ($file = readdir($dir_handle))) {
-				if ('.' == $file || '..' == $file) {
+				if ('.' === $file || '..' === $file) {
 					continue;
 				}
-				
-				$full_path = $src . '/' . $file;
+
+				$full_path = rtrim($src, '/\\') . DIRECTORY_SEPARATOR . $file;
 				
 				if (!wpo_delete_files($full_path)) {
 					$success = false;
@@ -1347,7 +1513,7 @@ if (!function_exists('wpo_is_empty_dir')) :
 		
 		while (false !== $file) {
 			
-			if ('.' != $file && '..' != $file && 'index.php' != $file) {
+			if ('.' !== $file && '..' !== $file && 'index.php' !== $file) {
 				$is_empty = false;
 				break;
 			}
@@ -1373,12 +1539,12 @@ if (!function_exists('wpo_cache_add_footer_output')) :
 		if (null === $buffered) {
 			add_action('shutdown', 'wpo_cache_add_footer_output', 11);
 			$buffered = $output;
-		} elseif ('shutdown' == current_filter()) {
+		} elseif ('shutdown' === current_filter()) {
 			// Only add the line if it was a page, not something else (e.g. REST response)
-			if (did_action('wp_footer') && !preg_match('/\/wp\-json\//', $_SERVER['REQUEST_URI']) && apply_filters('wpo_cache_show_cached_by_comment', true)) {
+			if (did_action('wp_footer') && !preg_match('/\/wp\-json\//', $_SERVER['REQUEST_URI']) && apply_filters('wpo_cache_show_cached_by_comment', true)) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.InputNotValidated -- Executes before WP fully loads, global value only used for string comparison
 				echo "\n<!-- WP Optimize page cache - https://teamupdraft.com/wp-optimize/ - ".esc_html($buffered)." -->\n";
 			} elseif (defined('WPO_CACHE_DEBUG') && WPO_CACHE_DEBUG && (!defined('REST_REQUEST') || !REST_REQUEST)) {
-				error_log('[CACHE DEBUG] '.wpo_current_url() . ' - ' . $buffered);
+				error_log('[CACHE DEBUG] '.wpo_current_url() . ' - ' . $buffered); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Edge case, used for debugging
 			}
 		}
 	}
@@ -1586,8 +1752,8 @@ endif;
  * @return void
  */
 if (!function_exists('wpo_cache_add_nocache_http_header_with_send_headers_action')) :
-	function wpo_cache_add_nocache_http_header_with_send_headers_action(string $message) {
-		if ('' != $message && !headers_sent()) {
+	function wpo_cache_add_nocache_http_header_with_send_headers_action($message) {
+		if ('' !== $message && !headers_sent()) {
 			wpo_cache_add_nocache_http_header($message);
 		}
 	}
@@ -1604,11 +1770,22 @@ if (!function_exists('wpo_feeds_caching_enabled')) :
 	}
 endif;
 
+/**
+ * Check if REST caching enabled
+ *
+ * @return bool
+ */
+if (!function_exists('wpo_rest_caching_enabled')) :
+	function wpo_rest_caching_enabled() {
+		return wpo_cache_config_get('enable_rest_caching', false);
+	}
+endif;
+
 if (!function_exists('wpo_debug_backtrace_summary')) {
 	function wpo_debug_backtrace_summary($ignore_class = null, $skip_frames = 0, $pretty = true) {
 		static $truncate_paths;
 		
-		$trace       = debug_backtrace(false);
+		$trace       = debug_backtrace(false); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace -- Edge case, using for debugging purpose
 		$caller      = array();
 		$check_class = !is_null($ignore_class);
 		$skip_frames++; // Skip this function.
@@ -1624,7 +1801,7 @@ if (!function_exists('wpo_debug_backtrace_summary')) {
 			if ($skip_frames > 0) {
 				$skip_frames--;
 			} elseif (isset($call['class'])) {
-				if ($check_class && $ignore_class == $call['class']) {
+				if ($check_class && $ignore_class === $call['class']) {
 					continue; // Filter out calls.
 				}
 				
@@ -1692,7 +1869,7 @@ endif;
  * @return string sanitized string.
  */
 if (!function_exists('wpo_early_sanitize_superglobal_text')) :
-function wpo_early_sanitize_superglobal_text(string $key, string $global_type = 'server'): string {
+function wpo_early_sanitize_superglobal_text($key, $global_type = 'server') {
 
 	$str = '';
 

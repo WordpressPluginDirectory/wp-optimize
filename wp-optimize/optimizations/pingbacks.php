@@ -37,7 +37,7 @@ class WP_Optimization_pingbacks extends WP_Optimization {
 		if (!empty($posts)) {
 			foreach ($posts as $key => $post) {
 				$posts[$key]['post_title'] = array(
-					'text' => '' == $post['post_title'] ? '('.__('no title', 'wp-optimize').')' : $post['post_title'],
+					'text' => '' === $post['post_title'] ? '('.__('no title', 'wp-optimize').')' : $post['post_title'],
 					'url' => get_edit_post_link($post['ID']),
 				);
 			}

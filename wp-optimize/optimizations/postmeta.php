@@ -124,7 +124,12 @@ class WP_Optimization_postmeta extends WP_Optimization {
 
 		$this->found_count += $postmeta;
 	}
-
+	
+	/**
+	 * Returns settings label
+	 *
+	 * @return string
+	 */
 	public function settings_label() {
 		return __('Clean post metadata', 'wp-optimize');
 	}
@@ -132,7 +137,7 @@ class WP_Optimization_postmeta extends WP_Optimization {
 	/**
 	 * N.B. This is not currently used; it was commented out in 1.9.1
 	 *
-	 * @return string Returns the description once auto remove option has ran
+	 * @return string Returns the description once auto remove option has run
 	 */
 	public function get_auto_option_description() {
 		return __('Remove orphaned post meta', 'wp-optimize');

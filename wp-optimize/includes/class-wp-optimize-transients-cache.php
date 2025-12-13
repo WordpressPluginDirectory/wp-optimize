@@ -41,7 +41,7 @@ class WP_Optimize_Transients_Cache {
 	 * @param int    $expiration
 	 */
 	public function set($key, &$value, $expiration = 0) {
-		$keep_free_mem = $this->_keep_free_mem ? $this->_keep_free_mem : 16 * 1048576;
+		$keep_free_mem = $this->_keep_free_mem ?: 16 * 1048576;
 
 		$used_memory = memory_get_usage();
 		$free_memory = WP_Optimize()->get_free_memory();
@@ -100,9 +100,9 @@ class WP_Optimize_Transients_Cache {
 	/**
 	 * Set transient.
 	 *
-	 * @param int   $key
-	 * @param mixed $value
-	 * @param int   $expiration
+	 * @param string $key
+	 * @param mixed  $value
+	 * @param int    $expiration
 	 */
 	public function set_transient($key, $value, $expiration = 0) {
 		if (WP_Optimize()->is_multisite_mode()) {

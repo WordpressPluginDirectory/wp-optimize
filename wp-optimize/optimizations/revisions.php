@@ -25,7 +25,7 @@ class WP_Optimization_revisions extends WP_Optimization {
 
 		$retention_subquery = '';
 
-		if ('true' == $this->retention_enabled) {
+		if ('true' === $this->retention_enabled) {
 			$retention_subquery = ' and post_modified < NOW() - INTERVAL ' . $this->retention_period . ' WEEK';
 		}
 
@@ -50,7 +50,7 @@ class WP_Optimization_revisions extends WP_Optimization {
 		// fix empty revision titles.
 		if (!empty($posts)) {
 			foreach ($posts as $key => $post) {
-				$posts[$key]['post_title'] = '' == $post['post_title'] ? '('.__('no title', 'wp-optimize').')' : $post['post_title'];
+				$posts[$key]['post_title'] = '' === $post['post_title'] ? '('.__('no title', 'wp-optimize').')' : $post['post_title'];
 			}
 		}
 
@@ -95,14 +95,14 @@ class WP_Optimization_revisions extends WP_Optimization {
 	 */
 	public function optimize() {
 
-		if ('true' == $this->revisions_retention_enabled) {
+		if ('true' === $this->revisions_retention_enabled) {
 			$this->optimize_by_posts();
 			return;
 		}
 
 		$clean = "DELETE FROM `" . $this->wpdb->posts . "` WHERE post_type = 'revision'";
 
-		if ('true' == $this->retention_enabled) {
+		if ('true' === $this->retention_enabled) {
 			$clean .= '
 				AND post_modified < NOW() - INTERVAL ' . $this->retention_period . ' WEEK';
 		}
@@ -185,7 +185,7 @@ class WP_Optimization_revisions extends WP_Optimization {
 	}
 	
 	public function get_info() {
-		if ('true' == $this->revisions_retention_enabled) {
+		if ('true' === $this->revisions_retention_enabled) {
 			$sql = "SELECT `post_parent`, GROUP_CONCAT(`ID`)".
 			" FROM `" . $this->wpdb->posts . "`".
 			" WHERE post_type = 'revision'".
@@ -212,7 +212,7 @@ class WP_Optimization_revisions extends WP_Optimization {
 		} else {
 			$sql = "SELECT COUNT(*) FROM `" . $this->wpdb->posts . "` WHERE post_type = 'revision'";
 
-			if ('true' == $this->retention_enabled) {
+			if ('true' === $this->retention_enabled) {
 				$sql .= ' and post_modified < NOW() - INTERVAL ' . $this->retention_period . ' WEEK';
 			}
 			$sql .= ';';
@@ -230,24 +230,29 @@ class WP_Optimization_revisions extends WP_Optimization {
 	 */
 	public function settings_label() {
 	
-		if ('true' == $this->retention_enabled && 'true' == $this->revisions_retention_enabled) {
+		if ('true' === $this->retention_enabled && 'true' === $this->revisions_retention_enabled) {
 			// translators: %1$d is revisions retention period in weeks, %2$d is revisions retention count
 			return sprintf(__('Clean post revisions which are older than %1$d weeks and keep at least %2$d revisions', 'wp-optimize'), $this->retention_period, $this->revisions_retention_count);
 		}
 
-		if ('true' == $this->retention_enabled && 'false' == $this->revisions_retention_enabled) {
+		if ('true' === $this->retention_enabled && 'false' === $this->revisions_retention_enabled) {
 			// translators: %d is revisions retention period in weeks
 			return sprintf(__('Clean post revisions which are older than %d weeks', 'wp-optimize'), $this->retention_period);
 		}
 
-		if ('false' == $this->retention_enabled && 'true' == $this->revisions_retention_enabled) {
+		if ('false' === $this->retention_enabled && 'true' === $this->revisions_retention_enabled) {
 			// translators: %d is number of revisions to retain
 			return sprintf(__('Clean post revisions but keep at least %d revisions', 'wp-optimize'), $this->revisions_retention_count);
 		}
 
 		return __('Clean all post revisions', 'wp-optimize');
 	}
-
+	
+	/**
+	 * Return description
+	 *
+	 * @return string
+	 */
 	public function get_auto_option_description() {
 		return __('Clean all post revisions', 'wp-optimize');
 	}

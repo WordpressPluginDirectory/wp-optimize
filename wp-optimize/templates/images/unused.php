@@ -13,7 +13,7 @@
 			</div>
 		<?php endfor; ?>
 		<div class="wpo-unused-images__premium-mask">
-			<a class="wpo-unused-images__premium-link" href="<?php echo esc_url($wp_optimize->premium_version_link); ?>" target="_blank"><?php esc_html_e('Manage unused images with WP-Optimize Premium.', 'wp-optimize'); ?></a>
+			<a class="wpo-unused-images__premium-link" href="<?php echo esc_url($wp_optimize->premium_version_link);?>&utm_content=manage-unused-images" target="_blank"><?php esc_html_e('Manage unused images with WP-Optimize Premium.', 'wp-optimize'); ?></a>
 		</div>
 	</div>
 </div>
@@ -59,7 +59,7 @@
 			<button type="button" class="button button-primary" disabled="disabled"><?php esc_html_e('Remove selected sizes', 'wp-optimize'); ?></button>
 		</div>
 		<div class="wpo-unused-image-sizes__premium-mask">
-			<a class="wpo-unused-images__premium-link" href="<?php echo esc_url($wp_optimize->premium_version_link); ?>" target="_blank"><?php esc_html_e('Take control of WordPress image sizes with WP-Optimize Premium.', 'wp-optimize'); ?></a>
+			<a class="wpo-unused-images__premium-link" href="<?php echo esc_url($wp_optimize->premium_version_link);?>&utm_content=take-control-image-sizes" target="_blank"><?php esc_html_e('Take control of WordPress image sizes with WP-Optimize Premium.', 'wp-optimize'); ?></a>
 		</div>
 	</div>
 </div>

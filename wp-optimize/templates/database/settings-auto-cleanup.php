@@ -1,16 +1,15 @@
 <?php if (!defined('WPO_VERSION')) die('No direct access allowed'); ?>
 
 <h3><?php esc_html_e('Scheduled clean-up settings', 'wp-optimize'); ?></h3>
-
 <p>
-	<a href="<?php echo esc_url(WP_Optimize()->premium_version_link); ?>" target="_blank"><?php esc_html_e('Take control of clean-ups: Upgrade to Premium for a more powerful and flexible scheduler', 'wp-optimize'); ?></a>
+	<a href="<?php echo esc_url($settings_cleanup_data['data']['premium_version_link']); ?>&utm_content=take-control-of-cleanups" target="_blank"><?php esc_html_e('Take control of clean-ups: Upgrade to Premium for a more powerful and flexible scheduler', 'wp-optimize'); ?></a>
 </p>
 
 <div class="wpo-fieldgroup">
 
 	<p>
 
-		<input name="enable-schedule" id="enable-schedule" type="checkbox" value ="true"  <?php checked($options->get_option('schedule'), 'true'); ?>>
+		<input name="enable-schedule" id="enable-schedule" type="checkbox" value="true" <?php checked($settings_cleanup_data['data']['enable_schedule'], 'true'); ?>>
 		<label for="enable-schedule"><?php esc_html_e('Enable scheduled clean-up and optimization', 'wp-optimize'); ?></label>
 
 	</p>
@@ -23,23 +22,12 @@
 			<select id="schedule_type" name="schedule_type">
 
 				<?php
-					$schedule_options = array(
-						'wpo_daily' => __('Daily', 'wp-optimize'),
-						'wpo_weekly' => __('Weekly', 'wp-optimize'),
-						'wpo_fortnightly' => __('Fortnightly', 'wp-optimize'),
-						'wpo_monthly' => __('Monthly (approx. - every 30 days)', 'wp-optimize'),
-					);
 
-					$schedule_type_saved_id = $options->get_option('schedule-type', 'wpo_weekly');
-
-					// Backwards compatibility:
-					if ('wpo_otherweekly' == $schedule_type_saved_id) $schedule_type_saved_id = 'wpo_fortnightly';
-
-					foreach ($schedule_options as $opt_id => $opt_description) {
-					?>
-					<option value="<?php echo esc_attr($opt_id); ?>" <?php if ($opt_id == $schedule_type_saved_id) echo 'selected="selected"'; ?>><?php echo esc_html($opt_description); ?></option>
-					<?php
-					}
+				foreach ($settings_cleanup_data['data']['schedule_options'] as $option) {
+				?>
+					<option value="<?php echo esc_attr($option['id']); ?>" <?php selected($option['selected']); ?>><?php echo esc_html($option['label']); ?></option>
+				<?php
+				}
 
 				?>
 
@@ -48,24 +36,20 @@
 		</p>
 
 		<?php
-		$wpo_auto_options = $options->get_option('auto');
 
-			$optimizations = $optimizer->sort_optimizations($optimizer->get_optimizations());
+		foreach ($settings_cleanup_data['data']['optimizations'] as $optimization) {
 
-			foreach ($optimizations as $id => $optimization) {
-			if (empty($optimization->available_for_auto)) continue;
+			$auto_id = $optimization['id'];
 
-			$auto_id = $optimization->get_auto_id();
+			$auto_dom_id = $optimization['dom_id'];
 
-			$auto_dom_id = 'wp-optimize-auto-'.$auto_id;
-
-			$setting_activated = (empty($wpo_auto_options[$auto_id]) || 'false' == $wpo_auto_options[$auto_id]) ? false : true;
-			?>
+			$setting_activated = $optimization['activated'];
+		?>
 			<p>
-			<input name="wp-optimize-auto[<?php echo esc_attr($auto_id); ?>]" id="<?php echo esc_attr($auto_dom_id); ?>" type="checkbox" value="true" <?php if ($setting_activated) echo 'checked="checked"'; ?>> <label for="<?php echo esc_attr($auto_dom_id); ?>"><?php echo esc_html($optimization->get_auto_option_description()); ?></label>
+				<input name="wp-optimize-auto[<?php echo esc_attr($auto_id); ?>]" id="<?php echo esc_attr($auto_dom_id); ?>" type="checkbox" value="true" <?php checked($setting_activated); ?>> <label for="<?php echo esc_attr($auto_dom_id); ?>"><?php echo esc_html($optimization['label']); ?></label>
 			</p>
-			<?php
-			}
+		<?php
+		}
 		?>
 
 		<!-- disabled email notification

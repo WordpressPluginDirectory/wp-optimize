@@ -28,7 +28,7 @@ class WP_Optimize_Minify_Config {
 	 * @return bool
 	 */
 	public function is_enabled() {
-		return $this->get('enabled');
+		return (bool) $this->get('enabled');
 	}
 
 	/**
@@ -49,7 +49,7 @@ class WP_Optimize_Minify_Config {
 	/**
 	 * Get config from file or cache
 	 *
-	 * @param string $option  - An option name
+	 * @param ?string $option  - An option name
 	 * @param mixed  $default - A default for the option
 	 * @return array|string
 	 */
@@ -174,6 +174,8 @@ class WP_Optimize_Minify_Config {
 			'enable_analytics' => false,
 			'analytics_method' => 'gtagv4',
 			'tracking_id' => '',
+
+			'enable_unused_css' => false,
 		);
 		return apply_filters('wpo_minify_defaults', $defaults);
 	}
@@ -189,7 +191,8 @@ class WP_Optimize_Minify_Config {
 		 *
 		 * @return boolean
 		 */
-		return apply_filters('wpo_minify_always_purge_everything', 0 === intval($this->get('cache_lifespan')) || (defined('WPO_ADVANCED_CACHE') && defined('WP_CACHE') && WP_CACHE));
+		$filtered_value = apply_filters('wpo_minify_always_purge_everything', 0 === intval($this->get('cache_lifespan')) || (defined('WPO_ADVANCED_CACHE') && defined('WP_CACHE') && WP_CACHE));
+		return is_bool($filtered_value) ? $filtered_value : false;
 	}
 
 	/**

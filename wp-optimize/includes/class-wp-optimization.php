@@ -98,13 +98,15 @@ abstract class WP_Optimization {
 	 * This is abstracted so to provide future possibilities, e.g. logging.
 	 *
 	 * @param  string $sql The prepared SQL query to run
-	 * @return array       Return array of results
+	 * @return mixed       Return array of results
 	 */
 	protected function query($sql) {
 		$this->sql_commands[] = $sql;
 		do_action('wp_optimize_optimization_query', $sql, $this);
 		$result = $this->wpdb->query($sql); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Already prepared query
-		return apply_filters('wp_optimize_optimization_query_result', $result, $sql, $this);
+		$filtered_result = apply_filters('wp_optimize_optimization_query_result', $result, $sql, $this);
+		if (!empty($filtered_result) && is_array($filtered_result)) return $filtered_result;
+		return $result;
 	}
 
 	/**
@@ -126,7 +128,7 @@ abstract class WP_Optimization {
 	 */
 	public function preview($params) {
 		return array(
-			'id_key'	=> 'id', // key used used to identify data.
+			'id_key'	=> 'id', // key is used to identify data.
 			'offset'	=> $params['offset'],
 			'limit'		=> $params['limit'],
 			'total'		=> 0,
@@ -216,7 +218,7 @@ abstract class WP_Optimization {
 	 * within class-wp-optimizer.php to kick off the optimizations.
 	 * It also passed the data array from the wpadmin.js.
 	 *
-	 * @return array array of results that includes sql_commands, output and meta
+	 * @return array|object|WP_Error|WP_Optimization array of results that includes sql_commands, output and meta
 	 */
 	public function do_optimization() {
 		return $this->optimizer->do_optimization($this);
@@ -226,7 +228,7 @@ abstract class WP_Optimization {
 	 * This gathers the optimization information to be displayed
 	 * before triggering any optimizations
 	 *
-	 * @return object Returns an object of optimization information
+	 * @return array|object|WP_Error|WP_Optimization Returns an object of optimization information
 	 */
 	public function get_optimization_info() {
 		return $this->optimizer->get_optimization_info($this);
@@ -254,7 +256,7 @@ abstract class WP_Optimization {
 			// check selected sites field.
 			if (!empty($optimization_sites)) {
 				foreach ($optimization_sites as $site_id) {
-					if ('all' == $site_id) {
+					if ('all' === (string) $site_id) {
 						$all_sites = true;
 					} else {
 						$selected_sites[] = $site_id;
@@ -300,7 +302,7 @@ abstract class WP_Optimization {
 	}
 
 	/**
-	 * Wrapper for switch_to_blog Wordpress MU function
+	 * Wrapper for switch_to_blog WordPress MU function
 	 *
 	 * @param int $new_blog new blog id.
 	 * @return bool|void - if on multisite, then always true (see https://codex.wordpress.org/Function_Reference/switch_to_blog)
@@ -312,9 +314,9 @@ abstract class WP_Optimization {
 	}
 
 	/**
-	 * Wrapper for restore_current_blog Wordpress MU function
+	 * Wrapper for restore_current_blog WordPress MU function
 	 *
-	 * @return bool
+	 * @return bool|void
 	 */
 	public function restore_current_blog() {
 		if (function_exists('restore_current_blog') && $this->is_multisite_mode()) {
@@ -325,7 +327,7 @@ abstract class WP_Optimization {
 	/**
 	 * This function adds output to the current registered output
 	 *
-	 * @param array $output Array of various outputs.
+	 * @param string $output Output message
 	 */
 	public function register_output($output) {
 		$this->output[] = $output;
@@ -335,7 +337,7 @@ abstract class WP_Optimization {
 	 * This function adds meta-data associated with the result to the registered output
 	 *
 	 * @param string $key   The key value.
-	 * @param string $value The value to be passed.
+	 * @param mixed $value The value to be passed.
 	 */
 	public function register_meta($key, $value) {
 		$this->meta[$key] = $value;
@@ -370,23 +372,45 @@ abstract class WP_Optimization {
 
 	/**
 	 * The next three functions reflect the fact that historically, WP-Optimize has not, for all optimizations, used the same ID consistently throughout forms, saved settings, and saved settings for scheduled clean-ups. Mostly, it has; but some flexibility is needed for the exceptions.
+	 *
+	 * @return string
 	 */
 	public function get_setting_id() {
 		return empty($this->setting_id) ? 'user-'.$this->id : 'user-'.$this->setting_id;
 	}
 	
+	/**
+	 * This function, `get_setting_id` and `get_auto_id` functions reflect the fact that historically, WP-Optimize has not, for all optimizations, used the same ID consistently throughout forms, saved settings, and saved settings for scheduled clean-ups. Mostly, it has; but some flexibility is needed for the exceptions.
+	 *
+	 * @return string
+	 */
 	public function get_dom_id() {
 		return empty($this->dom_id) ? 'clean-'.$this->id : $this->dom_id;
 	}
 	
+	/**
+	 * This function, `get_setting_id` and `get_dom_id` functions reflect the fact that historically, WP-Optimize has not, for all optimizations, used the same ID consistently throughout forms, saved settings, and saved settings for scheduled clean-ups. Mostly, it has; but some flexibility is needed for the exceptions.
+	 *
+	 * @return string
+	 */
 	public function get_auto_id() {
 		return empty($this->auto_id) ? $this->id : $this->auto_id;
 	}
 	
+	/**
+	 * Checks whether this optimization has changes table data
+	 *
+	 * @return bool
+	 */
 	public function get_changes_table_data() {
 		return empty($this->changes_table_data) ? false : true;
 	}
 	
+	/**
+	 * Returns the run sort order
+	 *
+	 * @return int
+	 */
 	public function get_run_sort_order() {
 		return empty($this->run_sort_order) ? 0 : $this->run_sort_order;
 	}
@@ -414,7 +438,9 @@ abstract class WP_Optimization {
 		$results->output = $this->output;
 		$results->meta = $this->meta;
 		
-		return apply_filters('wp_optimize_optimization_results', $results, $this->id, $this);
+		$filtered_results = apply_filters('wp_optimize_optimization_results', $results, $this->id, $this);
+		if (!empty($filtered_results) && is_object($filtered_results)) return $filtered_results;
+		return $results;
 	}
 
 	/**
@@ -431,7 +457,7 @@ abstract class WP_Optimization {
 		// N.B. Some of the optimizations used to have an onclick call to fCheck(). But that function was commented out, so did nothing.
 		$settings_label = $this->settings_label();
 
-		$setting_activated = ((empty($wpo_user_selection[$setting_id]) || 'false' == $wpo_user_selection[$setting_id]) ? false : true);
+		$setting_activated = !empty($wpo_user_selection[$setting_id]) && 'false' !== $wpo_user_selection[$setting_id];
 
 		$info = $this->get_optimization_info()->output;
 
@@ -460,7 +486,7 @@ abstract class WP_Optimization {
 	 */
 	public function get_preview_link($text, $attributes = array()) {
 		// if preview is not supported then return just $text.
-		if (false == $this->support_preview || false == WP_Optimize::is_premium()) return $text;
+		if (!$this->support_preview || !WP_Optimize::is_premium()) return $text;
 
 		$attributes = array_merge(
 			array(
@@ -487,7 +513,7 @@ abstract class WP_Optimization {
 	 *
 	 * @return array
 	 */
-	private function allow_checkboxes(): array {
+	private function allow_checkboxes() {
 		$allowed_html = wp_kses_allowed_html('post');
 		
 		$allowed_html['input'] = array(

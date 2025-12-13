@@ -18,7 +18,7 @@ class Updraft_Ring_Logger extends Updraft_Abstract_Logger {
 	/**
 	 * Returns logger description
 	 *
-	 * @return string|void
+	 * @return string
 	 */
 	public function get_description() {
 		return __('Store the most recent log entries in the WordPress database', 'wp-optimize');
@@ -40,9 +40,9 @@ class Updraft_Ring_Logger extends Updraft_Abstract_Logger {
 	 *
 	 * @param  string $message
 	 * @param  array  $context
-	 * @return null|void
+	 * @return void
 	 */
-	public function emergency($message, array $context = array()) {
+	public function emergency($message, $context = array()) {
 		$this->log($message, Updraft_Log_Levels::EMERGENCY, $context);
 	}
 
@@ -51,9 +51,9 @@ class Updraft_Ring_Logger extends Updraft_Abstract_Logger {
 	 *
 	 * @param  string $message
 	 * @param  array  $context
-	 * @return null|void
+	 * @return void
 	 */
-	public function alert($message, array $context = array()) {
+	public function alert($message, $context = array()) {
 		$this->log($message, Updraft_Log_Levels::ALERT, $context);
 	}
 
@@ -62,9 +62,9 @@ class Updraft_Ring_Logger extends Updraft_Abstract_Logger {
 	 *
 	 * @param  string $message
 	 * @param  array  $context
-	 * @return null|void
+	 * @return void
 	 */
-	public function critical($message, array $context = array()) {
+	public function critical($message, $context = array()) {
 		$this->log($message, Updraft_Log_Levels::CRITICAL, $context);
 	}
 
@@ -73,9 +73,9 @@ class Updraft_Ring_Logger extends Updraft_Abstract_Logger {
 	 *
 	 * @param  string $message
 	 * @param  array  $context
-	 * @return null|void
+	 * @return void
 	 */
-	public function error($message, array $context = array()) {
+	public function error($message, $context = array()) {
 		$this->log($message, Updraft_Log_Levels::ERROR, $context);
 	}
 
@@ -84,9 +84,9 @@ class Updraft_Ring_Logger extends Updraft_Abstract_Logger {
 	 *
 	 * @param  string $message
 	 * @param  array  $context
-	 * @return null|void
+	 * @return void
 	 */
-	public function warning($message, array $context = array()) {
+	public function warning($message, $context = array()) {
 		$this->log($message, Updraft_Log_Levels::WARNING, $context);
 	}
 
@@ -95,9 +95,9 @@ class Updraft_Ring_Logger extends Updraft_Abstract_Logger {
 	 *
 	 * @param  string $message
 	 * @param  array  $context
-	 * @return null|void
+	 * @return void
 	 */
-	public function notice($message, array $context = array()) {
+	public function notice($message, $context = array()) {
 		$this->log($message, Updraft_Log_Levels::NOTICE, $context);
 	}
 
@@ -106,9 +106,9 @@ class Updraft_Ring_Logger extends Updraft_Abstract_Logger {
 	 *
 	 * @param  string $message
 	 * @param  array  $context
-	 * @return null|void
+	 * @return void
 	 */
-	public function info($message, array $context = array()) {
+	public function info($message, $context = array()) {
 		$this->log($message, Updraft_Log_Levels::INFO, $context);
 	}
 
@@ -117,9 +117,9 @@ class Updraft_Ring_Logger extends Updraft_Abstract_Logger {
 	 *
 	 * @param  string $message
 	 * @param  array  $context
-	 * @return null|void
+	 * @return void
 	 */
-	public function debug($message, array $context = array()) {
+	public function debug($message, $context = array()) {
 		$this->log($message, Updraft_Log_Levels::DEBUG, $context);
 	}
 
@@ -129,11 +129,11 @@ class Updraft_Ring_Logger extends Updraft_Abstract_Logger {
 	 * @param  string $message
 	 * @param  mixed  $level
 	 * @param  array  $context
-	 * @return null|void
+	 * @return void
 	 */
-	public function log($message, $level, array $context = array()) {
+	public function log($message, $level, $context = array()) {
 
-		if (!$this->is_enabled()) return false;
+		if (!$this->is_enabled()) return;
 		
 		$message = gmdate("Y-m-d H:i:s").' ['.Updraft_Log_Levels::to_text($level).'] : '.$this->interpolate($message, $context);
 		$this->add_log($message);
@@ -174,7 +174,7 @@ class Updraft_Ring_Logger extends Updraft_Abstract_Logger {
 	}
 
 	/**
-	 * Set logger wordpress option name where log will stored
+	 * Set logger WordPress option name where log will be stored
 	 *
 	 * @param string $option_name Name for logger option.
 	 */
@@ -185,7 +185,7 @@ class Updraft_Ring_Logger extends Updraft_Abstract_Logger {
 	/**
 	 * Return log content
 	 *
-	 * @return mixed|void
+	 * @return mixed
 	 */
 	public function get_log() {
 		return get_option($this->get_logger_option_name(), array());

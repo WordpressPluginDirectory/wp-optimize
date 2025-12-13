@@ -141,17 +141,17 @@ trait WP_Optimize_HTTP_Error_Codes_Trait {
 		if (is_wp_error($response)) return $response;
 
 		$response_code = wp_remote_retrieve_response_code($response);
-		if (200 != $response_code) {
+		if (200 !== $response_code) {
 			$link = sprintf('<a href="%s" target="_blank">%s</a>', $style, $style);
 
-			if (401 == $response_code) {
+			if (401 === $response_code) {
 				$error = '<b>' . esc_html__('401 Unauthorized', 'wp-optimize') . '</b>';
 				// translators: %s is a `401 Unauthorized` error message
 				$error_string = sprintf(esc_html__('The server responded with a %s error.', 'wp-optimize'), $error) . ' '
 					. esc_html__('This usually happens when the site requires authentication to access it.', 'wp-optimize') . ' '
 					// translators: %s is a link to the style.css file
 					. sprintf(esc_html__('Please temporarily disable authentication for the following URL: %s and retry.', 'wp-optimize'), $link);
-			} elseif (404 == $response_code) {
+			} elseif (404 === $response_code) {
 				$error = '<b>' . esc_html__('404 File Not Found', 'wp-optimize') . '</b>';
 				// translators: %s is a `404 File Not Found` error message
 				$error_string = sprintf(esc_html__('The server responded with a %s error', 'wp-optimize'), $error) . ' '
@@ -187,7 +187,9 @@ trait WP_Optimize_HTTP_Error_Codes_Trait {
 			$this->set_codes();
 		}
 
-		return $code . " " . empty($this->http_codes[$code]) ? esc_html__("HTTP Code", "wp-optimize") : $this->http_codes[$code];
+		$message = $this->http_codes[$code] ?? esc_html__("HTTP Code", "wp-optimize");
+
+		return $code . " " . $message;
 	}
 }
 endif;

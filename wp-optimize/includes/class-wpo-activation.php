@@ -15,12 +15,14 @@ class WPO_Activation {
 			WP_Optimize()->die_minimum_requirement_not_met();
 		}
 
-		if (is_multisite() && !is_network_admin()) {
+		if (is_multisite() && !current_user_can('manage_network_options')) {
 			self::deactivate_and_die();
 		}
 
 		if (!self::is_reactivated()) {
 			self::set_as_newly_activated();
+			$onboarding = WP_Optimize()->get_onboarding();
+			$onboarding->activate_onboarding_wizard();
 		}
 
 		WP_Optimize()->get_options()->set_default_options();
@@ -35,6 +37,7 @@ class WPO_Activation {
 		if (self::is_premium()) {
 			self::init_premium();
 		}
+
 	}
 
 	/**
@@ -52,7 +55,7 @@ class WPO_Activation {
 	 * @return mixed
 	 */
 	private static function is_reactivated() {
-		return WP_Optimize()->get_options()->get_option('last-optimized', false);
+		return WP_Optimize()->get_options()->get_option('last-optimized');
 	}
 
 	/**

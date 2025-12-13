@@ -128,8 +128,8 @@ abstract class Updraft_Abstract_Logger implements Updraft_Logger_Interface {
 	 * Return option $name value
 	 *
 	 * @param  string $name    Name of the option.
-	 * @param  string $default Add default value.
-	 * @return array  An array of options.
+	 * @param  mixed $default Add default value.
+	 * @return mixed  The value of the option.
 	 */
 	public function get_option($name, $default = '') {
 		if (!array_key_exists($name, $this->options)) return $default;
@@ -139,8 +139,8 @@ abstract class Updraft_Abstract_Logger implements Updraft_Logger_Interface {
 	/**
 	 * Set option $name value.
 	 *
-	 * @param string $name  The name of the option.
-	 * @param string $value The value of the option.
+	 * @param mixed $name  The name of the option.
+	 * @param mixed $value The value of the option.
 	 */
 	public function set_option($name, $value = '') {
 		if (is_array($name)) {
@@ -164,10 +164,10 @@ abstract class Updraft_Abstract_Logger implements Updraft_Logger_Interface {
 	 * @param  array  $context
 	 * @return string
 	 */
-	protected function interpolate($message, array $context = array()) {
+	protected function interpolate($message, $context = array()) {
 		$replace = array();
 		foreach ($context as $key => $val) {
-			// Check that the value can be casted to string.
+			// Check that the value can be cast to string.
 			if (!is_array($val) && (!is_object($val) || method_exists($val, '__toString'))) {
 				$replace['{' . $key . '}'] = $val;
 			}

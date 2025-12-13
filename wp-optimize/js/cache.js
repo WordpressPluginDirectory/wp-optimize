@@ -153,10 +153,10 @@ var WP_Optimize_Cache = function () {
 		if (isNaN(browser_cache_expire_hours)) browser_cache_expire_hours = 0;
 
 		if (browser_cache_expire_days < 0 || browser_cache_expire_hours < 0) {
-			$('#wpo_browser_cache_error_message').text(wpoptimize.please_use_positive_integers).show();
+			alert(wpoptimize.please_use_positive_integers);
 			return false;
 		} else if (browser_cache_expire_hours > 23) {
-			$('#wpo_browser_cache_error_message').text(wpoptimize.please_use_valid_values).show();
+			alert(wpoptimize.please_use_valid_values);
 			return false;
 		} else {
 			$('#wpo_browser_cache_error_message').hide();
@@ -168,44 +168,46 @@ var WP_Optimize_Cache = function () {
 
 		loader.show();
 
-		send_command('enable_browser_cache', {browser_cache_expire_days: browser_cache_expire_days, browser_cache_expire_hours: browser_cache_expire_hours}, function(response) {
-			var cache_status_message = $('#wpo_browser_cache_status');
-			var cache_status_field = $('#wpo_enable_browser_cache');
-			if (response) {
-				if (response.enabled) {
-					button.text(wpoptimize.update);
-					cache_status_message.removeClass('wpo-disabled').addClass('wpo-enabled');
-					cache_status_field.val('true');
+		send_command('enable_browser_cache',
+			{browser_cache_expire_days: browser_cache_expire_days,
+				browser_cache_expire_hours: browser_cache_expire_hours}, function(response) {
+				var cache_status_message = $('#wpo_browser_cache_status');
+				var cache_status_field = $('#wpo_enable_browser_cache');
+				if (response) {
+					if (response.enabled) {
+						button.text(wpoptimize.update);
+						cache_status_message.removeClass('wpo-disabled').addClass('wpo-enabled');
+						cache_status_field.val('true');
+					} else {
+						button.text(wpoptimize.enable);
+						cache_status_message.addClass('wpo-disabled').removeClass('wpo-enabled');
+						cache_status_field.val('false');
+					}
+
+					if (response.message) {
+						$('#wpo_browser_cache_message').text(response.message).show();
+					} else {
+						$('#wpo_browser_cache_message').hide();
+					}
+
+					if (response.error_message) {
+						$('#wpo_browser_cache_error_message').text(response.error_message).show();
+					} else {
+						$('#wpo_browser_cache_error_message').hide();
+					}
+
+					if (response.output) {
+						$('#wpo_browser_cache_output').html(response.output).show();
+					} else {
+						$('#wpo_browser_cache_output').hide();
+					}
+
 				} else {
-					button.text(wpoptimize.enable);
-					cache_status_message.addClass('wpo-disabled').removeClass('wpo-enabled');
-					cache_status_field.val('false');
+					alert(wpoptimize.error_unexpected_response);
 				}
 
-				if (response.message) {
-					$('#wpo_browser_cache_message').text(response.message).show();
-				} else {
-					$('#wpo_browser_cache_message').hide();
-				}
-
-				if (response.error_message) {
-					$('#wpo_browser_cache_error_message').text(response.error_message).show();
-				} else {
-					$('#wpo_browser_cache_error_message').hide();
-				}
-
-				if (response.output) {
-					$('#wpo_browser_cache_output').html(response.output).show();
-				} else {
-					$('#wpo_browser_cache_output').hide();
-				}
-
-			} else {
-				alert(wpoptimize.error_unexpected_response);
-			}
-
-			loader.hide();
-		}).fail(function() {
+				loader.hide();
+			}).fail(function() {
 			alert(wpoptimize.error_unexpected_response);
 			loader.hide();
 		});

@@ -2,8 +2,6 @@
 
 if (!defined('WPO_VERSION')) die('No direct access allowed');
 
-require_once 'class-wp-optimize-htaccess.php';
-
 /**
  * Class WP_Optimize_Browser_Cache
  */
@@ -11,14 +9,14 @@ class WP_Optimize_Browser_Cache {
 
 	use WP_Optimize_HTTP_Error_Codes_Trait;
 
-	private $_htaccess = null;
+	private $_htaccess;
 
-	private $_options = null;
+	private $_options;
 
-	private $_wp_optimize = null;
+	private $_wp_optimize;
 
 	/**
-	 * Browser cache section in htaccess will wrapped with this comment
+	 * Browser cache section in htaccess will be wrapped with this comment
 	 *
 	 * @var string
 	 */
@@ -78,10 +76,11 @@ class WP_Optimize_Browser_Cache {
 	/**
 	 * Enable browser cache - add settings into .htaccess.
 	 *
-	 * @param string $expiry_time
+	 * @param int $expiry_days
+	 * @param int $expiry_hours
 	 */
-	public function enable($expiry_time = '1 month') {
-		$this->_htaccess->update_commented_section($this->prepare_browser_cache_section($expiry_time), $this->_htaccess_section_comment);
+	public function enable(int $expiry_days, int $expiry_hours) {
+		$this->_htaccess->update_commented_section($this->prepare_browser_cache_section($expiry_days, $expiry_hours), $this->_htaccess_section_comment);
 		$this->_htaccess->write_file();
 		$this->_options->update_option('enable_browser_cache', true);
 	}
@@ -96,21 +95,21 @@ class WP_Optimize_Browser_Cache {
 	}
 
 	/**
-	 * Check if browser cache option is set to true then add section with gzip settings into .htaccess (used when plugin being activated).
+	 * Check if browser cache option is set to true then add section with browser cache settings into .htaccess.
 	 */
 	public function restore() {
-		$expire_days = $this->_options->get_option('browser_cache_expire_days', '');
-		$expire_hours = $this->_options->get_option('browser_cache_expire_hours', '');
+		$expire_days = absint($this->_options->get_option('browser_cache_expire_days', 0));
+		$expire_hours = absint($this->_options->get_option('browser_cache_expire_hours', 0));
 
-		$expiry_time = $this->prepare_interval($expire_days, $expire_hours);
+		$enabled = 0 !== $expire_days || 0 !== $expire_hours;
 
-		$enabled = ('' == $expiry_time) ? false : true;
-
-		if ($enabled && $this->_htaccess->is_writable()) $this->enable($expiry_time);
+		if ($enabled && $this->_htaccess->is_writable()) $this->enable($expire_days, $expire_hours);
 	}
 
 	/**
 	 * Check if section with browser cache settings already exists.
+	 *
+	 * @return bool
 	 */
 	public function is_browser_cache_section_exists() {
 		return $this->_htaccess->is_commented_section_exists($this->_htaccess_section_comment);
@@ -122,24 +121,29 @@ class WP_Optimize_Browser_Cache {
 	 * @param array $params - ['browser_cache_expire' => '1 month 15 days 2 hours' || '' - for disable cache]
 	 * @return array
 	 */
-	public function enable_browser_cache_command_handler($params) {
-		$expire_days = isset($params['browser_cache_expire_days']) ? $params['browser_cache_expire_days'] : '';
-		$expire_hours = isset($params['browser_cache_expire_hours']) ? $params['browser_cache_expire_hours'] : '';
+	public function enable_browser_cache_command_handler(array $params): array {
+		$expire_days = absint($params['browser_cache_expire_days']);
+		$expire_hours = absint($params['browser_cache_expire_hours']);
 
-		$current_expire_days = $this->_options->get_option('browser_cache_expire_days', '');
-		$current_expire_hours = $this->_options->get_option('browser_cache_expire_hours', '');
+		$current_expire_days = absint($this->_options->get_option('browser_cache_expire_days', 0));
+		$current_expire_hours = absint($this->_options->get_option('browser_cache_expire_hours', 0));
 
 		$section_updated = false;
 
-		$expiry_time = $this->prepare_interval($expire_days, $expire_hours);
-
-		$enable = ('' == $expiry_time) ? false : true;
+		$enable = 0 !== $expire_days || 0 !== $expire_hours;
 
 		/**
 		 * If we don't need to do anything in .htaccess then return message.
 		 */
-		if ($enable == $this->_htaccess->is_commented_section_exists() && $expire_days == $current_expire_days && $expire_hours == $current_expire_hours) {
-			$message = __('Browser static caching settings already exists in the .htaccess file', 'wp-optimize');
+		if ($enable === $this->_htaccess->is_commented_section_exists()
+			&& $expire_days === $current_expire_days
+			&& $expire_hours === $current_expire_hours
+		) {
+			if ($enable) {
+				$message = __('Browser static caching settings already exists in the .htaccess file', 'wp-optimize');
+			} else {
+				$message = '';
+			}
 
 			return array(
 				'success' => true,
@@ -152,7 +156,7 @@ class WP_Optimize_Browser_Cache {
 			// update commented section
 
 			if ($enable) {
-				$this->enable($expiry_time);
+				$this->enable($expire_days, $expire_hours);
 			} else {
 				$this->disable();
 			}
@@ -186,14 +190,14 @@ class WP_Optimize_Browser_Cache {
 				);
 			}
 		} else {
-			$cache_section = $this->prepare_browser_cache_section($expiry_time);
+			$cache_section = $this->prepare_browser_cache_section($expire_days, $expire_hours);
 
 			if ($enable) {
 				// translators: %s is a file name
 				$message = sprintf(__("We can\'t update your %s file.", 'wp-optimize'), $this->_htaccess->get_filename()) . ' ' . __('Please try to add following lines manually:', 'wp-optimize');
 				$output = htmlentities($this->_htaccess->get_section_begin_comment() . PHP_EOL .
-						  join(PHP_EOL, $this->_htaccess->get_flat_array($cache_section)).
-						  PHP_EOL . $this->_htaccess->get_section_end_comment());
+					join(PHP_EOL, $this->_htaccess->get_flat_array($cache_section)).
+					PHP_EOL . $this->_htaccess->get_section_end_comment());
 			} else {
 				// translators: %s is a file name
 				$message = sprintf(__("We can\'t update your %s file.", 'wp-optimize'), $this->_htaccess->get_filename()) . ' ' . __('Please try to remove following lines manually:', 'wp-optimize');
@@ -218,12 +222,9 @@ class WP_Optimize_Browser_Cache {
 	 * @param int $hours
 	 * @return string
 	 */
-	private function prepare_interval($days, $hours) {
+	private function prepare_interval(int $days, int $hours): string {
 
-		$days = is_numeric($days) ? floor($days) : 0;
-		$hours = is_numeric($hours) ? floor($hours) : 0;
-
-		if (0 == $days && 0 == $hours) {
+		if (0 === $days && 0 === $hours) {
 			return '';
 		}
 
@@ -258,12 +259,30 @@ class WP_Optimize_Browser_Cache {
 	}
 
 	/**
+	 * Converts a human-readable time string into total seconds
+	 *
+	 * @param int $days
+	 * @param int $hours
+	 * @return string Total number of seconds
+	 */
+	private function convert_to_seconds(int $days, int $hours): string {
+		// Split the string into parts
+		$total_seconds = $days * 24 * 60 * 60 + $hours * 60 * 60;
+
+		return strval($total_seconds);
+	}
+
+	/**
 	 * Build browser cache section array.
 	 *
-	 * @param string $expire - value like - 1 day 12 hours 15 minutes
+	 * @param int $expire_days
+	 * @param int $expire_hours
 	 * @return array
 	 */
-	public function prepare_browser_cache_section($expire) {
+	public function prepare_browser_cache_section(int $expire_days, int $expire_hours): array {
+		$expire = $this->prepare_interval($expire_days, $expire_hours);
+		$max_age = $this->convert_to_seconds($expire_days, $expire_hours);
+
 		return array(
 			array(
 				'<IfModule mod_expires.c>',
@@ -280,6 +299,8 @@ class WP_Optimize_Browser_Cache {
 				'ExpiresByType application/javascript "access '.$expire.'"',
 				'ExpiresByType text/x-javascript "access '.$expire.'"',
 				'ExpiresByType application/x-shockwave-flash "access '.$expire.'"',
+				'ExpiresByType application/json "access 0 seconds"',
+				'ExpiresByType application/xml "access 0 seconds"',
 				'ExpiresDefault "access '.$expire.'"',
 				'</IfModule>',
 			),
@@ -288,22 +309,22 @@ class WP_Optimize_Browser_Cache {
 				'<IfModule mod_headers.c>',
 				array(
 					'<filesMatch "\.(ico|jpe?g|png|gif|webp|swf)$">',
-					'Header set Cache-Control "public"',
+					'Header set Cache-Control "public, max-age='.$max_age.'"',
 					'</filesMatch>',
 				),
 				array(
 					'<filesMatch "\.(css)$">',
-					'Header set Cache-Control "public"',
+					'Header set Cache-Control "public, max-age='.$max_age.'"',
 					'</filesMatch>',
 				),
 				array(
 					'<filesMatch "\.(js)$">',
-					'Header set Cache-Control "private"',
+					'Header set Cache-Control "private, max-age='.$max_age.'"',
 					'</filesMatch>',
 				),
 				array(
 					'<filesMatch "\.(x?html?|php)$">',
-					'Header set Cache-Control "private, must-revalidate"',
+					'Header set Cache-Control "private, must-revalidate, max-age='.$max_age.'"',
 					'</filesMatch>',
 				),
 				'</IfModule>',

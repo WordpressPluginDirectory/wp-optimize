@@ -13,6 +13,20 @@ wp_optimize.modal.open({
 
 var wp_optimize = window.wp_optimize || {};
 
+// WordPress v4.9 uses Backbone v1.3.3, which does not support the preinitialize() hook.
+// Therefore, we are adding a patch to enable support for the preinitialize() hook.
+(function() {
+	var OriginalView = Backbone.View;
+	Backbone.View = function(options) {
+		if (typeof this.preinitialize === 'function') {
+		this.preinitialize.apply(this, arguments);
+		}
+		return OriginalView.apply(this, arguments);
+	};
+	Backbone.View.prototype = OriginalView.prototype;
+	Backbone.View.extend = OriginalView.extend;
+})();
+
 (function($, wp) {
 	'use strict';
 	var modal = {};

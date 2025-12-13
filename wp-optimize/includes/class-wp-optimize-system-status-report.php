@@ -51,7 +51,7 @@ class WP_Optimize_System_Status_Report {
 
 			foreach ($block['items'] as $part_index => $part) {
 				$piece['items'][$part_index]['title'] = $part['title'];
-				$piece['items'][$part_index]['value'] = isset($part['value']) ? $part['value'] : '';
+				$piece['items'][$part_index]['value'] = $part['value'] ?? '';
 
 				if (isset($part['markdown_value'])) {
 					$piece['items'][$part_index]['markdown_value'] = $part['markdown_value'];
@@ -70,7 +70,7 @@ class WP_Optimize_System_Status_Report {
 	 * @return array
 	 */
 	private function get_report_format() {
-		$report = array(
+		return array(
 			array(
 				'title' => esc_html__('WP-Optimize information', 'wp-optimize'),
 				'items' => array(
@@ -123,8 +123,6 @@ class WP_Optimize_System_Status_Report {
 				)
 			),
 		);
-
-		return $report;
 	}
 	
 	/**
@@ -178,7 +176,7 @@ class WP_Optimize_System_Status_Report {
 					$this->replaceable_md_tags[$fieldname] = $replaceable_tag;
 
 					$row['markdown_value'] = $replaceable_tag;
-					$ajax_field_class = $data_idx;
+					$ajax_field_class = (string) $data_idx;
 				}
 				
 				$row['title'] = $this->fix_title_case($info['label']);
@@ -284,7 +282,7 @@ class WP_Optimize_System_Status_Report {
 		}
 
 		$json = wp_json_encode($config, JSON_PRETTY_PRINT);
-		return $preformat_container ? $this->pre_container($json) : $json;
+		return (string) $preformat_container ? $this->pre_container($json) : $json;
 	}
 
 	/**
@@ -334,7 +332,7 @@ class WP_Optimize_System_Status_Report {
 	 */
 	private function path_perms($preformat_container = true) {
 		$json = wp_json_encode($this->server_info_util->get_uploads_dir_permissions(), JSON_PRETTY_PRINT);
-		return $preformat_container ? $this->pre_container($json) : $json;
+		return (string) $preformat_container ? $this->pre_container($json) : $json;
 	}
 
 	/**
@@ -354,9 +352,9 @@ class WP_Optimize_System_Status_Report {
 	}
 
 	/**
-	 * Prepare complex item (asynx loading) as a label HTML tag that will be replaced with JS code (ex. directories sizes from core-site-health API call)
+	 * Prepare complex item (async loading) as a label HTML tag that will be replaced with JS code (ex. directories sizes from core-site-health API call)
 	 *
-	 * @param string|array $value              If array, it will be JSON encoded inside a preformatted HTML tag
+	 * @param string|array $value              If an array, it will be JSON encoded inside a preformatted HTML tag
 	 * @param string|null  $id                 If not null, it is used as the label id property. If null, there will be no label, just value
 	 * @param string|null  $dynamic_field_type If not null, a css class is used to be able to catch these fields when the call is done
 	 * @return string
@@ -382,9 +380,60 @@ class WP_Optimize_System_Status_Report {
 	 * @return string
 	 */
 	private function generation_time() {
-		$timezone = wp_timezone_string();
+		$timezone = $this->wp_timezone_string();
 
-		return date_i18n('Y-m-d H:i:s', current_datetime()->getTimestamp()) . ('' !== $timezone ? ' (' . $timezone . ')' : '');
+		return date_i18n('Y-m-d H:i:s', $this->current_datetime()->getTimestamp()) . ('' !== $timezone ? ' (' . $timezone . ')' : '');
+	}
+
+	/**
+	 * Retrieves the site's timezone string in a backward-compatible way.
+	 *
+	 * If the `wp_timezone_string()` function is available (WordPress 5.3+), it will use it.
+	 * Otherwise, it falls back to a custom implementation that uses `timezone_string` or `gmt_offset`.
+	 *
+	 * Example return values:
+	 * - 'Europe/London'
+	 * - 'UTC'
+	 * - '+01:00'
+	 * - '-06:30'
+	 *
+	 * @return string PHP timezone identifier or a ±HH:MM offset.
+	 */
+	private function wp_timezone_string() {
+		if (function_exists('wp_timezone_string')) {
+			return wp_timezone_string();
+		}
+
+		$timezone_string = get_option('timezone_string');
+
+		if ($timezone_string) {
+			return $timezone_string;
+		}
+
+		$offset  = (float) get_option( 'gmt_offset' );
+		$hours   = (int) $offset;
+		$minutes = ($offset - $hours);
+
+		$sign      = ($offset < 0) ? '-' : '+';
+		$abs_hour  = abs($hours);
+		$abs_mins  = abs($minutes * 60);
+		$tz_offset = sprintf('%s%02d:%02d', $sign, $abs_hour, $abs_mins);
+
+		return $tz_offset;
+	}
+
+	/**
+	 * Retrieves the current site datetime object in a backwards-compatible way.
+	 *
+	 * @return DateTimeImmutable
+	 */
+	private function current_datetime() {
+		if (function_exists('current_datetime')) {
+			return current_datetime();
+		}
+
+		$timezone = new DateTimeZone($this->wp_timezone_string());
+		return new DateTimeImmutable('now', $timezone);
 	}
 }
 

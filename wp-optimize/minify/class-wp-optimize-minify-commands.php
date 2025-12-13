@@ -16,7 +16,7 @@ class WP_Optimize_Minify_Commands {
 	 * @return array
 	 */
 	public function get_minify_cached_files($data = array()) {
-		$stamp = isset($data['stamp']) ? $data['stamp'] : 0;
+		$stamp = $data['stamp'] ?? 0;
 		$files = WP_Optimize_Minify_Cache_Functions::get_cached_files($stamp, false);
 		$files['js'] = array_map(array('WP_Optimize_Minify_Cache_Functions', 'format_file_logs'), $files['js']);
 		$files['css'] = array_map(array('WP_Optimize_Minify_Cache_Functions', 'format_file_logs'), $files['css']);
@@ -71,7 +71,7 @@ class WP_Optimize_Minify_Commands {
 			);
 		}
 
-		// deletes temp files and old caches incase CRON isn't working
+		// deletes temp files and old caches in case CRON isn't working
 		WP_Optimize_Minify_Cache_Functions::cache_increment();
 		if (wp_optimize_minify_config()->always_purge_everything()) {
 			WP_Optimize_Minify_Cache_Functions::purge();
@@ -141,7 +141,7 @@ class WP_Optimize_Minify_Commands {
 	/**
 	 * Fetch and remove the temp and minify js/css cache files.
 	 *
-	 * @param Array $data file data
+	 * @param array $data file data
 	 */
 	public function fetch_and_remove_temp_minify_cache_files($data) {
 		$filename = $data['filename'];
@@ -210,7 +210,7 @@ class WP_Optimize_Minify_Commands {
 		$purged = $this->purge_minify_cache();
 		return array(
 			'success' => true,
-			'files' => isset($purged['files']) ? $purged['files'] : array(),
+			'files' => $purged['files'] ?? array(),
 		);
 	}
 
@@ -244,7 +244,7 @@ class WP_Optimize_Minify_Commands {
 	/**
 	 * Run minify preload action.
 	 *
-	 * @return void|array - Doesn't return anything if run() is successful (Run() prints a JSON object and closed browser connection) or an array if failed.
+	 * @return array|true[]|null - Doesn't return anything if run() is successful (Run() prints a JSON object and closed browser connection) or an array if failed.
 	 */
 	public function run_minify_preload() {
 		return WP_Optimize_Minify_Preloader::instance()->run('manual');
@@ -253,7 +253,7 @@ class WP_Optimize_Minify_Commands {
 	/**
 	 * Cancel minify preload action.
 	 *
-	 * @return array
+	 * @return mixed
 	 */
 	public function cancel_minify_preload() {
 		WP_Optimize_Minify_Preloader::instance()->cancel_preload();
@@ -263,7 +263,7 @@ class WP_Optimize_Minify_Commands {
 	/**
 	 * Get status of minify preload.
 	 *
-	 * @return array
+	 * @return mixed
 	 */
 	public function get_minify_preload_status() {
 		return WP_Optimize_Minify_Preloader::instance()->get_status_info();
@@ -359,7 +359,7 @@ class WP_Optimize_Minify_Commands {
 	 * Get transient file.
 	 *
 	 * @param string $key
-	 * @param string $value
+	 * @param mixed $value
 	 * @param string $filename
 	 * @return string
 	 */

@@ -9,7 +9,7 @@ class WP_Optimize_Htaccess {
 	 *
 	 * @var string
 	 */
-	private $_htaccess_file = '';
+	private $_htaccess_file;
 
 	/**
 	 * Structured content of .htaccess file.
@@ -48,7 +48,7 @@ class WP_Optimize_Htaccess {
 	}
 
 	/**
-	 * Checks if .htaccess file is readaable.
+	 * Checks if .htaccess file is readable.
 	 *
 	 * @return bool
 	 */
@@ -78,12 +78,13 @@ class WP_Optimize_Htaccess {
 	 *		[5] => 'RewriteCond %{REQUEST_FILENAME} !-d',
 	 *		[6] => 'RewriteRule . /index.php [L]',
 	 *		[7] => '</IfModule>',
+	 * 		]
 	 *	[2] => '# END WordPress'
 	 *
 	 * @return void
 	 */
 	public function read_file() {
-		if (false == $this->is_exists() || false == $this->is_readable()) return;
+		if (!$this->is_exists() || !$this->is_readable()) return;
 
 		$content = file_get_contents($this->_htaccess_file);
 
@@ -165,11 +166,11 @@ class WP_Optimize_Htaccess {
 		$last = key($flat_array);
 
 		foreach ($flat_array as $key => $value) {
-			if ('' != $value && '#' == $value[0]) {
+			if ('' !== $value && '#' === $value[0]) {
 				// never add prefix for comment lines.
 				$flat_array[$key] = $value;
 			} else {
-				$flat_array[$key] = ($key == $first || $key == $last) ? $value : $prefix . $value;
+				$flat_array[$key] = ($key === $first || $key === $last) ? $value : $prefix . $value;
 			}
 		}
 
@@ -184,6 +185,7 @@ class WP_Optimize_Htaccess {
 	 *
 	 * @param array  $content
 	 * @param string $section
+	 * @param bool   $prepend
 	 */
 	public function update_commented_section($content, $section = 'WP-Optimize Browser Cache', $prepend = false) {
 		$section_begin = $this->get_section_begin_comment($section);
@@ -240,7 +242,7 @@ class WP_Optimize_Htaccess {
 	public function is_commented_section_exists($section = 'WP-Optimize Browser Cache') {
 		$search = $this->search_commented_section($section);
 
-		return (false === $search) ? false : true;
+		return false !== $search;
 	}
 
 	/**
@@ -264,8 +266,8 @@ class WP_Optimize_Htaccess {
 
 			$value = $this->normalize_string($value);
 
-			if ($value == $section_begin_normalized) $section_begin_index = $i;
-			if ($value == $section_end_normalized) $section_end_index = $i;
+			if ($value === $section_begin_normalized) $section_begin_index = $i;
+			if ($value === $section_end_normalized) $section_end_index = $i;
 		}
 
 		if (false === $section_begin_index) {

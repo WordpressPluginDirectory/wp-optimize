@@ -31,7 +31,7 @@ class WP_Optimization_autodraft extends WP_Optimization {
 
 		$retention_subquery = '';
 
-		if ('true' == $this->retention_enabled) {
+		if ('true' === $this->retention_enabled) {
 			$retention_subquery = ' and post_modified < NOW() - INTERVAL ' . $this->retention_period . ' WEEK';
 		}
 
@@ -54,7 +54,7 @@ class WP_Optimization_autodraft extends WP_Optimization {
 		// fix empty revision titles.
 		if (!empty($posts)) {
 			foreach ($posts as $key => $post) {
-				$posts[$key]['post_title'] = '' == $post['post_title'] ? '('.__('no title', 'wp-optimize').')' : $post['post_title'];
+				$posts[$key]['post_title'] = '' === $post['post_title'] ? '('.__('no title', 'wp-optimize').')' : $post['post_title'];
 			}
 		}
 
@@ -101,7 +101,7 @@ class WP_Optimization_autodraft extends WP_Optimization {
 	public function optimize() {
 		$clean = "DELETE FROM `" . $this->wpdb->posts . "` WHERE post_status = 'auto-draft'";
 
-		if ('true' == $this->retention_enabled) {
+		if ('true' === $this->retention_enabled) {
 			$clean .= ' AND post_modified < NOW() - INTERVAL ' . $this->retention_period . ' WEEK';
 		}
 
@@ -125,7 +125,7 @@ class WP_Optimization_autodraft extends WP_Optimization {
 	 */
 	public function after_get_info() {
 
-		if (0 != $this->found_count && null != $this->found_count) {
+		if (0 !== $this->found_count && null !== $this->found_count) {
 			// translators: %s is the number of auto-drafts
 			$message = sprintf(_n('%s auto draft post in your database', '%s auto draft posts in your database', $this->found_count, 'wp-optimize'), number_format_i18n($this->found_count));
 		} else {
@@ -138,7 +138,7 @@ class WP_Optimization_autodraft extends WP_Optimization {
 		}
 
 		// add preview link for output.
-		if (0 != $this->found_count && null != $this->found_count) {
+		if (0 !== $this->found_count && null !== $this->found_count) {
 			$message = $this->get_preview_link($message);
 		}
 
@@ -152,7 +152,7 @@ class WP_Optimization_autodraft extends WP_Optimization {
 	public function get_info() {
 		$sql = "SELECT COUNT(*) FROM `" . $this->wpdb->posts . "` WHERE post_status = 'auto-draft'";
 
-		if ('true' == $this->retention_enabled) {
+		if ('true' === $this->retention_enabled) {
 			$sql .= ' and post_modified < NOW() - INTERVAL ' . $this->retention_period . ' WEEK';
 		}
 		$sql .= ';';
@@ -163,11 +163,11 @@ class WP_Optimization_autodraft extends WP_Optimization {
 	/**
 	 * Return settings label
 	 *
-	 * @return string|void
+	 * @return string
 	 */
 	public function settings_label() {
 
-		if ('true' == $this->retention_enabled) {
+		if ('true' === $this->retention_enabled) {
 			// translators: %s is the retention period in weeks
 			return sprintf(__('Clean auto draft posts which are older than %s weeks', 'wp-optimize'), $this->retention_period);
 		} else {
@@ -179,7 +179,7 @@ class WP_Optimization_autodraft extends WP_Optimization {
 	/**
 	 * Return description
 	 *
-	 * @return string|void
+	 * @return string
 	 */
 	public function get_auto_option_description() {
 		return __('Remove auto-draft posts', 'wp-optimize');

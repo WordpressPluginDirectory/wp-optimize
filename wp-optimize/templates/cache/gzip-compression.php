@@ -29,7 +29,7 @@
 		<?php if ($wpo_gzip_compression_enabled && !is_wp_error($wpo_gzip_compression_enabled) && !$wpo_gzip_compression_enabled_by_wpo) : ?>
 			<div class="wpo-fieldgroup wpo-gzip-already-enabled">
 				<p><span class="dashicons dashicons-yes"></span> 
-				<?php if (is_array($wpo_gzip_headers_information) && 'brotli' == $wpo_gzip_headers_information['compression']) { ?>
+				<?php if (is_array($wpo_gzip_headers_information) && 'brotli' === $wpo_gzip_headers_information['compression']) { ?>
 					<?php esc_html_e('Your server uses Brotli compression instead of Gzip, which is good.', 'wp-optimize'); ?>
 				<?php } else { ?>
 					<?php esc_html_e('Gzip compression is already enabled.', 'wp-optimize'); ?>
@@ -45,7 +45,7 @@
 				<p id="wpo_gzip_compression_status" class="<?php echo esc_attr($class_name); ?>">
 					<strong class="wpo-enabled"><?php esc_html_e('Gzip compression is currently ENABLED.', 'wp-optimize'); ?></strong>
 					<strong class="wpo-disabled"><?php esc_html_e('Gzip compression is currently DISABLED.', 'wp-optimize'); ?></strong>
-					<?php if (!$wp_optimize->is_apache_server() || ($wpo_gzip_compression_enabled && false == $wpo_gzip_compression_settings_added)) : ?>
+					<?php if (!$wp_optimize->is_apache_server() || ($wpo_gzip_compression_enabled && false === $wpo_gzip_compression_settings_added)) : ?>
 						<a href="#" class="wpo-refresh-gzip-status" title="<?php esc_attr_e('Press this to see if any changes were made to your Gzip configuration', 'wp-optimize'); ?>"><?php esc_html_e('Check status again', 'wp-optimize'); ?> <img class="wpo_spinner display-none" src="<?php echo esc_url(admin_url('images/spinner-2x.gif')); // phpcs:ignore PluginCheck.CodeAnalysis.ImageFunctions.NonEnqueuedImage -- N/A ?>" alt="..."></a>
 					<?php endif; ?>
 				</p>
@@ -53,7 +53,7 @@
 				<?php
 
 				// add gzip compression section only if gzip compression disabled or we added cache settings to .htaccess.
-				if (is_wp_error($wpo_gzip_compression_enabled) || false == $wpo_gzip_compression_enabled || $wpo_gzip_compression_settings_added) {
+				if (is_wp_error($wpo_gzip_compression_enabled) || false === $wpo_gzip_compression_enabled || $wpo_gzip_compression_settings_added) {
 
 					if ($wp_optimize->is_apache_server()) {
 						$button_text = (!is_wp_error($wpo_gzip_compression_enabled) && $wpo_gzip_compression_enabled) ? __('Disable', 'wp-optimize') : __('Enable', 'wp-optimize');

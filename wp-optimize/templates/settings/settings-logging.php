@@ -8,11 +8,11 @@
 
 		</p>
 
-		<div class="save_settings_reminder"><?php esc_html_e('Remember to save your settings so that your changes take effect.', 'wp-optimize');?></div>
+		<div class="save_settings_reminder"><?php esc_html_e('Remember to save your settings so that your changes take effect.', 'wp-optimize'); ?></div>
 
 		<?php
-		
-		$loggers = $wp_optimize->wpo_loggers();
+
+		$loggers = $loggers_data['existing_loggers'];
 
 		if (count($loggers) > 0) {
 
@@ -27,21 +27,17 @@
 				<?php
 
 				foreach ($loggers as $logger) {
-					$logger_id = strtolower(get_class($logger));
+					$logger_id = $logger['id'];
 
-					?>
+				?>
 
 					<div class="wpo_logging_row" data-id="<?php echo esc_attr($logger_id); ?>">
 						<div class="wpo_logging_logger_row"><span
-									class="dashicons dashicons-arrow-right"></span><?php echo esc_html($logger->get_description()); ?>
+								class="dashicons dashicons-arrow-right"></span><?php echo esc_html($logger['description']); ?>
 						</div>
-						<div class="wpo_logging_options_row"><?php echo esc_html($logger->get_options_text()); ?></div>
-						<?php
-							$status = '';
-							$status = ($logger->is_enabled() && $logger->is_available()) ? 'active' : 'inactive';
-							$status_text = ($logger->is_enabled() && $logger->is_available()) ? __('Active', 'wp-optimize') : __('Inactive', 'wp-optimize');
-						?>
-						<div class="wpo_logging_status_row <?php echo esc_attr($status); ?>"><?php echo esc_html($status_text); ?></div>
+						<div class="wpo_logging_options_row"><?php echo esc_html($logger['options_text']); ?></div>
+						
+						<div class="wpo_logging_status_row <?php echo esc_attr($logger['status']); ?>"><?php echo esc_html($logger['status_text']); ?></div>
 
 						<div class="wpo_logging_actions_row">
 							<span class="wpo_edit_logger" title="<?php esc_attr_e('Edit', 'wp-optimize'); ?>"><?php esc_html_e('Edit', 'wp-optimize'); ?></span>
@@ -55,50 +51,41 @@
 
 						<div class="wpo_additional_logger_options wpo_hidden">
 							<input class="wpo_hidden" type="hidden" name="wpo-logger-type[]"
-									value="<?php echo esc_attr($logger_id); ?>"/>
-							
+								value="<?php echo esc_attr($logger_id); ?>" />
+
 							<?php
-							$options_list = $logger->get_options_list();
-							$options_values = $logger->get_options_values();
+							$options_list = $logger['options_list'];
 
 							if (!empty($options_list)) {
-								foreach ($options_list as $option_name => $placeholder) {
-									// check if settings item defined as array.
-									if (is_array($placeholder)) {
-										$validate = $placeholder[1];
-										$placeholder = $placeholder[0];
-									} else {
-										$validate = '';
-									}
+								foreach ($options_list as $option) {
 
-									$data_validate_attr = ('' !== $validate ? 'data-validate="'.esc_attr($validate).'"' : '');
-
-									?>
+							?>
 									<input class="wpo_logger_addition_option" type="text"
-											name="wpo-logger-options[<?php echo esc_attr($option_name); ?>][]"
-											value="<?php echo esc_attr($options_values[$option_name]); ?>"
-											placeholder="<?php echo esc_attr($placeholder); ?>"
-										<?php echo $data_validate_attr; // phpcs:ignore WordPress.Security.EscapeOutput -- Output is already escaped ?> "/>
+										name="wpo-logger-options[<?php echo esc_attr($option['name']); ?>][]"
+										value="<?php echo esc_attr($option['value']); ?>"
+										placeholder="<?php echo esc_attr($option['placeholder']); ?>"
+										<?php echo $option['data_validate_attr']; // phpcs:ignore WordPress.Security.EscapeOutput -- Output is already escaped 
+										?>/>
 									<?php
 								}
 							}
-							?>
+									?>
 							<label>
-								<input class="wpo_logger_active_checkbox"
-										type="checkbox" <?php checked($logger->is_enabled() && $logger->is_available()); ?> <?php disabled($logger->is_available(), false); ?>>
-								<input type="hidden" name="wpo-logger-options[active][]"
-										value="<?php echo $logger->is_enabled() ? '1' : '0'; ?>"/>
-								<?php esc_html_e('Active', 'wp-optimize'); ?>
-							</label>
+								<input class=" wpo_logger_active_checkbox"
+										type="checkbox" <?php checked($logger['is_enabled'] && $logger['is_available']); ?> <?php disabled($logger['is_available'], false); ?>>
+									<input type="hidden" name="wpo-logger-options[active][]"
+										value="<?php echo $logger['is_enabled'] ? '1' : '0'; ?>" />
+									<?php esc_html_e('Active', 'wp-optimize'); ?>
+									</label>
 						</div>
 
 					</div>
-					<?php
+				<?php
 				}
 				?>
-			</div><!-- End #wp-optimize-logging-options -->	
-			<?php
+			</div><!-- End #wp-optimize-logging-options -->
+		<?php
 		}
-		?>	
+		?>
 	</div><!-- End #wp-optimize-logger-settings -->
 </div>

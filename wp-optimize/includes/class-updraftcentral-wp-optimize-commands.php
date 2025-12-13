@@ -19,10 +19,10 @@ class UpdraftCentral_WP_Optimize_Commands extends UpdraftCentral_Commands {
 	/**
 	 * Magic method to pass on the command to WP_Optimize_Commands
 	 *
-	 * @param String $name		- command name
-	 * @param Array	 $arguments	- command parameters
+	 * @param string $name		- command name
+	 * @param array	 $arguments	- command parameters
 	 *
-	 * @return Array - response
+	 * @return array - response
 	 */
 	public function __call($name, $arguments) {
 	
@@ -30,6 +30,10 @@ class UpdraftCentral_WP_Optimize_Commands extends UpdraftCentral_Commands {
 			return $this->_generic_error_response('wp_optimize_no_such_command', $name);
 		}
 		
+		if (count($arguments) > 0) {
+			$arguments[0] = $arguments[0] ?? array();
+		}
+
 		$result = call_user_func_array(array($this->commands, $name), $arguments);
 		
 		if (is_wp_error($result)) {

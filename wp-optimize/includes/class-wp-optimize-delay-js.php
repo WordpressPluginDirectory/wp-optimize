@@ -43,7 +43,7 @@ class WP_Optimize_Delay_JS {
 	 *
 	 * @return bool
 	 */
-	private function should_process(): bool {
+	private function should_process() {
 		return $this->options['enabled'] && $this->options['enable_js'] && ($this->is_delay_js_enabled() || $this->is_preload_js_enabled()) && !$this->is_edit_mode();
 	}
 
@@ -152,7 +152,7 @@ class WP_Optimize_Delay_JS {
 	 * @return bool
 	 */
 	private function is_delay_js_enabled() {
-		return $this->options['enable_delay_js'];
+		return (bool) $this->options['enable_delay_js'];
 	}
 	
 	/**
@@ -398,7 +398,7 @@ class WP_Optimize_Delay_JS {
 	}
 	
 	/**
-	 * Regiters callback to output Delay JS script.
+	 * Registers callback to output Delay JS script.
 	 *
 	 * @return void
 	 */
@@ -412,8 +412,8 @@ class WP_Optimize_Delay_JS {
 	 *
 	 * @return bool
 	 */
-	private function is_edit_mode(): bool {
-		return isset($_GET['fl_builder']) || isset($_GET['et_fb']) || isset($_GET['elementor-preview']) || isset($_GET['oxygen']) || isset($_GET['ct_builder']);
+	private function is_edit_mode() {
+		return isset($_GET['fl_builder']) || isset($_GET['et_fb']) || isset($_GET['elementor-preview']) || isset($_GET['oxygen']) || isset($_GET['ct_builder']); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- We are not using any global values, only checking for existence
 	}
 }
 

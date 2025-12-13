@@ -26,7 +26,7 @@ class WP_Optimization_commentmeta extends WP_Optimization {
 	public function preview($params) {
 
 		// get clicked comment type link.
-		$type = isset($params['type']) && 'akismet' == $params['type'] ? 'akismet' : 'trash';
+		$type = isset($params['type']) && 'akismet' === $params['type'] ? 'akismet' : 'trash';
 
 		// get data requested for preview.
 		// Suppress WordPress.DB.PreparedSQL.NotPrepared errors, these are safe and prepared. `$this->wpdb` is $wpdb`
@@ -34,11 +34,11 @@ class WP_Optimization_commentmeta extends WP_Optimization {
 		$sql = $this->wpdb->prepare(
 			"SELECT * FROM `" . $this->wpdb->commentmeta . "`".
 			" WHERE ".
-			('trash' == $type ? "comment_id NOT IN (SELECT comment_id FROM `" . $this->wpdb->comments . "`)" : "").
-			('akismet' == $type ? "meta_key LIKE" : "").
+			('trash' === $type ? "comment_id NOT IN (SELECT comment_id FROM `" . $this->wpdb->comments . "`)" : "").
+			('akismet' === $type ? "meta_key LIKE" : "").
 			" %s ORDER BY `comment_ID` LIMIT %d, %d;",
 			array(
-				('akismet' == $type ? '%akismet%' : ''),
+				('akismet' === $type ? '%akismet%' : ''),
 				$params['offset'],
 				$params['limit'],
 			)
@@ -51,7 +51,7 @@ class WP_Optimization_commentmeta extends WP_Optimization {
 		if (!empty($posts)) {
 			foreach ($posts as $key => $post) {
 				$posts[$key]['post_title'] = array(
-					'text' => '' == $post['post_title'] ? '('.__('no title', 'wp-optimize').')' : $post['post_title'],
+					'text' => '' === $post['post_title'] ? '('.__('no title', 'wp-optimize').')' : $post['post_title'],
 					'url' => get_edit_post_link($post['ID']),
 				);
 			}
@@ -63,11 +63,11 @@ class WP_Optimization_commentmeta extends WP_Optimization {
 		$sql = $this->wpdb->prepare(
 			"SELECT COUNT(*) FROM `" . $this->wpdb->comments . "`".
 				"WHERE ".
-				('trash' == $type ? "comment_id NOT IN (SELECT comment_id FROM `" . $this->wpdb->comments . "`)" : "").
-				('akismet' == $type ? "meta_key LIKE " : "").
+				('trash' === $type ? "comment_id NOT IN (SELECT comment_id FROM `" . $this->wpdb->comments . "`)" : "").
+				('akismet' === $type ? "meta_key LIKE " : "").
 				" %s;",
 			array(
-				('akismet' == $type ? '%akismet%' : ''),
+				('akismet' === $type ? '%akismet%' : ''),
 			)
 		);
 
@@ -214,10 +214,20 @@ class WP_Optimization_commentmeta extends WP_Optimization {
 
 	}
 
+	/**
+	 * Return settings label
+	 *
+	 * @return string
+	 */
 	public function settings_label() {
 		return __('Clean comment metadata', 'wp-optimize');
 	}
 
+	/**
+	 * Return description
+	 *
+	 * @return string
+	 */
 	public function get_auto_option_description() {
 		return __('Clean comment metadata', 'wp-optimize');
 	}

@@ -10,20 +10,20 @@ class WPO_Custom_Permalink_Compatibility {
 	 * Constructor.
 	 */
 	private function __construct() {
-		if (!class_exists('Custom_Permalinks')) return;
-
-		add_filter('custom_permalink_before_saving', array($this, 'custom_permalink_before_saving'), 10, 1);
+		add_filter('custom_permalink_before_saving', array($this, 'custom_permalink_before_saving'));
 		add_filter('pre_update_option_custom_permalink_table', array($this, 'pre_update_option_custom_permalink_table'), 10, 2);
 		add_action('update_option_permalink_structure', array($this, 'update_option_permalink_structure'), 10, 2);
 	}
 
 	/**
 	 * Returns singleton instance.
+	 *
+	 * @return self
 	 */
 	public static function instance() {
 		static $instance = null;
-		if (null == $instance) {
-			$instance = new static;
+		if (null === $instance) {
+			$instance = new self();
 		}
 
 		return $instance;
@@ -121,7 +121,7 @@ class WPO_Custom_Permalink_Compatibility {
 	 * @return void
 	 */
 	private function update_posts_custom_permalinks() {
-		$post_types = get_post_types(array('public' => true), 'names');
+		$post_types = get_post_types(array('public' => true));
 		$args = array(
 			'post_type' => $post_types,
 			'posts_per_page' => -1,

@@ -121,6 +121,7 @@
                 "issues": "https://github.com/MarcusSchwarz/lesserphp/issues",
                 "source": "https://github.com/MarcusSchwarz/lesserphp/tree/v0.5.5"
             },
+            "abandoned": true,
             "install-path": "../marcusschwarz/lesserphp"
         },
         {
@@ -544,17 +545,17 @@
         },
         {
             "name": "phpseclib/phpseclib",
-            "version": "1.0.23",
-            "version_normalized": "1.0.23.0",
+            "version": "1.0.24",
+            "version_normalized": "1.0.24.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpseclib/phpseclib.git",
-                "reference": "86990d518f4434719271fadd112d34b20208f3a9"
+                "reference": "03d2bb4d2319c81e93e92e628c9ff9c540db1184"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/86990d518f4434719271fadd112d34b20208f3a9",
-                "reference": "86990d518f4434719271fadd112d34b20208f3a9",
+                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/03d2bb4d2319c81e93e92e628c9ff9c540db1184",
+                "reference": "03d2bb4d2319c81e93e92e628c9ff9c540db1184",
                 "shasum": ""
             },
             "require": {
@@ -572,7 +573,7 @@
                 "ext-xml": "Install the XML extension to load XML formatted public keys.",
                 "pear-pear/PHP_Compat": "Install PHP_Compat to get phpseclib working on PHP < 5.0.0."
             },
-            "time": "2024-02-26T04:44:00+00:00",
+            "time": "2025-10-06T01:04:39+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -645,7 +646,7 @@
             ],
             "support": {
                 "issues": "https://github.com/phpseclib/phpseclib/issues",
-                "source": "https://github.com/phpseclib/phpseclib/tree/1.0.23"
+                "source": "https://github.com/phpseclib/phpseclib/tree/1.0.24"
             },
             "funding": [
                 {
@@ -665,17 +666,17 @@
         },
         {
             "name": "pimple/pimple",
-            "version": "v3.5.0",
-            "version_normalized": "3.5.0.0",
+            "version": "v3.6.0",
+            "version_normalized": "3.6.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/silexphp/Pimple.git",
-                "reference": "a94b3a4db7fb774b3d78dad2315ddc07629e1bed"
+                "reference": "a70f552d338f9266eec6606c1f0b324da5514c96"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/silexphp/Pimple/zipball/a94b3a4db7fb774b3d78dad2315ddc07629e1bed",
-                "reference": "a94b3a4db7fb774b3d78dad2315ddc07629e1bed",
+                "url": "https://api.github.com/repos/silexphp/Pimple/zipball/a70f552d338f9266eec6606c1f0b324da5514c96",
+                "reference": "a70f552d338f9266eec6606c1f0b324da5514c96",
                 "shasum": ""
             },
             "require": {
@@ -683,9 +684,9 @@
                 "psr/container": "^1.1 || ^2.0"
             },
             "require-dev": {
-                "symfony/phpunit-bridge": "^5.4@dev"
+                "phpunit/phpunit": "*"
             },
-            "time": "2021-10-28T11:13:42+00:00",
+            "time": "2025-11-12T12:31:38+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -715,7 +716,7 @@
                 "dependency injection"
             ],
             "support": {
-                "source": "https://github.com/silexphp/Pimple/tree/v3.5.0"
+                "source": "https://github.com/silexphp/Pimple/tree/v3.6.0"
             },
             "install-path": "../pimple/pimple"
         },
@@ -1505,6 +1506,37 @@
             "type": "library",
             "installation-source": "dist",
             "install-path": "../team-updraft/lib-central"
+        },
+        {
+            "name": "team-updraft/lib-onboarding-wizard",
+            "version": "0.1.1",
+            "version_normalized": "0.1.1.0",
+            "source": {
+                "type": "git",
+                "url": "ssh://git@source.updraftplus.com:20022/team-updraft/lib-onboarding-wizard.git",
+                "reference": "e20894a1c06b1ffd8d6d7c90df1ce76cbc2aa972"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://source.updraftplus.com/api/v4/projects/140/packages/composer/archives/team-updraft/lib-onboarding-wizard.zip?sha=e20894a1c06b1ffd8d6d7c90df1ce76cbc2aa972",
+                "reference": "e20894a1c06b1ffd8d6d7c90df1ce76cbc2aa972",
+                "shasum": ""
+            },
+            "require": {
+                "composer-plugin-api": "^2.0"
+            },
+            "type": "composer-plugin",
+            "extra": {
+                "class": "LibOnboardingWizard"
+            },
+            "installation-source": "dist",
+            "autoload": {
+                "classmap": [
+                    "composer-plugin-extras"
+                ]
+            },
+            "description": "onboarding wizard",
+            "install-path": "../team-updraft/lib-onboarding-wizard"
         },
         {
             "name": "tubalmartin/cssmin",

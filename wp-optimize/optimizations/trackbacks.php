@@ -38,7 +38,7 @@ class WP_Optimization_trackbacks extends WP_Optimization {
 		if (!empty($posts)) {
 			foreach ($posts as $key => $post) {
 				$posts[$key]['post_title'] = array(
-					'text' => '' == $post['post_title'] ? '('.__('no title', 'wp-optimize').')' : $post['post_title'],
+					'text' => '' === $post['post_title'] ? '('.__('no title', 'wp-optimize').')' : $post['post_title'],
 					'url' => get_edit_post_link($post['ID']),
 				);
 			}
@@ -77,7 +77,7 @@ class WP_Optimization_trackbacks extends WP_Optimization {
 		}
 
 		// add preview link for output.
-		if (0 != $this->found_count && null != $this->found_count) {
+		if ($this->found_count > 0) {
 			$message = $this->get_preview_link($message);
 		}
 
@@ -135,7 +135,12 @@ class WP_Optimization_trackbacks extends WP_Optimization {
 		$comments = $this->wpdb->get_var($sql); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Safe, no user input used
 		$this->found_count += $comments;
 	}
-
+	
+	/**
+	 * Do actions after get_info() function.
+	 *
+	 * @return string
+	 */
 	public function settings_label() {
 		return __('Remove trackbacks', 'wp-optimize');
 	}

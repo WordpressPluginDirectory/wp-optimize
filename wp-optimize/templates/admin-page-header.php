@@ -3,21 +3,19 @@
 <header class="wpo-main-header">
 	<p class="wpo-header-links">
 		<span class="wpo-header-links__label"><?php esc_html_e('Useful links', 'wp-optimize'); ?></span>
-		<?php $wp_optimize->wp_optimize_url('https://getwpo.com/', __('Home', 'wp-optimize')); ?> |
+		<?php $wp_optimize->wp_optimize_url('https://teamupdraft.com/wp-optimize/?utm_source=wpo-plugin&utm_medium=referral&utm_campaign=paac&utm_content=home&utm_creative_format=menu', __('Home', 'wp-optimize')); ?> |
 
-		<?php $wp_optimize->wp_optimize_url('https://updraftplus.com/', 'UpdraftPlus'); ?> |
+		<?php $wp_optimize->wp_optimize_url('https://teamupdraft.com/?utm_source=wpo-plugin&utm_medium=referral&utm_campaign=paac&utm_content=teamupdraft&utm_creative_format=menu', 'TeamUpdraft'); ?> |
 		
-		<?php $wp_optimize->wp_optimize_url('https://updraftplus.com/news/', __('News', 'wp-optimize')); ?> |
+		<?php $wp_optimize->wp_optimize_url('https://teamupdraft.com/blog/?utm_source=wpo-plugin&utm_medium=referral&utm_campaign=paac&utm_content=blog&utm_creative_format=menu', __('Blogs', 'wp-optimize')); ?> |
 
-		<?php $wp_optimize->wp_optimize_url('https://twitter.com/updraftplus', __('Twitter', 'wp-optimize')); ?> |
+		<?php $wp_optimize->wp_optimize_url('https://x.com/TeamUpdraftWP', __('Twitter / X', 'wp-optimize')); ?> |
 
-		<?php $wp_optimize->wp_optimize_url('https://wordpress.org/support/plugin/wp-optimize/', __('Support', 'wp-optimize')); ?> |
-
-		<?php $wp_optimize->wp_optimize_url('https://updraftplus.com/newsletter-signup', __('Newsletter', 'wp-optimize')); ?> |
+		<?php $wp_optimize->wp_optimize_url('https://teamupdraft.com/support/?utm_source=wpo-plugin&utm_medium=referral&utm_campaign=paac&utm_content=support&utm_creative_format=menu', __('Support', 'wp-optimize')); ?> |
 
 		<?php $wp_optimize->wp_optimize_url('https://david.dw-perspective.org.uk', __("Team lead", 'wp-optimize')); ?> |
 		
-		<?php $wp_optimize->wp_optimize_url('https://getwpo.com/faqs/', __("FAQs", 'wp-optimize')); ?> |
+		<?php $wp_optimize->wp_optimize_url('https://teamupdraft.com/documentation/wp-optimize/?utm_source=wpo-plugin&utm_medium=referral&utm_campaign=paac&utm_content=faqs&utm_creative_format=menu', __("Documentation", 'wp-optimize')); ?> |
 
 		<?php $wp_optimize->wp_optimize_url('https://www.simbahosting.co.uk/s3/shop/', __("More plugins", 'wp-optimize')); ?>
 	</p>

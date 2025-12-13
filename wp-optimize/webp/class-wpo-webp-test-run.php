@@ -9,9 +9,9 @@ if (!class_exists('WPO_WebP_Test_Run')) :
 class WPO_WebP_Test_Run {
 
 	/**
-	 * Get a test result object OR false, if tests cannot be made.
+	 * Get an array of working and non-working converters list
 	 *
-	 * @return object|false
+	 * @return array
 	 */
 	public static function get_converter_status() {
 		$source = WPO_PLUGIN_MAIN_PATH . 'images/logo/wpo_logo_small.png';

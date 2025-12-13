@@ -10,12 +10,39 @@ class WPO_Htaccess_Capabilities {
 	private static $_instance = null;
 
 	/**
-	 * Tests and sets up server's htacess capabilities as properties
+	 * Tests and sets up server's htaccess capabilities as properties
+	 *
+	 * @var HtaccessCapabilityTester
+	 */
+	public $hct;
+	
+	/**
+	 * @var bool
+	 */
+	public $htaccess_enabled;
+	
+	/**
+	 * @var bool
+	 */
+	public $mod_headers;
+
+	/**
+	 * @var bool
+	 */
+	public $mod_mime;
+
+	/**
+	 * @var bool
+	 */
+	public $mod_rewrite;
+
+	/**
+	 * Constructor
 	 */
 	public function __construct() {
 		$uploads = wp_upload_dir();
 		$this->hct = new HtaccessCapabilityTester($uploads['basedir'] . '/wpo', $uploads['baseurl'] . '/wpo');
-		$this->htaccess_enabled = $this->hct->htaccessEnabled();
+		$this->htaccess_enabled = (bool) $this->hct->htaccessEnabled();
 		$this->mod_headers = $this->get_mod_header_status();
 		$this->mod_mime = $this->get_mod_mime_status();
 		$this->mod_rewrite = $this->get_mod_rewrite_status();
@@ -24,7 +51,7 @@ class WPO_Htaccess_Capabilities {
 	/**
 	 * Gets singleton instance
 	 *
-	 * @return object
+	 * @return self
 	 */
 	public static function get_instance() {
 		if (null === self::$_instance) {

@@ -9,6 +9,7 @@ return array(
     'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
     'HTTP_ConditionalGet' => $vendorDir . '/mrclay/minify/lib/HTTP/ConditionalGet.php',
     'HTTP_Encoder' => $vendorDir . '/mrclay/minify/lib/HTTP/Encoder.php',
+    'LibOnboardingWizard' => $vendorDir . '/team-updraft/lib-onboarding-wizard/composer-plugin-extras/plugin.php',
     'Minify' => $vendorDir . '/mrclay/minify/lib/Minify.php',
     'Minify\\App' => $vendorDir . '/mrclay/minify/lib/Minify/App.php',
     'Minify\\Config' => $vendorDir . '/mrclay/minify/lib/Minify/Config.php',

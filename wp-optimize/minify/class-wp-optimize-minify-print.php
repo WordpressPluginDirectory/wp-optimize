@@ -112,7 +112,7 @@ class WP_Optimize_Minify_Print {
 		$res['code'] = str_ireplace('font-style:normal;', 'font-display:block;font-style:normal;', $res['code']);
 		
 		// inline css or fail
-		if (false != $res['status']) {
+		if ($res['status']) {
 			echo '<style type="text/css" media="all">' . "\n";
 			echo $res['code'] . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- This is already escaped
 			echo '</style>' . "\n";
@@ -149,7 +149,7 @@ class WP_Optimize_Minify_Print {
 	 *
 	 * @param string $file
 	 * @param string $code
-	 * @param string $log
+	 * @param array $log
 	 * @return void
 	 */
 	public static function write_combined_asset($file, $code, $log) {

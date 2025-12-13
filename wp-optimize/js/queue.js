@@ -150,7 +150,7 @@ function Updraft_Queue() {
 			return ele && typeof ele === 'object' && ele.optimization_id === id;
 		});
 	}
-
+	
 	/**
 	 * Returns a copy of all items currently in the queue.
 	 *

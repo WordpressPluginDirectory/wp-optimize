@@ -10,7 +10,7 @@ class WP_Optimize_Minify_Fonts {
 	/**
 	 * Get a list of Google fonts
 	 *
-	 * @return Array
+	 * @return array
 	 */
 	public static function get_google_fonts() {
 		// https://www.googleapis.com/webfonts/v1/webfonts?sort=alpha
@@ -22,7 +22,7 @@ class WP_Optimize_Minify_Fonts {
 	}
 
 	/**
-	 * Check if the google font exist or not
+	 * Check if the Google font exist or not
 	 *
 	 * @param string $font
 	 * @return boolean
@@ -71,6 +71,8 @@ class WP_Optimize_Minify_Fonts {
 
 	/**
 	 * Parses font url based on whether it is API version 1 or 2
+	 *
+	 * @param string $font
 	 */
 	private static function parse_font_url($font) {
 		if (false !== strpos($font, 'css?')) {
@@ -82,6 +84,8 @@ class WP_Optimize_Minify_Fonts {
 
 	/**
 	 * Parses google font api version 1 url
+	 *
+	 * @param string $font
 	 */
 	private static function parse_font_api1_url($font) {
 		parse_str(wp_parse_url(rtrim($font, '|'), PHP_URL_QUERY), $font_elements);
@@ -95,7 +99,7 @@ class WP_Optimize_Minify_Fonts {
 			} else {
 				// if the family was already added, and this new one has weights, merge with previous
 				if (isset($font_family[1])) {
-					if (isset(self::$fonts[$font_family[0]]['version']) && 'V2' == self::$fonts[$font_family[0]]['version']) {
+					if (isset(self::$fonts[$font_family[0]]['version']) && 'V2' === self::$fonts[$font_family[0]]['version']) {
 						self::$fonts[$font_family[0]]['specs'] = explode(',', rtrim($font_family[1], ','));
 					} else {
 						self::$fonts[$font_family[0]]['specs'] = array_merge(self::$fonts[$font_family[0]]['specs'], explode(',', rtrim($font_family[1], ',')));
@@ -113,6 +117,8 @@ class WP_Optimize_Minify_Fonts {
 
 	/**
 	 * Parses google font api version 2 url
+	 *
+	 * @param string $font
 	 */
 	private static function parse_font_api2_url($font) {
 		$parsed_url = wp_parse_url($font, PHP_URL_QUERY);
@@ -177,8 +183,8 @@ class WP_Optimize_Minify_Fonts {
 	 */
 	private static function convert_v1_font_specs_to_v2() {
 		foreach (self::$fonts as $font_name => $font_details) {
-			if ('V2' == $font_details['version']) continue;
-			if (0 == count($font_details['specs'])) {
+			if ('V2' === $font_details['version']) continue;
+			if (0 === count($font_details['specs'])) {
 				self::$fonts[$font_name]['specs'] = array(
 					'wght' => array(),
 					'ital' => array(),
@@ -235,8 +241,8 @@ class WP_Optimize_Minify_Fonts {
 	private static function build() {
 		$result = '';
 		foreach (self::$fonts as $font_name => $font_details) {
-			if ('display=swap' == $font_name) continue;
-			if ('' != $result) {
+			if ('display=swap' === $font_name) continue;
+			if ('' !== $result) {
 				$result .= '&';
 			}
 			$result .= 'family=' . str_replace(' ', '+', $font_name);
@@ -246,7 +252,7 @@ class WP_Optimize_Minify_Fonts {
 	}
 
 	/**
-	 * Converts font specifications into a valid google font api2 url string
+	 * Converts font specifications into a valid Google font api2 url string
 	 *
 	 * @param array $font_specs Font style and weight specifications
 	 *
@@ -265,9 +271,9 @@ class WP_Optimize_Minify_Fonts {
 
 		// Italic only
 		if ($italic_weights && !$weights && !$all_weights) {
-			if ('1' == $font_specs['ital'][0]) {
+			if ('1' === $font_specs['ital'][0]) {
 				return ':ital@1';
-			} elseif ('0;1' == $font_specs['ital'][0]) {
+			} elseif ('0;1' === $font_specs['ital'][0]) {
 				return ':ital@0;1';
 			}
 		}
@@ -288,7 +294,7 @@ class WP_Optimize_Minify_Fonts {
 					break;
 				case 'ital':
 					foreach ($units as $unit) {
-						array_push($result, 1 == $unit ? '1,400' : $unit);
+						array_push($result, 1 === (int) $unit ? '1,400' : $unit);
 					}
 					break;
 				case 'ital,wght':

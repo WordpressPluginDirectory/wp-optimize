@@ -6,7 +6,7 @@ $cls_link = 'https://getwpo.com/cumulative-layout-shift/';
 
 <div class="wpo-fieldgroup wpo-first-child dimensions-options">
 	<div class="wpo-images-dimensions__premium-mask">
-		<a class="wpo-images-dimensions__premium-link" href="<?php echo esc_url($wp_optimize->premium_version_link); ?>" target="_blank"><?php esc_html_e('Auto add images dimensions with WP-Optimize Premium.', 'wp-optimize'); ?></a>
+		<a class="wpo-images-dimensions__premium-link" href="<?php echo esc_url($wp_optimize->premium_version_link);?>&utm_content=auto-add-image-dimensions" target="_blank"><?php esc_html_e('Auto add images dimensions with WP-Optimize Premium.', 'wp-optimize'); ?></a>
 	</div>
 	<p class="wpo-images-dimension-show-links"><?php
 	// translators: %1$s - First Contentful Paint link, %2$s - Cumulative Layout Shift link (articles about core web vitals, FCP and CLS).

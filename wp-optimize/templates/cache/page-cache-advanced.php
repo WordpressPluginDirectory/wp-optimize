@@ -17,7 +17,7 @@
 		</label>
 		<span tabindex="0" data-tooltip="<?php esc_attr_e('Host gravatars locally to reduce http requests and enhanced privacy.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
 	</div>
-	<p><a href="<?php echo esc_url(WP_Optimize()->premium_version_link); ?>" target="_blank"><?php esc_html_e('Upgrade to WP-Optimize Premium to unlock this feature.', 'wp-optimize'); ?></a></p>
+	<p><a href="<?php echo esc_url(WP_Optimize()->premium_version_link); ?>&utm_content=host-gravatars-locally" target="_blank"><?php esc_html_e('Upgrade to WP-Optimize Premium to unlock this feature.', 'wp-optimize'); ?></a></p>
 </div>
 <h3 class="wpo-first-child"><?php esc_html_e('URLs to exclude from caching', 'wp-optimize'); ?></h3>
 

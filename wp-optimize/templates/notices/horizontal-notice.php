@@ -56,26 +56,26 @@
 					echo wp_kses_post($text);
 					$button_text = '';
 					if (isset($discount_code)) echo ' <b>' . esc_html($discount_code) . '</b>';
-				
+
 				if (!empty($button_link) && !empty($button_meta) && 'no-button' !== $button_meta) {
 					// Check which Message is going to be used.
-					if ('updraftcentral' == $button_meta) {
+					if ('updraftcentral' === $button_meta) {
 						$button_text = __('Get UpdraftCentral', 'wp-optimize');
-					} elseif ('updraftplus' == $button_meta) {
+					} elseif ('updraftplus' === $button_meta) {
 						$button_text = __('Get UpdraftPlus', 'wp-optimize');
-					} elseif ('aios' == $button_meta) {
+					} elseif ('aios' === $button_meta) {
 						$button_text = __('Get AIOS', 'wp-optimize');
-					} elseif ('signup' == $button_meta) {
+					} elseif ('signup' === $button_meta) {
 						$button_text = __('Sign up', 'wp-optimize');
-					} elseif ('go_there' == $button_meta) {
+					} elseif ('go_there' === $button_meta) {
 						$button_text = __('Go there', 'wp-optimize');
-					} elseif ('wpo-premium' == $button_meta) {
+					} elseif ('wpo-premium' === $button_meta) {
 						$button_text = __('Find out more.', 'wp-optimize');
-					} elseif ('wp-optimize' == $button_meta) {
+					} elseif ('wp-optimize' === $button_meta) {
 						$button_text = __('Find out more.', 'wp-optimize');
-					} elseif ('collection' == $button_meta) {
+					} elseif ('collection' === $button_meta) {
 						$button_text = __('Read more.', 'wp-optimize');
-					} elseif ('translate' == $button_meta) {
+					} elseif ('translate' === $button_meta) {
 						$button_text = __('Translate', 'wp-optimize');
 					}
 					$wp_optimize->wp_optimize_url($button_link, $button_text, null, 'class="updraft_notice_link"');

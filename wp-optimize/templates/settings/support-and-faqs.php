@@ -4,7 +4,7 @@
 <div class="wpo-fieldgroup">
 	<?php WP_Optimize()->include_template('settings/system-status.php'); ?>
 	<ul>
-		<li><?php $wp_optimize->wp_optimize_url('https://getwpo.com/faqs/', __('Read our FAQ here', 'wp-optimize')); ?></li>
+		<li><?php $wp_optimize->wp_optimize_url('https://teamupdraft.com/documentation/wp-optimize/?utm_source=wpo-plugin&utm_medium=referral&utm_campaign=paac&utm_content=read-our-faqs&utm_creative_format=text', __('Read our FAQ here', 'wp-optimize')); ?></li>
 		<li><?php $wp_optimize->wp_optimize_url('https://wordpress.org/support/plugin/wp-optimize/', __('Support is available here.', 'wp-optimize')); ?></li>
 		<li>
 			<?php

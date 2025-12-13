@@ -71,7 +71,7 @@ class WP_Optimize_404_Detector {
 
 		$url_data = isset($_SERVER['REQUEST_URI']) ? $this->parse_url(esc_url_raw(wp_unslash($_SERVER['REQUEST_URI']))) : false;
 
-		if (false == $url_data || !isset($url_data['path']) || ('/' == $url_data['path'])) {
+		if (!$url_data || !isset($url_data['path']) || ('/' === $url_data['path'])) {
 			return;
 		}
 
@@ -98,9 +98,9 @@ class WP_Optimize_404_Detector {
 		if ('' !== $referrer) {
 			$referrer_parsed = $this->parse_url($referrer);
 			$safe_referrer = (isset($referrer_parsed['scheme']) ? $referrer_parsed['scheme'] . '://' : '') .
-							(isset($referrer_parsed['host']) ? $referrer_parsed['host'] : '') .
+							($referrer_parsed['host'] ?? '') .
 							(isset($referrer_parsed['port']) ? ':' . $referrer_parsed['port'] : '') .
-							(isset($referrer_parsed['path']) ? $referrer_parsed['path'] : '') .
+							($referrer_parsed['path'] ?? '') .
 							(isset($referrer_parsed['query']) ? '?' . $referrer_parsed['query'] : '');
 		}
 
@@ -158,7 +158,7 @@ class WP_Optimize_404_Detector {
 	/**
 	 * Find requests that by themselves have a request count over the threshold
 	 *
-	 * @param array $all_suspicious_referrers Optional. By reference, will be populated with hashed referrers
+	 * @param array|null $all_suspicious_referrers Optional. By reference, will be populated with hashed referrers
 	 * @return array
 	 */
 	private function get_single_suspicious_requests_by_referer(&$all_suspicious_referrers = null) {
@@ -226,7 +226,7 @@ class WP_Optimize_404_Detector {
 			$item->referrer = esc_html__('(any)', 'wp-optimize');
 
 			if (0 < $item->non_suspicious_referrers) {
-				// Some non-suspicious referrers exist in the group, all those are grouped under `--nonsuspicious--`, so remove it from the suscipious count
+				// Some non-suspicious referrers exist in the group, all those are grouped under `--nonsuspicious--`, so remove it from the suspicious count
 				$item->suspicious_referrers = $item->suspicious_referrers - 1;
 			}
 
@@ -273,19 +273,144 @@ class WP_Optimize_404_Detector {
 	}
 
 	/**
-	 * Check if there are any suspicious requests logged, then return the total
+	 * Check if there are any suspicious requests logged, then return the count of unique URLs and total 404 requests
 	 *
-	 * @return int
+	 * @return array
 	 */
 	public function get_suspicious_requests_count() {
 		$requests = $this->get_single_suspicious_requests_by_referer();
-		
-		$total = 0;
-		foreach ($requests as $req) {
-			$total += $req->total_count;
+
+		$result = array(
+			'unique_urls'    => 0,
+			'total_requests' => 0,
+		);
+
+		if (empty($requests)) {
+			return $result;
 		}
 
-		return $total;
+		if (!is_multisite() || (is_multisite() && is_network_admin())) {
+			$result = $this->handle_single_site_or_network_admin_requests($requests, $result);
+		} elseif (is_multisite() && defined('SUBDOMAIN_INSTALL') && SUBDOMAIN_INSTALL) {
+			$result = $this->handle_subdomain_multisite_requests($requests, $result);
+		} elseif (is_multisite()) {
+			$result = $this->handle_subdirectory_multisite_requests($requests, $result);
+		}
+		return $result;
+	}
+
+	/**
+	 * This method run to count total 404 requests and unique URLs for single site and multi site network admin.
+	 *
+	 * @param array $requests requests save in db
+	 * @param array $result   result array containing unique urls and total request count default values (zero)
+	 *
+	 * @return array
+	 */
+	private function handle_single_site_or_network_admin_requests($requests, $result) {
+
+		foreach ($requests as $req) {
+			$result = $this->increment_result($req->total_count, $result);
+		}
+
+		return $result;
+	}
+
+	/**
+	 * This method run to count total 404 requests and unique URLs for multi site sub-domain setup only (not for network admin).
+	 *
+	 * @param array $requests requests save in db
+	 * @param array $result   result array containing unique urls and total request count default values (zero)
+	 *
+	 * @return array
+	 */
+	private function handle_subdomain_multisite_requests($requests, $result) {
+
+		$current_blog_id  = get_current_blog_id();
+		$current_site_url = get_site_url($current_blog_id);
+		$current_host     = $this->parse_url($current_site_url, PHP_URL_HOST);
+
+		foreach ($requests as $req) {
+			$req_host = $this->parse_url($req->url, PHP_URL_HOST);
+
+			if ($req_host === $current_host) {
+				$result = $this->increment_result($req->total_count, $result);
+			}
+		}
+
+		return $result;
+	}
+
+	/**
+	 * This method run to count total 404 requests and unique URLs for multi site sub-directory setup only.
+	 *
+	 * @param array $requests requests save in db
+	 * @param array $result   result array containing unique urls and total request count default values (zero)
+	 *
+	 * @return array
+	 */
+	private function handle_subdirectory_multisite_requests($requests, $result) {
+
+		$current_blog_id  = get_current_blog_id();
+		$current_site_url = get_site_url($current_blog_id);
+		$current_host     = $this->parse_url($current_site_url, PHP_URL_HOST);
+		$current_path     = trim((string) $this->parse_url($current_site_url, PHP_URL_PATH), '/');
+		$other_paths      = array();
+		$all_sites        = get_sites(array('fields' => 'ids'));
+
+		foreach ($all_sites as $site_id) {
+			if ($site_id === $current_blog_id) {
+				continue;
+			}
+			$site_path = trim((string) $this->parse_url(get_site_url($site_id), PHP_URL_PATH), '/');
+			if (!empty($site_path)) {
+				$other_paths[] = '/' . $site_path;
+			}
+		}
+
+		foreach ($requests as $req) {
+
+			$req_host = $this->parse_url($req->url, PHP_URL_HOST);
+			$req_path = trim((string) $this->parse_url($req->url, PHP_URL_PATH), '/');
+
+			if ($req_host !== $current_host) {
+				continue;
+			}
+
+			if (empty($current_path)) {
+				$is_sub_site_request = false;
+				foreach ($other_paths as $sub_path) {
+					if (0 === strpos('/' . $req_path, $sub_path)) {
+						$is_sub_site_request = true;
+						break;
+					}
+				}
+				if ($is_sub_site_request) {
+					continue;
+				}
+			} else {
+				if (0 !== strpos('/' . $req_path, '/' . $current_path)) {
+					continue;
+				}
+			}
+			$result = $this->increment_result($req->total_count, $result);
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Returns the incremented result for unique urls and total requests
+	 *
+	 * @param int   $total_count total requests count (didn't type cast as $wpdb->get_results() doesn't guarantee it)
+	 * @param array $result      result array containing unique urls and total request count
+	 *
+	 * @return array
+	 */
+	private function increment_result($total_count, $result) {
+		$result['unique_urls']++;
+		$result['total_requests'] += (int) $total_count;
+		return $result;
 	}
 
 	/**
@@ -324,8 +449,8 @@ class WP_Optimize_404_Detector {
 	 * @return int
 	 */
 	private function sort_suspicious_requests($result_a, $result_b) {
-		$a_url_total = isset($this->total_count_per_url[$result_a->url]) ? $this->total_count_per_url[$result_a->url] : 0;
-		$b_url_total = isset($this->total_count_per_url[$result_b->url]) ? $this->total_count_per_url[$result_b->url] : 0;
+		$a_url_total = $this->total_count_per_url[$result_a->url] ?? 0;
+		$b_url_total = $this->total_count_per_url[$result_b->url] ?? 0;
 
 		$a = (PHP_INT_MAX - $a_url_total) . ' ' . $result_a->url . ' ' . (PHP_INT_MAX - $result_a->total_count);
 		$b = (PHP_INT_MAX - $b_url_total) . ' ' . $result_b->url . ' ' . (PHP_INT_MAX - $result_b->total_count);
@@ -334,20 +459,21 @@ class WP_Optimize_404_Detector {
 	}
 
 	/**
-	 * Wrapper over `wp_parse_url` to handle a `false` response, in such case we return an empty array.
+	 * Wrapper over `wp_parse_url` to handle a `false` response, in such case if component is -1 then we return empty array else empty string
 	 * This wrapper always requests `wp_parse_url` the default return an array with all components found.
 	 *
-	 * @param string $url The URL to be parsed
-	 * @return array
+	 * @param string $url       The URL to be parsed
+	 * @param int    $component The specific component to retrieve. Use one of the PHP predefined constants to specify which one. Defaults to -1 (= return all parts as an array).
+	 *
+	 * @return string|array
 	 */
-	private function parse_url($url) {
-		$parsed = wp_parse_url($url);
+	private function parse_url($url, $component = -1) {
+		$parsed = wp_parse_url($url, $component);
 
-		if (false !== $parsed) {
+		if (false !== $parsed && null !== $parsed) {
 			return $parsed;
-		} else {
-			return array();
 		}
+		return (-1 === $component) ? array() : '';
 	}
 }
 

@@ -23,8 +23,8 @@ class WPO_Ajax {
 	 */
 	private function __construct() {
 		add_action('wp_ajax_wp_optimize_ajax', array($this, 'handle_ajax_requests'));
-		add_filter('wp_optimize_heartbeat_ajax', array($this, 'handle_heartbeat_requests'), 10, 1);
-		add_filter('wp_optimize_is_heartbeat_valid_ajax_command', array($this, 'is_heartbeat_command_valid'), 10, 1);
+		add_filter('wp_optimize_heartbeat_ajax', array($this, 'handle_heartbeat_requests'));
+		add_filter('wp_optimize_is_heartbeat_valid_ajax_command', array($this, 'is_heartbeat_command_valid'));
 	}
 
 	/**
@@ -146,14 +146,14 @@ class WPO_Ajax {
 	 * Sets nonce property value
 	 */
 	private function set_nonce() {
-		$this->nonce = empty($_POST['nonce']) ? '' : $_POST['nonce'];
+		$this->nonce = empty($_POST['nonce']) ? '' : sanitize_key(wp_unslash($_POST['nonce'])); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- is_valid_request() checks nonce
 	}
 
 	/**
 	 * Sets subaction property value
 	 */
 	private function set_subaction() {
-		$this->subaction = empty($_POST['subaction']) ? '' : stripcslashes($_POST['subaction']);
+		$this->subaction = empty($_POST['subaction']) ? '' : sanitize_key(wp_unslash($_POST['subaction'])); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- is_valid_request() checks nonce
 	}
 
 	/**
@@ -169,7 +169,7 @@ class WPO_Ajax {
 	 * Sets data property value
 	 */
 	private function set_data() {
-		$this->data = isset($_POST['data']) ? stripslashes_deep($_POST['data']) : null;
+		$this->data = isset($_POST['data']) ? stripslashes_deep($_POST['data']) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- is_valid_request() checks nonce, sanitization takes place later
 	}
 
 	/**
@@ -205,7 +205,7 @@ class WPO_Ajax {
 	/**
 	 * Send user capability check failed error response to browser and possibly die
 	 *
-	 * @param Boolean $send - if true, then the response is output; otherwise, it is returned
+	 * @param boolean $send - if true, then the response is output; otherwise, it is returned
 	 */
 	private function send_user_capability_error_response($send = true) {
 		$error = array(
@@ -214,7 +214,7 @@ class WPO_Ajax {
 			'error_message' => __('You are not allowed to run this command.', 'wp-optimize')
 		);
 
-		if (true == $send) {
+		if ($send) {
 			wp_send_json($error);
 		} else {
 			return $error;
@@ -244,7 +244,7 @@ class WPO_Ajax {
 			'error_message' => __('Options can only be saved by network admin', 'wp-optimize')
 		);
 
-		if (true == $send) {
+		if ($send) {
 			wp_send_json($error);
 		} else {
 			return $error;
@@ -286,7 +286,7 @@ class WPO_Ajax {
 			$options->update_option($this->subaction, (time() + 366 * 86400));
 		} elseif (in_array($this->subaction, array('dismiss_page_notice_until', 'dismiss_notice'))) {
 			$options->update_option($this->subaction, (time() + 84 * 86400));
-		} elseif ('dismiss_review_notice' == $this->subaction) {
+		} elseif ('dismiss_review_notice' === $this->subaction) {
 			if (empty($this->data['dismiss_forever'])) {
 				$options->update_option($this->subaction, time() + 84 * 86400);
 			} else {
@@ -370,7 +370,7 @@ class WPO_Ajax {
 	 * Log an error message for invalid ajax command
 	 */
 	private function add_invalid_command_error_log_entry() {
-		error_log("WP-Optimize: ajax_handler: no such command (" . $this->subaction . ")");
+		error_log("WP-Optimize: ajax_handler: no such command (" . $this->subaction . ")"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Edge case, used for debugging
 	}
 
 	/**

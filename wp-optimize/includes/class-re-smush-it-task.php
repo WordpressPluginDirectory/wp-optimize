@@ -8,12 +8,23 @@ if (!defined('ABSPATH')) die('Access denied.');
 if (!class_exists('Re_Smush_It_Task')) :
 
 class Re_Smush_It_Task extends Updraft_Smush_Task {
-
+	
+	/**
+	 * Task name
+	 *
+	 * @var string
+	 */
 	public $label = 're-smush-it';
 
+	/**
+	 * Maximum filesize
+	 */
 	const MAX_FILESIZE = 5242880;
-
-	const API_URL = 'http://api.resmush.it/';
+	
+	/**
+	 * API URL
+	 */
+	const API_URL = 'https://api.resmush.it/';
 
 	/**
 	 * Checks if the server is online
@@ -24,7 +35,7 @@ class Re_Smush_It_Task extends Updraft_Smush_Task {
 		
 		global $wp_version;
 		$test_image = WPO_PLUGIN_MAIN_PATH . 'images/icon/wpo.png';
-		$boundary = wp_generate_password(12);
+		$boundary = wp_generate_password();
 		$file_name = basename($test_image);
 
 		$body = "--$boundary";
@@ -68,13 +79,15 @@ class Re_Smush_It_Task extends Updraft_Smush_Task {
 	/**
 	 * Prepares the image as part of the post data for the specific implementation
 	 *
-	 * @param String $local_file - The image to e optimised
+	 * @param string $local_file - The image to e optimised
 	 * @param array  $options    - Eventual options
+	 *
+	 * @return array
 	 */
 	public function prepare_post_request($local_file, $options) {
 		global $wp_version;
 		
-		$boundary = wp_generate_password(12);
+		$boundary = wp_generate_password();
 		$headers  = array( "content-type" => "multipart/form-data; boundary=$boundary" );
 
 		$lossy = $this->get_option('lossy_compression');
@@ -120,7 +133,7 @@ class Re_Smush_It_Task extends Updraft_Smush_Task {
 	/**
 	 * Processes the response received from the remote server
 	 *
-	 * @param String $response - The response object
+	 * @param mixed $response - The response object
 	 */
 	public function process_server_response($response) {
 		global $http_response_header;
@@ -167,7 +180,7 @@ class Re_Smush_It_Task extends Updraft_Smush_Task {
 	/**
 	 * Retrieve features for this service
 	 *
-	 * @return Array - an array of options
+	 * @return array - an array of options
 	 */
 	public static function get_features() {
 		return array(
@@ -180,7 +193,7 @@ class Re_Smush_It_Task extends Updraft_Smush_Task {
 	/**
 	 * Retrieve default options for this task type.
 	 *
-	 * @return Array - an array of options
+	 * @return array - an array of options
 	 */
 	public function get_default_options() {
 		return array(

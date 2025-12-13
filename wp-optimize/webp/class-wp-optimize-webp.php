@@ -9,11 +9,11 @@ class WP_Optimize_WebP {
 	private $_htaccess = null;
 
 	/**
-	 * Set to true when webp is enabled and vice-versa
+	 * Set to true when webp is enabled and vice versa
 	 *
 	 * @var boolean
 	 */
-	private $_should_use_webp = false;
+	private $_should_use_webp;
 
 	/**
 	 * The logger for this instance
@@ -40,6 +40,8 @@ class WP_Optimize_WebP {
 
 		add_action('wpo_reset_webp_conversion_test_result', array($this, 'reset_webp_serving_method'));
 		add_action('wpo_prune_webp_logs', array($this, 'prune_webp_logs'));
+		$task_manager = WPO_Webp_Task_Manager::get_instance();
+		add_action('wpo_webp_convert_compressed_images', array($task_manager, 'webp_convert_compressed_images'));
 	}
 
 	/**
@@ -68,9 +70,10 @@ class WP_Optimize_WebP {
 	 * Logging of interesting messages related to Webp
 	 *
 	 * @param string $message
+	 * @param string $level
 	 */
-	public function log($message) {
-		$this->logger->info($message);
+	public function log(string $message, string $level = 'info') {
+		$this->logger->log($message, $level);
 	}
 
 	/**
@@ -127,7 +130,7 @@ class WP_Optimize_WebP {
 		if (!empty($redirection_possible)) return 'true' === $redirection_possible;
 		return $this->run_webp_serving_self_test();
 	}
-
+	
 	/**
 	 * Detect whether using alter HTML method is possible or not
 	 *
@@ -284,7 +287,7 @@ class WP_Optimize_WebP {
 	 */
 	public function should_run_webp_conversion_test() {
 		$webp_conversion_test = $this->get_webp_conversion_test_result();
-		return (true !== $webp_conversion_test);
+		return true !== $webp_conversion_test;
 	}
 
 	/**
@@ -409,6 +412,9 @@ class WP_Optimize_WebP {
 		if (!wp_next_scheduled('wpo_prune_webp_logs')) {
 			wp_schedule_event(time(), 'weekly', 'wpo_prune_webp_logs');
 		}
+		if (!wp_next_scheduled('wpo_webp_convert_compressed_images')) {
+			wp_schedule_event(strtotime('midnight'), 'daily', 'wpo_webp_convert_compressed_images');
+		}
 	}
 
 	/**
@@ -417,10 +423,11 @@ class WP_Optimize_WebP {
 	public function remove_webp_cron_schedules() {
 		wp_clear_scheduled_hook('wpo_reset_webp_conversion_test_result');
 		wp_clear_scheduled_hook('wpo_prune_webp_logs');
+		wp_clear_scheduled_hook('wpo_webp_convert_compressed_images');
 	}
 
 	/**
-	 * Return the true if webp conversion is enabled and vice-versa
+	 * Return the true if webp conversion is enabled and vice versa
 	 *
 	 * @return bool
 	 */
@@ -477,7 +484,7 @@ class WP_Optimize_WebP {
 	}
 
 	/**
-	 * Check if all of the functions from the list is available.
+	 * Check if all the functions from the list is available.
 	 *
 	 * @param array $functions
 	 * @return bool

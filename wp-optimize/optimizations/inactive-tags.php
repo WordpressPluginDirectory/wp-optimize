@@ -17,16 +17,21 @@ class WP_Optimization_tags extends WP_Optimization {
 
 	}
 
+	/**
+	 * Returns settings label
+	 *
+	 * @return string
+	 */
 	public function settings_label() {
 		return __('Remove unused tags', 'wp-optimize');
 	}
 
 	/**
 	 * Return description
-	 * N.B. This is not currently used; it was commented out in 1.9.1
 	 *
-	 * @return string|void
+	 * @return string
 	 */
 	public function get_auto_option_description() {
+		return __('Removes unused tags', 'wp-optimize');
 	}
 }

@@ -41,12 +41,12 @@ class WP_Optimize_Install_Or_Update_Notice {
 	 */
 	public function show_current_notice() {
 		// Check the option
-		$latest_saved_notice = $this->options->get_option('install-or-update-notice-version', false);
+		$latest_saved_notice = $this->options->get_option('install-or-update-notice-version');
 		if ($latest_saved_notice && version_compare($latest_saved_notice, $this->version, '>=')) {
 			return false;
 		}
 
-		$notice_show_time = $this->options->get_option('install-or-update-notice-show-time', false);
+		$notice_show_time = $this->options->get_option('install-or-update-notice-show-time');
 
 		// If notice has been showing for more than 14days, automatically dismiss it.
 		if ($notice_show_time && (time() - $notice_show_time) > (14 * 86400)) {
@@ -83,7 +83,7 @@ class WP_Optimize_Install_Or_Update_Notice {
 	 * @return boolean
 	 */
 	private function is_new_install() {
-		if ($this->options->get_option('newly-activated', false)) {
+		if ($this->options->get_option('newly-activated')) {
 			return true;
 		}
 

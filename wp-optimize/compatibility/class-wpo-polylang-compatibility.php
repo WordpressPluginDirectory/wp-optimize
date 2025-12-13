@@ -19,11 +19,6 @@ class WPO_Polylang_Compatibility {
 	 * Constructor.
 	 */
 	private function __construct() {
-		// Check if polylang is active
-		if (!class_exists('Polylang')) {
-			return;
-		}
-
 		// Add action hooks to delete cache for all languages
 		add_action('wpo_single_post_cache_deleted', array($this, 'polylang_delete_post_cache_for_all_languages'));
 		add_action('wpo_single_post_feed_cache_deleted', array($this, 'polylang_delete_post_feed_cache_for_all_languages'));
@@ -35,8 +30,8 @@ class WPO_Polylang_Compatibility {
 	 * @return WPO_Polylang_Compatibility
 	 */
 	public static function instance() {
-		if (null == self::$instance) {
-			self::$instance = new self;
+		if (null === self::$instance) {
+			self::$instance = new self();
 		}
 
 		return self::$instance;

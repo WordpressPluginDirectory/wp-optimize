@@ -3,7 +3,7 @@
 if (!defined('WPO_VERSION')) die('No direct access allowed');
 
 /**
- * This class invokes optimiazations. The optimizations themselves live in the 'optimizations' sub-directory of the plugin.  The proper way to obtain access to the instance is via WP_Optimize()->get_optimizer()
+ * This class invokes optimiazations. The optimizations themselves live in the 'optimizations' subdirectory of the plugin.  The proper way to obtain access to the instance is via WP_Optimize()->get_optimizer()
  */
 class WP_Optimizer {
 
@@ -19,7 +19,12 @@ class WP_Optimizer {
 		}
 		return $_instance;
 	}
-
+	
+	/**
+	 * Gets retention information
+	 *
+	 * @return array
+	 */
 	public function get_retain_info() {
 	
 		$options = WP_Optimize()->get_options();
@@ -44,6 +49,11 @@ class WP_Optimizer {
 		return array($revisions_retention_enabled, $revisions_retention_count);
 	}
 	
+	/**
+	 * Gets a list of optimizations
+	 *
+	 * @return array
+	 */
 	public function get_optimizations_list() {
 	
 		$optimizations = array();
@@ -52,14 +62,14 @@ class WP_Optimizer {
 		
 		if ($dh = opendir($optimizations_dir)) {
 			while (($file = readdir($dh)) !== false) {
-				if ('.' == $file || '..' == $file || '.php' != substr($file, -4, 4) || !is_file($optimizations_dir.'/'.$file) || 'inactive-' == substr($file, 0, 9)) continue;
+				if ('.' === $file || '..' === $file || '.php' !== substr($file, -4, 4) || !is_file($optimizations_dir.'/'.$file) || 'inactive-' === substr($file, 0, 9)) continue;
 				$optimizations[] = substr($file, 0, (strlen($file) - 4));
 			}
 			closedir($dh);
 		}
 		
-		return apply_filters('wp_optimize_get_optimizations_list', $optimizations);
-
+		$filtered_optimizations = apply_filters('wp_optimize_get_optimizations_list', $optimizations);
+		return is_array($filtered_optimizations) ? $filtered_optimizations : $optimizations;
 	}
 	
 	/**
@@ -71,7 +81,7 @@ class WP_Optimizer {
 	 * @return array
 	 */
 	public function sort_optimizations($optimizations, $sort_on = 'ui_sort_order') {
-		if ('run_sort_order' == $sort_on) {
+		if ('run_sort_order' === $sort_on) {
 			uasort($optimizations, array($this, 'sort_optimizations_run_traditional'));
 		} else {
 			uasort($optimizations, array($this, 'sort_optimizations_ui_traditional'));
@@ -79,26 +89,43 @@ class WP_Optimizer {
 		return $optimizations;
 	}
 	
+	/**
+	 * Sorts optimizations based on UI order
+	 *
+	 * @param WP_Optimization $a
+	 * @param WP_Optimization $b
+	 * @return int
+	 */
 	public function sort_optimizations_ui_traditional($a, $b) {
-		return $this->sort_optimizations_traditional($a, $b, 'ui_sort_order');
+		return $this->sort_optimizations_traditional($a, $b);
 	}
 	
+	/**
+	 * Sorts optimizations based on Run order
+	 *
+	 * @param WP_Optimization $a
+	 * @param WP_Optimization $b
+	 * @return int
+	 */
 	public function sort_optimizations_run_traditional($a, $b) {
 		return $this->sort_optimizations_traditional($a, $b, 'run_sort_order');
 	}
 	
+	/**
+	 * Sorting list of optimization based on given order
+	 *
+	 * @param WP_Optimization $a
+	 * @param WP_Optimization $b
+	 * @param string          $sort_on
+	 * @return int
+	 */
 	public function sort_optimizations_traditional($a, $b, $sort_on = 'ui_sort_order') {
-	
-		if (!is_a($a, 'WP_Optimization')) return (!is_a($b, 'WP_Optimization')) ? 0 : 1;
-		if (!is_a($b, 'WP_Optimization')) return -1;
-	
 		$sort_order_a = empty($a->$sort_on) ? 0 : $a->$sort_on;
 		$sort_order_b = empty($b->$sort_on) ? 0 : $b->$sort_on;
 	
-		if ($sort_order_a == $sort_order_b) return 0;
+		if ($sort_order_a === $sort_order_b) return 0;
 		
-		return ($sort_order_a < $sort_order_b) ? (-1) : 1;
-	
+		return ($sort_order_a < $sort_order_b) ? -1 : 1;
 	}
 	
 	/**
@@ -106,7 +133,7 @@ class WP_Optimizer {
 	 * Each array key is an optimization ID, and the value is an object,
 	 * as returned by get_optimization()
 	 *
-	 * @return [array] array of optimizations or WP_Error objects
+	 * @return array array of optimizations
 	 */
 	public function get_optimizations() {
 	
@@ -123,16 +150,17 @@ class WP_Optimizer {
 			}
 		}
 	
-		return apply_filters('wp_optimize_get_optimizations', $optimization_objects);
+		$filtered_optimizations = apply_filters('wp_optimize_get_optimizations', $optimization_objects);
+		return is_array($filtered_optimizations) ? $filtered_optimizations : $optimization_objects;
 	
 	}
 	
 	/**
 	 * This method returns an object for a specific optimization.
 	 *
-	 * @param  string $which_optimization An optimization ID.
-	 * @param  array  $data               An array of anny options $data.
-	 * @return array                      WP_Error Will return the optimization, or a WP_Error object if it was not found.
+	 * @param  string|object $which_optimization An optimization ID.
+	 * @param  array         $data               An array of anny options $data.
+	 * @return array|WP_Error                    WP_Error Will return the optimization, or a WP_Error object if it was not found.
 	 */
 	public function get_optimization($which_optimization, $data = array()) {
 
@@ -170,7 +198,7 @@ class WP_Optimizer {
 	 * The method to call to perform an optimization.
 	 *
 	 * @param  string|object $which_optimization An optimization ID, or a WP_Optimization object.
-	 * @return array                             Array of results from the optimization.
+	 * @return object                            Array of results from the optimization.
 	 */
 	public function do_optimization($which_optimization) {
 		
@@ -262,9 +290,9 @@ class WP_Optimizer {
 			
 			if (isset($optimization_options[$option_id])) {
 				// if options saved as a string then compare with string (for support different versions)
-				if (is_string($optimization_options[$option_id]) && 'false' === $optimization_options[$option_id]) continue;
+				if ('false' === $optimization_options[$option_id]) continue;
 
-				if ('auto' == $which_option && empty($optimization->available_for_auto)) continue;
+				if ('auto' === $which_option && empty($optimization->available_for_auto)) continue;
 
 				WP_Optimize()->change_time_limit();
 
@@ -282,7 +310,7 @@ class WP_Optimizer {
 	public function get_table_prefix($allow_override = false) {
 		$wpdb = $GLOBALS['wpdb'];
 		if (is_multisite() && !defined('MULTISITE')) {
-			// In this case (which should only be possible on installs upgraded from pre WP 3.0 WPMU), $wpdb->get_blog_prefix() cannot be made to return the right thing. $wpdb->base_prefix is not explicitly marked as public, so we prefer to use get_blog_prefix if we can, for future compatibility.
+			// In this case (which should only be possible on installations upgraded from pre WP 3.0 WPMU), $wpdb->get_blog_prefix() cannot be made to return the right thing. $wpdb->base_prefix is not explicitly marked as public, so we prefer to use get_blog_prefix if we can, for future compatibility.
 			$prefix = $wpdb->base_prefix;
 		} else {
 			$prefix = $wpdb->get_blog_prefix(0);
@@ -312,6 +340,7 @@ class WP_Optimizer {
 		if (is_array($table_status)) {
 
 			$corrupted_tables_count = 0;
+			$array_index_was_unset = false;
 
 			foreach ($table_status as $index => $table) {
 				$table_name = $table->Name;
@@ -322,6 +351,7 @@ class WP_Optimizer {
 
 				if (!$include_table && '' !== $table_prefix) {
 					unset($table_status[$index]);
+					$array_index_was_unset = true;
 					continue;
 				}
 
@@ -338,6 +368,10 @@ class WP_Optimizer {
 
 				$table_status[$index]->blog_id = $wpo_db_info->get_table_blog_id($table_name);
 			}
+			if ($array_index_was_unset) {
+				// Reset array keys after removing elements
+				$table_status = array_values($table_status);
+			}
 
 			WP_Optimize()->get_options()->update_option('corrupted-tables-count', $corrupted_tables_count);
 		}
@@ -349,8 +383,8 @@ class WP_Optimizer {
 	/**
 	 * Returns information about single table by table name.
 	 *
-	 * @param String $table_name table name
-	 * @return Object|Boolean table information object.
+	 * @param string $table_name table name
+	 * @return object|boolean table information object.
 	 */
 	public function get_table($table_name) {
 	
@@ -374,10 +408,10 @@ class WP_Optimizer {
 	/**
 	 * Add information about relationship database tables with plugins.
 	 *
-	 * @param {string} $table_name
-	 * @param {object} $table_obj
+	 * @param string $table_name
+	 * @param object $table_obj
 	 *
-	 * @return {object}
+	 * @return object
 	 */
 	public function join_plugin_information($table_name, $table_obj) {
 		// set can be removed flag.
@@ -391,15 +425,16 @@ class WP_Optimizer {
 		// if table belongs to any plugin then add plugins status.
 		$plugins = WP_Optimize()->get_db_info()->get_table_plugin($table_name);
 
+		$plugin_status = array();
+
 		if (false !== $plugins) {
 			// if belongs to any of plugin then we can remove table if plugin not active.
 			$can_be_removed = true;
 
-			$plugin_status = array();
 			foreach ($plugins as $plugin) {
 				$status = WP_Optimize()->get_db_info()->get_plugin_status($plugin);
 
-				if (__('WordPress core', 'wp-optimize') == $plugin) $wp_core_table = true;
+				if (__('WordPress core', 'wp-optimize') === $plugin) $wp_core_table = true;
 				// if plugin is active then we can't remove.
 				if ($wp_core_table || $status['active'] || $wp_actionscheduler_table) $can_be_removed = false;
 
@@ -410,10 +445,9 @@ class WP_Optimizer {
 					);
 				}
 			}
-
-			$table_obj->plugin_status = $plugin_status;
 		}
 
+		$table_obj->plugin_status = $plugin_status;
 		$table_obj->wp_core_table = $wp_core_table;
 		$table_obj->can_be_removed = $can_be_removed;
 
@@ -427,7 +461,7 @@ class WP_Optimizer {
 	 *
 	 * @param int $blog_id filter tables by prefix
 	 *
-	 * @return Array - an array of data such as table list, innodb info and data free
+	 * @return array - an array of data such as table list, innodb info and data free
 	 */
 	public function get_table_information($blog_id = 0) {
 		// Get table information.
@@ -444,7 +478,7 @@ class WP_Optimizer {
 		// Make a list of tables to optimize.
 		foreach ($tablesstatus as $each_table) {
 			// if $blog_id is set then filter tables
-			if ($blog_id > 0 && $blog_id != $each_table->blog_id) continue;
+			if ($blog_id > 0 && $blog_id !== $each_table->blog_id) continue;
 
 			$table_information['table_list'] .= $each_table->Name.'|';
 
@@ -460,7 +494,7 @@ class WP_Optimizer {
 			$table_information['total_gain'] += $each_table->Data_free;
 
 			// count InnoDB tables.
-			if ('InnoDB' == $each_table->Engine) {
+			if ('InnoDB' === $each_table->Engine) {
 				$table_information['inno_db_tables']++;
 			} else {
 				$table_information['non_inno_db_tables']++;
@@ -517,7 +551,7 @@ class WP_Optimizer {
 	 * This function will return total database size and a possible gain of db in KB.
 	 *
 	 * @param boolean $update - Whether to update the values or not
-	 * @return string total db size gained.
+	 * @return array total db size gained.
 	 */
 	public function get_current_db_size($update = false) {
 		
@@ -542,7 +576,7 @@ class WP_Optimizer {
 			$data_usage += $tablestatus->Data_length;
 			$index_usage += $tablestatus->Index_length;
 
-			if ('InnoDB' != $tablestatus->Engine) {
+			if ('InnoDB' !== $tablestatus->Engine) {
 				$overhead_usage += $tablestatus->Data_free;// phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable -- $overhead_usage declared up above
 				$total_gain += $tablestatus->Data_free;
 			}
@@ -575,6 +609,12 @@ class WP_Optimizer {
 	}
 	
 	
+	/**
+	 * Trackback, Comments actions
+	 *
+	 * @param array $options
+	 * @return array
+	 */
 	public function trackback_comment_actions($options) {
 	
 		$output = array();

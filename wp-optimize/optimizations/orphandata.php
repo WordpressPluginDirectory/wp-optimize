@@ -65,6 +65,11 @@ class WP_Optimization_orphandata extends WP_Optimization {
 		$this->found_count += $orphandata;
 	}
 	
+	/**
+	 * Returns settings label
+	 *
+	 * @return string
+	 */
 	public function settings_label() {
 		return __('Clean orphaned relationship data', 'wp-optimize');
 	}

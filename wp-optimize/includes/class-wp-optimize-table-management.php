@@ -78,11 +78,11 @@ class WP_Optimize_Table_Management {
 	private function table_exists($table_name) {
 		global $wpdb;
 
-		return $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $table_name)) == $table_name;
+		return $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $table_name)) === $table_name;
 	}
 
 	/**
-	 * Compile the SQL that is going to be sent to WP's dbDelta()
+	 * Compile the SQL that is going to be sent to WordPress's dbDelta()
 	 *
 	 * @param string $table_name        The name of the table to be created
 	 * @param array  $table_description Definition of the table to be created
@@ -128,7 +128,7 @@ class WP_Optimize_Table_Management {
 	}
 
 	/**
-	 * Compile the SQL for the fields piece of the create statement
+	 * Compile the SQL for the fields piece of the `create` statement
 	 *
 	 * @param array $table_description Definition of the table, including keys
 	 * @return array

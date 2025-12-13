@@ -19,11 +19,13 @@ class WPO_Page_Builder_Compatibility {
 
 	/**
 	 * Returns singleton instance.
+	 *
+	 * @return self
 	 */
 	public static function instance() {
 		static $instance = null;
-		if (null == $instance) {
-			$instance = new static;
+		if (null === $instance) {
+			$instance = new self();
 		}
 
 		return $instance;
@@ -36,14 +38,14 @@ class WPO_Page_Builder_Compatibility {
 	 * @param string $file_path         The absolute path to the file.
 	 * @return string
 	 */
-	public function use_file_hash_for_divi_assets(string $modification_time, string $file_path): string {
+	public function use_file_hash_for_divi_assets($modification_time, $file_path) {
 		if (false !== strpos($file_path, 'et-cache')) {
 			$hash = hash_file('adler32', $file_path);
 			if ($hash) {
 				return $hash . '-h';
 			}
 		}
-		
+
 		return $modification_time;
 	}
 
@@ -52,8 +54,8 @@ class WPO_Page_Builder_Compatibility {
 	 *
 	 * @return bool
 	 */
-	private function is_edit_mode() {
-		return isset($_GET['fl_builder']) || isset($_GET['et_fb']); // phpcs:ignore WordPress.Security.NonceVerification -- We are not using $_GET value, just checking its existence
+	public function is_edit_mode() {
+		return isset($_GET['fl_builder']) || isset($_GET['et_fb']) || isset($_GET['ct_builder']); // phpcs:ignore WordPress.Security.NonceVerification -- We are not using $_GET value, just checking its existence
 	}
 
 	/**

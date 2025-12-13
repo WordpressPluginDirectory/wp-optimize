@@ -116,12 +116,12 @@ class WP_Optimize_Minify_Front_End {
 	 */
 	public function run_on_page($context = 'default') {
 		/**
-		 * Filters whether the functionality is ran on the current page.
+		 * Filters whether the functionality is run on the current page.
 		 *
 		 * @param boolean $run_on_page
 		 * @param string  $context - Optional, The feature where the check is done
 		 */
-		return apply_filters(
+		$filtered_value = apply_filters(
 			'wpo_minify_run_on_page',
 			!is_admin()
 			&& (!defined('SCRIPT_DEBUG') || !SCRIPT_DEBUG)
@@ -132,17 +132,18 @@ class WP_Optimize_Minify_Front_End {
 			&& !WP_Optimize_Minify_Functions::exclude_contents(),
 			$context
 		);
+		return is_bool($filtered_value) ? $filtered_value : false;
 	}
 
 	/**
 	 * Inline css in place, instead of inlining the large file
 	 *
-	 * @param String $html
-	 * @param String $handle
-	 * @param String $href
-	 * @param String $media
+	 * @param string $html
+	 * @param string $handle
+	 * @param string $href
+	 * @param mixed $media
 	 *
-	 * @return String
+	 * @return string|boolean
 	 */
 	public function inline_css($html, $handle, $href, $media) {
 		$exclude_css = $this->get_excluded_css_list();
@@ -167,15 +168,14 @@ class WP_Optimize_Minify_Front_End {
 		if (wp_styles()->get_data($handle, 'conditional')) return $html;
 		
 		// mediatype fix for some plugins + remove print mediatypes
-		if ('screen' == $media
-			|| 'screen, print' == $media
-			|| empty($media)
-			|| is_null($media)
-			|| false == $media
+		if (!is_string($media)
+			|| '' === $media
+			|| 'screen' === $media
+			|| 'screen, print' === $media
 		) {
 			$media = 'all';
 		}
-		if (!empty($this->options['remove_print_mediatypes']) && 'print' == $media) {
+		if (!empty($this->options['remove_print_mediatypes']) && 'print' === $media) {
 			return false;
 		}
 
@@ -198,25 +198,25 @@ class WP_Optimize_Minify_Front_End {
 			return $html;
 		}
 
-		// check if working with a font awesom link
+		// check if working with a font awesome link
 		if (WP_Optimize_Minify_Functions::is_font_awesome($href)) {
 			// font awesome processing, async css
-			if ('async' == $this->options['fawesome_method']) {
+			if ('async' === $this->options['fawesome_method']) {
 				WP_Optimize_Minify_Print::async_style($href, $media);
 				return false;
 			} elseif ('exclude' === $this->options['fawesome_method']) {
 				// font awesome processing, async and exclude from PageSpeedIndex
 				WP_Optimize_Minify_Print::exclude_style($href);
 				return false;
-			} elseif ('inline' == $this->options['fawesome_method']) {
+			} elseif ('inline' === $this->options['fawesome_method']) {
 				WP_Optimize_Minify_Print::inline_style($handle, $href);
 				return false;
 			}
 		}
 
-		// Check if working with google font url
+		// Check if working with Google font url
 
-		if ('fonts.googleapis.com' == wp_parse_url($href, PHP_URL_HOST)) {
+		if ('fonts.googleapis.com' === wp_parse_url($href, PHP_URL_HOST)) {
 			// if option disabled google fonts processing
 			if ($this->options['disable_google_fonts_processing']) return $html;
 			// check if google fonts should be removed
@@ -251,7 +251,7 @@ class WP_Optimize_Minify_Front_End {
 					$res = json_decode($json, true);
 
 					// inline css or fail
-					if (null !== $res && false != $res['status']) {
+					if (null !== $res && false !== $res['status']) {
 						// add font-display
 						// https://developers.google.com/web/updates/2016/02/font-display
 						$res['code'] = str_ireplace('font-style:normal;', 'font-display:block;font-style:normal;', $res['code']);
@@ -305,7 +305,7 @@ class WP_Optimize_Minify_Front_End {
 		$res = json_decode($json, true);
 		
 		// inline it + other inlined children styles
-		if (null !== $res && false != $res['status']) {
+		if (null !== $res && $res['status']) {
 			echo '<style class="optimize_css_2" type="text/css" media="'.esc_attr($media).'">';
 			echo $res['code'];  // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- This is already escaped
 			echo '</style>' . "\n";
@@ -313,12 +313,12 @@ class WP_Optimize_Minify_Front_End {
 			// get inline_styles for this handle, minify and print
 			$inline_styles = array();
 			$inline_styles = wp_styles()->get_data($handle, 'after');
-			if (false != $inline_styles) {
+			if ($inline_styles) {
 
 				// string type
 				if (is_string($inline_styles)) {
 					$code = WP_Optimize_Minify_Functions::get_css($href, $inline_styles, $this->options['enable_css_minification']);
-					if (!empty($code) && false != $code) {
+					if (!empty($code)) {
 						echo '<style class="optimize_css_3" type="text/css" media="'.esc_attr($media).'">';
 						echo $code; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- This is already escaped
 						echo '</style>' . "\n";
@@ -329,7 +329,7 @@ class WP_Optimize_Minify_Front_End {
 				if (is_array($inline_styles)) {
 					foreach ($inline_styles as $st) {
 						$code = WP_Optimize_Minify_Functions::get_css($href, $st, $this->options['enable_css_minification']);
-						if (!empty($code) && false != $code) {
+						if (!empty($code)) {
 							echo '<style class="optimize_css_4" type="text/css" media="'.esc_attr($media).'">';
 							echo $code; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- This is already escaped
 							echo '</style>' . "\n";
@@ -353,11 +353,11 @@ class WP_Optimize_Minify_Front_End {
 	/**
 	 * Enable defer for JavaScript (WP 4.1 and above) and remove query strings for ignored files
 	 *
-	 * @param String $tag
-	 * @param String $handle
-	 * @param String $src
+	 * @param string $tag
+	 * @param string $handle
+	 * @param string $src
 	 *
-	 * @return String
+	 * @return string
 	 */
 	public function defer_js($tag, $handle, $src) {
 		$wp_domain = trim(str_ireplace(array('http://', 'https://'), '', trim(site_url(), '/')));
@@ -533,7 +533,7 @@ class WP_Optimize_Minify_Front_End {
 			
 			// mediatype
 			$mt = isset($wp_styles->registered[$handle]->args) ? $wp_styles->registered[$handle]->args : 'all';
-			if ('screen' == $mt || 'screen, print' == $mt || empty($mt) || is_null($mt) || false == $mt) {
+			if ('screen' === $mt || 'screen, print' === $mt || empty($mt) || is_null($mt) || false === $mt) {
 				$mt = 'all';
 			}
 			$mediatype = $mt;
@@ -616,7 +616,7 @@ class WP_Optimize_Minify_Front_End {
 			$nfonts = array();
 			if ($this->options['merge_google_fonts']) {
 				$nfonts[] = WP_Optimize_Minify_Fonts::concatenate_google_fonts($google_fonts);
-				// mark the google fonts as done so they don't get processed
+				// mark the Google fonts as done so they don't get processed
 				if ('inherit' !== $this->options['gfonts_method']) {
 					$done = array_merge($done, array_keys($google_fonts));
 				}
@@ -659,7 +659,7 @@ class WP_Optimize_Minify_Front_End {
 					} else {
 						echo "<!-- GOOGLE FONTS REQUEST FAILED for " . esc_html($href) . " -->"  . "\n";
 						// inlining failed, so enqueue again
-						wp_enqueue_style($handle, $href, array(), null);
+						wp_enqueue_style($handle, $href, array(), null); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- Not needed as this is a google font and from cache
 					}
 				} elseif ('async' === $this->options['gfonts_method']) {
 					WP_Optimize_Minify_Print::async_style($href);
@@ -710,8 +710,8 @@ class WP_Optimize_Minify_Front_End {
 			// skip ignore list, conditional css, external css, font-awesome merge and already minified js
 			if (($process_css && !$normal_processing && !WP_Optimize_Minify_Functions::in_arrayi($href, $ignore_list) && !isset($conditional) && WP_Optimize_Minify_Functions::internal_url($href, site_url()))
 				|| empty($href)
-				|| ($process_css && 'inherit' == $this->options['fawesome_method'] && WP_Optimize_Minify_Functions::is_font_awesome($href))
-				|| ($process_css && !$disable_google_fonts_processing && 'inherit' == $this->options['gfonts_method'] && WP_Optimize_Minify_Functions::is_google_font($href))
+				|| ($process_css && 'inherit' === $this->options['fawesome_method'] && WP_Optimize_Minify_Functions::is_font_awesome($href))
+				|| ($process_css && !$disable_google_fonts_processing && 'inherit' === $this->options['gfonts_method'] && WP_Optimize_Minify_Functions::is_google_font($href))
 			) {
 				// collect inline css for this handle
 				if (isset($wp_styles->registered[$handle]->extra['after']) && is_array($wp_styles->registered[$handle]->extra['after'])) {
@@ -720,7 +720,7 @@ class WP_Optimize_Minify_Front_End {
 				}
 			
 				// process
-				if (isset($header[count($header)-1]['handle']) || count($header) == 0 || $header[count($header)-1]['media'] != $mediatype || !$merge_css) {
+				if (isset($header[count($header)-1]['handle']) || count($header) === 0 || $header[count($header)-1]['media'] !== $mediatype || !$merge_css) {
 					array_push($header, array('handles' => array(), 'media' => $mediatype, 'versions' => array()));
 				}
 			
@@ -835,7 +835,7 @@ class WP_Optimize_Minify_Front_End {
 							}
 
 							// response has failed
-							if (true != $res['status']) {
+							if (true !== $res['status']) {
 								$log['files'][$handle] = $res['log'];
 								$log['files'][$handle]['version'] = $version;
 								$log['files'][$handle]['last_modified'] = $last_modified;
@@ -845,7 +845,7 @@ class WP_Optimize_Minify_Front_End {
 							// Only add the $handle to $done if it was successfully downloaded
 							$done[] = $handle;
 							// append code to merged file
-							$code .= isset($res['code']) ? $res['code'] : '';
+							$code .= $res['code'] ?? '';
 							$log['files'][$handle] = $res['log'];
 							$log['files'][$handle]['version'] = $version;
 							$log['files'][$handle]['last_modified'] = $last_modified;
@@ -969,7 +969,7 @@ class WP_Optimize_Minify_Front_End {
 			}
 			
 			// Exclude JS files from PageSpeedIndex (Async) takes priority over the ignore list
-			if (false != $async_js || is_array($async_js)) {
+			if (!empty($async_js)) {
 				
 				// check for string match
 				$skipjs = false;
@@ -982,7 +982,7 @@ class WP_Optimize_Minify_Front_End {
 						break;
 					}
 				}
-				if (false != $skipjs) {
+				if (false !== $skipjs) {
 					continue;
 				}
 			}
@@ -1006,8 +1006,8 @@ class WP_Optimize_Minify_Front_End {
 				if (isset($footer[count($footer)-1]['handle'])
 					|| !count($footer)
 					|| !$merge_js
-					|| (isset($scripts->registered[$handle]->extra['strategy']) && $previous_load_strategy != $scripts->registered[$handle]->extra['strategy'])
-					|| (!isset($scripts->registered[$handle]->extra['strategy']) && null != $previous_load_strategy)
+					|| (isset($scripts->registered[$handle]->extra['strategy']) && $previous_load_strategy !== $scripts->registered[$handle]->extra['strategy'])
+					|| (!isset($scripts->registered[$handle]->extra['strategy']) && null !== $previous_load_strategy)
 				) {
 					array_push($footer, array('handles' => array(), 'versions' => array()));
 				}
@@ -1027,12 +1027,8 @@ class WP_Optimize_Minify_Front_End {
 
 				$footer[count($footer) - 1]['last_modified'][] = WP_Optimize_Minify_Functions::get_modification_time($wp_scripts->registered[$handle]->src);
 				// external and ignored scripts
-
-				if (isset($scripts->registered[$handle]->extra['strategy'])) {
-					$previous_load_strategy = $scripts->registered[$handle]->extra['strategy'];
-				} else {
-					$previous_load_strategy = null;
-				}
+				
+				$previous_load_strategy = $scripts->registered[$handle]->extra['strategy'] ?? null;
 					
 			} else {
 				array_push($footer, array('handle' => $handle));
@@ -1118,7 +1114,7 @@ class WP_Optimize_Minify_Front_End {
 							}
 							
 							// response has failed
-							if (true != $res['status']) {
+							if (true !== $res['status']) {
 								$log['files'][$handle] = $res['log'];
 								$log['files'][$handle]['uses_loading_strategy'] = isset($footer[$i]['strategy']);
 								$log['files'][$handle]['version'] = $version;
@@ -1152,7 +1148,7 @@ class WP_Optimize_Minify_Front_End {
 							
 							// append code to merged file
 							$code .= $before_code . "\n";
-							$code .= isset($res['code']) ? $res['code'] : '';
+							$code .= $res['code'] ?? '';
 							$code .= "\n" . $after_code . "\n";
 							$code = WP_Optimize_Minify_Functions::prepare_merged_js($code, $href);
 							$log['files'][$handle] = $res['log'];
@@ -1197,7 +1193,7 @@ class WP_Optimize_Minify_Front_End {
 				}
 				
 				// register minified file
-				wp_register_script("wpo_min-footer-$i", $file_url, array(), null, false);
+				wp_register_script("wpo_min-footer-$i", $file_url, array(), null, false); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- Not needed as this is a timestamp based cache
 				
 				// add all extra data from wp_localize_script
 				$before_code = '';
@@ -1259,7 +1255,7 @@ class WP_Optimize_Minify_Front_End {
 
 	/**
 	 * Process header JavaScript
-	 * Dependant on 'enable_js' option
+	 * Dependent on 'enable_js' option
 	 *
 	 * @return void
 	 */
@@ -1292,7 +1288,7 @@ class WP_Optimize_Minify_Front_End {
 			$href = WP_Optimize_Minify_Functions::get_hurl($wp_scripts->registered[$handle]->src);
 			// inlined scripts without file
 			if (empty($href)) {
-				wp_enqueue_script($handle, false);
+				wp_enqueue_script($handle, false); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- Not needed
 				continue;
 			}
 
@@ -1338,8 +1334,8 @@ class WP_Optimize_Minify_Front_End {
 					if (isset($header[count($header)-1]['handle'])
 						|| !count($header)
 						|| !$merge_js
-						|| (isset($scripts->registered[$handle]->extra['strategy']) && $previous_load_strategy != $scripts->registered[$handle]->extra['strategy'])
-						|| (!isset($scripts->registered[$handle]->extra['strategy']) && null != $previous_load_strategy)
+						|| (isset($scripts->registered[$handle]->extra['strategy']) && $previous_load_strategy !== $scripts->registered[$handle]->extra['strategy'])
+						|| (!isset($scripts->registered[$handle]->extra['strategy']) && null !== $previous_load_strategy)
 					) {
 						array_push($header, array('handles' => array(), 'versions' => array()));
 					}
@@ -1379,12 +1375,8 @@ class WP_Optimize_Minify_Front_End {
 
 					// Register strategy if it is used
 					if (isset($scripts->registered[$handle]->extra['strategy'])) $header[count($header)-1]['strategy'] = $scripts->registered[$handle]->extra['strategy'];
-
-					if (isset($scripts->registered[$handle]->extra['strategy'])) {
-						$previous_load_strategy = $scripts->registered[$handle]->extra['strategy'];
-					} else {
-						$previous_load_strategy = null;
-					}
+					
+					$previous_load_strategy = $scripts->registered[$handle]->extra['strategy'] ?? null;
 					
 
 					// external and ignored scripts
@@ -1395,7 +1387,7 @@ class WP_Optimize_Minify_Front_End {
 
 				// make sure that the scripts skipped here, show up in the footer
 			} else {
-				wp_enqueue_script($handle, $href, array(), null, true);
+				wp_enqueue_script($handle, $href, array(), null, true);  // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- Not needed as this is a timestamp based cache
 			}
 		}
 
@@ -1473,7 +1465,7 @@ class WP_Optimize_Minify_Front_End {
 							}
 
 							// response has failed
-							if (true != $res['status']) {
+							if (true !== $res['status']) {
 								$log['files'][$handle] = $res['log'];
 								$log['files'][$handle]['uses_loading_strategy'] = isset($header[$i]['strategy']);
 								$log['files'][$handle]['version'] = $version;
@@ -1556,7 +1548,7 @@ class WP_Optimize_Minify_Front_End {
 
 				// register minified file
 				$dependencies = isset($excluded_dependencies[$i]) ? $excluded_dependencies[$i] : array();
-				wp_register_script("wpo_min-header-$i", $file_url, $dependencies, null, false);
+				wp_register_script("wpo_min-header-$i", $file_url, $dependencies, null, false);  // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- Not needed as this is a timestamp based cache
 
 				// add all extra data from wp_localize_script
 				$before_code = '';
@@ -1657,7 +1649,7 @@ class WP_Optimize_Minify_Front_End {
 			return;
 		}
 
-		// dequeue and get a list of google fonts, or requeue external
+		// dequeue and get a list of Google fonts, or requeue external
 		foreach ($styles->to_do as $handle) {
 			$href = WP_Optimize_Minify_Functions::get_hurl($wp_styles->registered[$handle]->src);
 			// inlined scripts without file
@@ -1726,7 +1718,7 @@ class WP_Optimize_Minify_Front_End {
 						$done = array_merge($done, array($handle));
 					} else {
 						// fallback, enqueue google fonts
-						wp_enqueue_style($handle, $href, array(), null, 'all');
+						wp_enqueue_style($handle, $href, array(), null, 'all');  // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- Not needed as this google font and from cache
 					}
 				}
 			}
@@ -1747,9 +1739,9 @@ class WP_Optimize_Minify_Front_End {
 				$conditional = $wp_styles->registered[$handle]->extra["conditional"]; // such as ie7, ie8, ie9, etc
 			}
 			
-			// mediatype
+			// media type
 			$mt = isset($wp_styles->registered[$handle]->args) ? $wp_styles->registered[$handle]->args : 'all';
-			if ('screen' == $mt || 'screen, print' == $mt || empty($mt) || is_null($mt) || false == $mt) {
+			if ('screen' === $mt || 'screen, print' === $mt || empty($mt)) {
 				$mt = 'all';
 			}
 			$mediatype = $mt;
@@ -1782,7 +1774,7 @@ class WP_Optimize_Minify_Front_End {
 			}
 
 			// Exclude specific CSS files from PageSpeedIndex?
-			if (false != $async_css && is_array($async_css) && WP_Optimize_Minify_Functions::in_arrayi($href, $async_css)) {
+			if (is_array($async_css) && WP_Optimize_Minify_Functions::in_arrayi($href, $async_css)) {
 				WP_Optimize_Minify_Print::exclude_style($href);
 				$done = array_merge($done, array($handle));
 				continue;
@@ -1825,7 +1817,7 @@ class WP_Optimize_Minify_Front_End {
 				}
 
 				// process
-				if (isset($footer[count($footer)-1]['handle']) || !count($footer) || $footer[count($footer)-1]['media'] != $wp_styles->registered[$handle]->args || !$merge_css) {
+				if (isset($footer[count($footer)-1]['handle']) || !count($footer) || $footer[count($footer)-1]['media'] !== $wp_styles->registered[$handle]->args || !$merge_css) {
 					array_push($footer, array('handles' => array(), 'media' => $mediatype, 'versions' => array()));
 				}
 			
@@ -1905,7 +1897,7 @@ class WP_Optimize_Minify_Front_End {
 							$href = WP_Optimize_Minify_Functions::get_hurl($handle_src);
 							$version = $wp_styles->registered[$handle]->ver;
 							$last_modified = WP_Optimize_Minify_Functions::get_modification_time($handle_src);
-							// inlined scripts without hreffile
+							// inlined scripts without href file
 							if (empty($href)) continue;
 
 							// download, minify, cache
@@ -1934,7 +1926,7 @@ class WP_Optimize_Minify_Front_End {
 							}
 							
 							// response has failed
-							if (true != $res['status']) {
+							if (true !== $res['status']) {
 								$log['files'][$handle] = $res['log'];
 								$log['files'][$handle]['version'] = $version;
 								$log['files'][$handle]['last_modified'] = $last_modified;
@@ -1944,7 +1936,7 @@ class WP_Optimize_Minify_Front_End {
 							$done[] = $handle;
 
 							// append code to merged file
-							$code .= isset($res['code']) ? $res['code'] : '';
+							$code .= $res['code'] ?? '';
 							$log['files'][$handle] = $res['log'];
 							$log['files'][$handle]['version'] = $version;
 							$log['files'][$handle]['last_modified'] = $last_modified;
@@ -1959,7 +1951,7 @@ class WP_Optimize_Minify_Front_End {
 							wp_dequeue_script($handle);
 							wp_enqueue_script($handle);
 						}
-					};
+					}
 
 					// generate cache, add inline css, write log
 					if (!empty($code)) {
@@ -2003,7 +1995,7 @@ class WP_Optimize_Minify_Front_End {
 							$this->inline_css(file_get_contents($file), $handle, $file_url, $footer[$i]['media']);
 						} else {
 							// enqueue it
-							wp_enqueue_style("wpo_min-footer-$i", $file_url, array(), null, $footer[$i]['media']);
+							wp_enqueue_style("wpo_min-footer-$i", $file_url, array(), null, $footer[$i]['media']); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- Not needed as this is a timestamp based cache
 						}
 					} else {
 						// file could not be generated, output something meaningful
@@ -2026,9 +2018,9 @@ class WP_Optimize_Minify_Front_End {
 	/**
 	 * Process JS Scripts of type module
 	 *
-	 * @param String $buffer Page HTML.
+	 * @param string $buffer Page HTML.
 	 *
-	 * @return String
+	 * @return string
 	 */
 	public function process_script_modules($buffer) {
 
@@ -2105,7 +2097,7 @@ class WP_Optimize_Minify_Front_End {
 
 			if (!$res['status']) continue;
 
-			$code .= isset($res['code']) ? $res['code'] : '';
+			$code .= $res['code'] ?? '';
 			$code = WP_Optimize_Minify_Functions::prepare_merged_js($code, $href);
 			$log['files'][$handle] = $res['log'];
 			$log['files'][$handle]['version'] = $version;
@@ -2181,7 +2173,7 @@ class WP_Optimize_Minify_Front_End {
 	 */
 	public function add_google_fonts_merged() {
 		// must have something to do
-		if (count($this->collect_google_fonts) == 0) return;
+		if (count($this->collect_google_fonts) === 0) return;
 
 		// merge google fonts
 		$href = WP_Optimize_Minify_Fonts::concatenate_google_fonts($this->collect_google_fonts);
@@ -2249,7 +2241,7 @@ class WP_Optimize_Minify_Front_End {
 			&& count($this->collect_preload_css) > 0
 		) {
 			foreach ($this->collect_preload_css as $u) {
-				// filter out footer footer files, because they are not in the critical path
+				// filter out footer files, because they are not in the critical path
 				if (strpos($u, '/assets/wpo-minify-footer-') !== false) {
 					continue;
 				}
@@ -2265,7 +2257,7 @@ class WP_Optimize_Minify_Front_End {
 		) {
 			foreach ($this->collect_preload_js as $u) {
 
-				// filter out footer footer files, because they are not in the critical path
+				// filter out footer files, because they are not in the critical path
 				if (false !== strpos($u, '/assets/wpo-minify-footer-')) {
 					continue;
 				}
@@ -2276,7 +2268,7 @@ class WP_Optimize_Minify_Front_End {
 		}
 		
 		// must have something
-		if (count($headers) == 0) {
+		if (count($headers) === 0) {
 			return false;
 		} else {
 			$headers = implode("\n", $headers);
@@ -2294,7 +2286,7 @@ class WP_Optimize_Minify_Front_End {
 		clearstatcache();
 		
 		// if there are no query strings
-		if ($b == $a) {
+		if ($b === $a) {
 			if (!file_exists($a)) {
 				WP_Optimize_Minify_Print::write_header($a, $headers);
 			}
@@ -2309,11 +2301,11 @@ class WP_Optimize_Minify_Front_End {
 	/**
 	 * Collect all wpo_min JS files and save them to a headers file
 	 *
-	 * @param String $html
-	 * @param String $handle
-	 * @param String $src
+	 * @param string $html
+	 * @param string $handle
+	 * @param string $src
 	 *
-	 * @return String
+	 * @return string
 	 */
 	public function collect_js_preload_headers($html, $handle, $src) {
 		if (false !== strpos($src, 'assets/wpo-minify')) {
@@ -2386,10 +2378,10 @@ class WP_Optimize_Minify_Front_End {
 		clearstatcache();
 		
 		// return header files or fallback
-		if ($b == $a && file_exists($a)) {
+		if ($b === $a && file_exists($a)) {
 			return file_get_contents($a);
 		}
-		if ($b != $a && file_exists($b)) {
+		if ($b !== $a && file_exists($b)) {
 			return file_get_contents($b);
 		}
 		
@@ -2397,7 +2389,7 @@ class WP_Optimize_Minify_Front_End {
 	}
 	
 	/**
-	 * Add pre-connect and pre-load headers
+	 * Add pre-connect and preload headers
 	 *
 	 * @return void
 	 */
@@ -2408,7 +2400,7 @@ class WP_Optimize_Minify_Front_End {
 		$pre_connect = $this->get_pre_connect_list();
 
 		// preload
-		if (is_array($pre_connect) && count($pre_connect) > 0) {
+		if (count($pre_connect) > 0) {
 			foreach ($pre_connect as $url) {
 				if (!empty($url) && filter_var($url, FILTER_VALIDATE_URL)) {
 					header("Link: <$url>; rel=preconnect", false);
@@ -2417,7 +2409,7 @@ class WP_Optimize_Minify_Front_End {
 		}
 
 		$headers = $this->get_preload_headers();
-		if (false != $headers) {
+		if ($headers) {
 			$nh = array_map('trim', explode("\n", $headers));
 			foreach ($nh as $h) {
 				if (!empty($h)) {
@@ -2478,13 +2470,13 @@ class WP_Optimize_Minify_Front_End {
 	 * Handles header meta information removal
 	 */
 	private function remove_header_meta_info() {
-		// no resource hints, generator tag, shortlinks, manifest link, etc
+		// no resource hints, generator tag, shortlink, manifest link, etc
 		remove_action('wp_head', 'wp_resource_hints', 2);
 		remove_action('wp_head', 'wp_generator');
 		remove_action('template_redirect', 'wp_shortlink_header', 11);
 		remove_action('wp_head', 'wlwmanifest_link');
 		remove_action('wp_head', 'rsd_link');
-		remove_action('wp_head', 'adjacent_posts_rel_link_wp_head', 10, 0);
+		remove_action('wp_head', 'adjacent_posts_rel_link_wp_head');
 		remove_action('wp_head', 'feed_links', 2);
 		remove_action('wp_head', 'feed_links_extra', 3);
 		WP_Optimize_Minify_Functions::remove_redundant_shortlink();
@@ -2576,9 +2568,9 @@ class WP_Optimize_Minify_Front_End {
 
 		// merge, if inline is selected but prevent optimization for these locations
 		if ($this->options['inline_css']) {
-			// this prints the styles (not fonts) and checks the 'colllect google fonts'
+			// this prints the styles (not fonts) and checks the 'collect google fonts'
 			add_filter('style_loader_tag', array($this, 'inline_css'), PHP_INT_MAX, 4);
-			// this prints the google fonts
+			// this prints the Google fonts
 			add_action('wp_print_styles', array($this, 'add_google_fonts_merged'), PHP_INT_MAX);
 			add_action('wp_print_footer_scripts', array($this, 'add_google_fonts_merged'), PHP_INT_MAX);
 		}
@@ -2586,12 +2578,12 @@ class WP_Optimize_Minify_Front_End {
 		if ($this->options['enabled_css_preload']) {
 			add_filter('style_loader_tag', array($this, 'collect_css_preload_headers'), PHP_INT_MAX, 3);
 		}
-		// Optimize the css and collect the google fonts for merging
+		// Optimize the css and collect the Google fonts for merging
 		add_action('wp_print_styles', array($this, 'process_header_css'), PHP_INT_MAX);
 		add_action('wp_print_footer_scripts', array($this, 'process_footer_css'), 9);
 
 		/**
-		 * Filters whether or not to ignore the order of the CSS files, and group them by media type
+		 * Filters whether to ignore the order of the CSS files, and group them by media type
 		 *
 		 * @param boolean $maintain_css_order
 		 * @return boolean
@@ -2599,12 +2591,14 @@ class WP_Optimize_Minify_Front_End {
 		 */
 		if (!apply_filters('wpo_minify_maintain_css_order', true)) {
 			// Reorder stylesheets
-			add_filter('wpo_minify_stylesheets', array($this, 'order_stylesheets_per_media_type'), 10);
+			add_filter('wpo_minify_stylesheets', array($this, 'order_stylesheets_per_media_type'));
 		}
 	}
 
 	/**
 	 * Determines whether we should minify html or not
+	 *
+	 * @return bool
 	 */
 	private function should_process_html() {
 		return $this->options['html_minification'] && !is_admin() && $this->is_cache_preload();
@@ -2612,6 +2606,8 @@ class WP_Optimize_Minify_Front_End {
 
 	/**
 	 * Determines whether to use loadCSS polyfill or not
+	 *
+	 * @return bool
 	 */
 	private function should_use_loadCSS() {
 		return $this->options['loadcss']
@@ -2705,11 +2701,11 @@ class WP_Optimize_Minify_Front_End {
 	/**
 	 * Decides whether minify cache should be incremented or not
 	 *
-	 * @param string $res
+	 * @param array $res
 	 * @param string $href
 	 * @param string $type
 	 * @param string $handle
-	 * @param string $version
+	 * @param mixed $version
 	 *
 	 * @return bool true when cache is invalid, false otherwise
 	 */
@@ -2731,5 +2727,6 @@ class WP_Optimize_Minify_Front_End {
 			$new_hash = hash('sha256', $new_res['code']);
 			return strcmp($hash, $new_hash);
 		}
+		return false;
 	}
 }

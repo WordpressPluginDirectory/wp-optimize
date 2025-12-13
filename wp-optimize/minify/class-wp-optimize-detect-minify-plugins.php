@@ -51,6 +51,7 @@ class WP_Optimize_Detect_Minify_Plugins {
 	/**
 	 * Check if minify feature is active
 	 *
+	 * @param string $plugin_slug Slug of the plugin
 	 * @return bool
 	 */
 	public function is_minify_active($plugin_slug) {
@@ -58,10 +59,11 @@ class WP_Optimize_Detect_Minify_Plugins {
 			case 'w3-total-cache':
 				return (function_exists('w3tc_config') && w3tc_config()->get_boolean('minify.enabled'));
 			case 'autoptimize':
-				return ('on' == get_option('autoptimize_js', false) || 'on' == get_option('autoptimize_css', false) || 'on' == get_option('autoptimize_html', false));
+				return ('on' === get_option('autoptimize_js', false) || 'on' === get_option('autoptimize_css', false) || 'on' === get_option('autoptimize_html', false));
 			case 'fast-velocity-minify':
 				return true;
 		}
+		return false;
 	}
 
 	/**

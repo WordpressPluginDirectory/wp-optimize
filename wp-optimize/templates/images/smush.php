@@ -3,11 +3,11 @@
 	<div class="wpo-info">
 		<a class="wpo-info__trigger" href="#"><span class="dashicons dashicons-sos"></span> <?php esc_html_e('How to use the image compression feature', 'wp-optimize'); ?> <span class="wpo-info__close"><?php esc_html_e('Close', 'wp-optimize'); ?></span></a>
 		<div class="wpo-info__content">
-			<p><strong><?php esc_html_e('Not sure how to use the image compression feature?', 'wp-optimize'); ?></strong> <br><?php esc_html_e('Watch our howto video below.', 'wp-optimize'); ?></p>
+			<p><strong><?php esc_html_e('Not sure how to use the image compression feature?', 'wp-optimize'); ?></strong> <br><?php esc_html_e('Watch our how to video below.', 'wp-optimize'); ?></p>
 			<div class="wpo-video-preview">
-				<a href="https://vimeo.com/333938451" data-embed="https://player.vimeo.com/video/333938451?color=df6926&title=0&byline=0&portrait=0" target="_blank"><img src="<?php echo esc_url(trailingslashit(WPO_PLUGIN_URL) . 'images/notices/image-compression-video-preview.png'); // phpcs:ignore PluginCheck.CodeAnalysis.ImageFunctions.NonEnqueuedImage -- N/A ?>" alt="<?php esc_attr_e('Video preview', 'wp-optimize'); ?>" /></a>
+				<a href="https://vimeo.com/1014326354" data-embed="https://player.vimeo.com/video/1014326354?color=df6926&title=0&byline=0&portrait=0" target="_blank"><img src="<?php echo esc_url(trailingslashit(WPO_PLUGIN_URL) . 'images/notices/video-thumb.jpg'); ?>" alt="<?php esc_attr_e('Video preview', 'wp-optimize'); ?>" /></a>
 			</div>
-			<small>(<?php esc_html_e('Loads a video hosted on vimeo.com', 'wp-optimize'); ?>) - <?php $wp_optimize->wp_optimize_url('https://vimeo.com/333938451', __('Open the video in a new window', 'wp-optimize')); ?></small>
+			<small>(<?php esc_html_e('Loads a video hosted on vimeo.com', 'wp-optimize'); ?>) - <?php $wp_optimize->wp_optimize_url('https://vimeo.com/1014326354', __('Open the video in a new window', 'wp-optimize')); ?></small>
 		</div>
 	</div>
 	<p>
@@ -23,8 +23,8 @@
 				<span class="slider round"></span>
 			</label>
 			<label for="smush-automatically"><?php esc_html_e('Automatically compress newly-added images', 'wp-optimize');?>
-				<span tabindex="0" data-tooltip="<?php echo esc_attr__('The images will be added to a background queue, which will start automatically within the next hour.', 'wp-optimize').' '.esc_attr__('This prevents the site from being slowed down during media uploads.', 'wp-optimize').' '.esc_attr__('The time taken to complete the compression will depend upon the size and quantity of the images.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
 			</label>
+			<span tabindex="0" data-tooltip="<?php echo esc_attr__('The images will be added to a background queue, which will start automatically within the next hour.', 'wp-optimize').' '.esc_attr__('This prevents the site from being slowed down during media uploads.', 'wp-optimize').' '.esc_attr__('The time taken to complete the compression will depend upon the size and quantity of the images.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
 		</div>
 
 		<div class="wpo-fieldgroup__subgroup">
@@ -39,8 +39,8 @@
 					$message .= ' ';
 					$message .= __('But if you are using a solution other than WP-Optimize to compress your images, you can hide these metaboxes by disabling this switch.', 'wp-optimize')
 				?>
-				<span tabindex="0" data-tooltip="<?php echo esc_attr($message);?>"><span class="dashicons dashicons-editor-help"></span> </span>
 			</label>
+			<span tabindex="0" data-tooltip="<?php echo esc_attr($message);?>"><span class="dashicons dashicons-editor-help"></span> </span>
 		</div>
 
 		<div class="compression_options">
@@ -74,7 +74,7 @@
 				</datalist>
 				<span class="slider-end"><?php esc_html_e('Best image quality', 'wp-optimize');?></span>
 			</div>
-			<p><?php esc_html_e('Not sure what to choose?', 'wp-optimize'); ?> <?php $wp_optimize->wp_optimize_url('https://getwpo.com/lossy-vs-lossless-image-compression-a-guide-to-the-trade-off-between-image-size-and-quality/', __('Read our article "Lossy vs Lossless image compression"', 'wp-optimize')); ?></p>
+			<p><?php esc_html_e('Not sure what to choose?', 'wp-optimize'); ?> <?php $wp_optimize->wp_optimize_url('https://teamupdraft.com/blog/lossy-vs-lossless-image-compression/?utm_source=wpo-plugin&utm_medium=referral&utm_campaign=paac&utm_content=lossy-vs-lossless-article-from-compress-tab&utm_creative_format=text', __('Read our article "Lossy vs Lossless image compression"', 'wp-optimize')); ?></p>
 
 			<?php if (WPO_USE_WEBP_CONVERSION) : ?>
 				<h3><?php esc_html_e('WebP conversion', 'wp-optimize');?></h3>
@@ -124,7 +124,7 @@
 				<span tabindex="0" data-tooltip="<?php esc_attr_e('The original images are stored alongside the compressed images, you can visit the edit screen of the individual images in the Media Library to restore them.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
 				<br>
 				<input type="checkbox" id="smush-backup-delete" class="smush-options" <?php checked($smush_options['back_up_delete_after']); ?> >
-				<label for="smush-backup-delete"><?php esc_html_e('Automatically delete image backups after', 'wp-optimize');?><input id="smush-backup-delete-days" type="number" min="1" value="<?php echo (0 !== intval($smush_options['back_up_delete_after_days'])) ? intval($smush_options['back_up_delete_after_days']) : 50; ?>"><?php esc_html_e('days', 'wp-optimize');?></label><label> — <?php esc_html_e('or', 'wp-optimize'); ?></label> <button type="button" id="wpo_smush_delete_backup_btn" class="wpo_primary_small button"><?php esc_html_e('Delete all backup images now', 'wp-optimize'); ?></button>
+				<label for="smush-backup-delete-days"><?php esc_html_e('Automatically delete image backups after', 'wp-optimize');?><input id="smush-backup-delete-days" type="number" min="1" value="<?php echo (0 !== intval($smush_options['back_up_delete_after_days'])) ? intval($smush_options['back_up_delete_after_days']) : 50; ?>"><?php esc_html_e('days', 'wp-optimize');?></label><label> — <?php esc_html_e('or', 'wp-optimize'); ?></label> <button type="button" id="wpo_smush_delete_backup_btn" class="wpo_primary_small button"><?php esc_html_e('Delete all backup images now', 'wp-optimize'); ?></button>
 				<img id="wpo_smush_delete_backup_spinner" class="display-none" src="<?php echo esc_url(admin_url('images/spinner-2x.gif')); // phpcs:ignore PluginCheck.CodeAnalysis.ImageFunctions.NonEnqueuedImage -- N/A ?>" alt="...">
 				<span id="wpo_smush_delete_backup_done" class="dashicons dashicons-yes display-none save-done"></span>
 				<br>

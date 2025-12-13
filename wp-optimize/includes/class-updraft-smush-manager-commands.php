@@ -50,6 +50,8 @@ class Updraft_Smush_Manager_Commands extends Updraft_Task_Manager_Commands_1_0 {
 
 	/**
 	 * Returns a list of commands available for smush related operations
+	 *
+	 * @return array
 	 */
 	public static function get_allowed_ajax_commands() {
 
@@ -82,36 +84,34 @@ class Updraft_Smush_Manager_Commands extends Updraft_Task_Manager_Commands_1_0 {
 	/**
 	 * Process the compression of a single image
 	 *
-	 * @param mixed $data - sent in via AJAX
+	 * @param array $data - sent in via AJAX
 	 * @return WP_Error|array - information about the operation or WP_Error object on failure
 	 */
 	public function compress_single_image($data) {
 
 		$options = empty($data['smush_options']) ? $this->task_manager->get_smush_options() : $data['smush_options'];
-		
 		$image = isset($data['selected_image']['attachment_id']) ? absint($data['selected_image']['attachment_id']) : 0;
 		$blog = isset($data['selected_image']['blog_id']) ? absint($data['selected_image']['blog_id']) : 0;
-		
+
 		if (0 === $image) {
 			return new WP_Error('invalid_image', __('Image ID is invalid', 'wp-optimize'));
 		}
-		
+
 		if (0 === $blog && is_multisite()) {
 			return new WP_Error('invalid_blog', __('Blog ID is invalid', 'wp-optimize'));
 		}
 
-		// A subsite administrator can only compress their own image. If the blog ID isn't theirs, return an error.
-		if ($blog && is_multisite() && get_current_blog_id() != $blog && !current_user_can('manage_network_options')) {
+		// A sub site administrator can only compress their own image. If the blog ID isn't theirs, return an error.
+		if ($blog && is_multisite() && get_current_blog_id() !== $blog && !current_user_can('manage_network_options')) {
 			return new WP_Error('compression_not_permitted', __('The blog ID provided does not match the current blog.', 'wp-optimize'));
 		}
-		
+
 		$server = isset($options['compression_server']) ? sanitize_text_field($options['compression_server']) : $this->task_manager->get_default_webservice();
-		
+
 		$lossy = isset($options['lossy_compression']) ? filter_var($options['lossy_compression'], FILTER_VALIDATE_BOOLEAN) : false;
 		$backup = isset($options['back_up_original']) ? filter_var($options['back_up_original'], FILTER_VALIDATE_BOOLEAN) : true;
 		$exif = isset($options['preserve_exif']) ? filter_var($options['preserve_exif'], FILTER_VALIDATE_BOOLEAN) : false;
 		$quality = isset($options['image_quality']) ? absint($options['image_quality']) : 92;
-
 
 		$options = array(
 			'attachment_id' 	=> $image,
@@ -154,14 +154,13 @@ class Updraft_Smush_Manager_Commands extends Updraft_Task_Manager_Commands_1_0 {
 	/**
 	 * Restores a single image, if backup is available
 	 *
-	 * @param mixed $data - Sent in via AJAX
+	 * @param array $data - Sent in via AJAX
 	 * @return WP_Error|array - information about the operation or a WP_Error object on failure
 	 */
 	public function restore_single_image($data) {
-		
+
 		$blog_id = isset($data['blog_id']) ? absint($data['blog_id']) : 0;
 		$image_id   = isset($data['selected_image']) ? absint($data['selected_image']) : 0;
-
 
 		$success = $this->task_manager->restore_single_image($image_id, $blog_id);
 
@@ -185,7 +184,7 @@ class Updraft_Smush_Manager_Commands extends Updraft_Task_Manager_Commands_1_0 {
 	/**
 	 * Process the compression of multiple images
 	 *
-	 * @param mixed $data - Sent in via AJAX
+	 * @param array $data - Sent in via AJAX
 	 * @return array
 	 */
 	public function process_bulk_smush($data = array()) {
@@ -217,7 +216,7 @@ class Updraft_Smush_Manager_Commands extends Updraft_Task_Manager_Commands_1_0 {
 	/**
 	 * Returns useful information for the UI and closes the connection
 	 *
-	 * @param mixed $data - Sent in via AJAX
+	 * @param array $data - Sent in via AJAX
 	 *
 	 * @return array - Information for the UI
 	 */
@@ -273,7 +272,7 @@ class Updraft_Smush_Manager_Commands extends Updraft_Task_Manager_Commands_1_0 {
 	/**
 	 * Updates webp related options
 	 *
-	 * @param mixed $data - Sent in via AJAX
+	 * @param array $data - Sent in via AJAX
 	 * @return WP_Error|array - information about the operation or WP_Error object on failure
 	 */
 	public function update_webp_options($data) {
@@ -344,7 +343,7 @@ class Updraft_Smush_Manager_Commands extends Updraft_Task_Manager_Commands_1_0 {
 	/**
 	 * Updates smush related options
 	 *
-	 * @param mixed $data - Sent in via AJAX
+	 * @param array $data - Sent in via AJAX
 	 * @return WP_Error|array - information about the operation or WP_Error object on failure
 	 */
 	public function update_smush_options($data) {
@@ -398,7 +397,9 @@ class Updraft_Smush_Manager_Commands extends Updraft_Task_Manager_Commands_1_0 {
 	/**
 	 * Checks if the selected server is online
 	 *
-	 * @param mixed $data - Sent in via AJAX
+	 * @param array $data - Sent in via AJAX
+	 *
+	 * @return array
 	 */
 	public function check_server_status($data) {
 		$server = isset($data['server']) ? sanitize_text_field($data['server']) : $this->task_manager->get_default_webservice();
@@ -465,7 +466,7 @@ class Updraft_Smush_Manager_Commands extends Updraft_Task_Manager_Commands_1_0 {
 
 		foreach ($image_list as $image) {
 			if (!array_key_exists($image['blog_id'], $selected_images)) $selected_images[$image['blog_id']] = array();
-			
+
 			$selected_images[$image['blog_id']][] = $image['attachment_id'];
 		}
 
@@ -582,7 +583,7 @@ class Updraft_Smush_Manager_Commands extends Updraft_Task_Manager_Commands_1_0 {
 	/**
 	 * Returns the log file
 	 *
-	 * @return WP_Error|file - logfile or WP_Error object on failure
+	 * @return void|WP_Error - logfile or WP_Error object on failure
 	 */
 	public function get_smush_logs() {
 
@@ -686,7 +687,7 @@ class Updraft_Smush_Manager_Commands extends Updraft_Task_Manager_Commands_1_0 {
 		$attachment_id = isset($data['attachment_id']) ? absint($data['attachment_id']) : 0;
 		if (0 === $attachment_id) return $this->image_not_found_response();
 
-		$compressed = get_post_meta($attachment_id, 'smush-complete', true) ? true : false;
+		$compressed = (bool) get_post_meta($attachment_id, 'smush-complete', true);
 
 		$smush_options = Updraft_Smush_Manager()->get_smush_options();
 
@@ -711,7 +712,7 @@ class Updraft_Smush_Manager_Commands extends Updraft_Task_Manager_Commands_1_0 {
 	 *
 	 * @return string
 	 */
-	private function get_smush_media_column_content(int $blog_id, int $attachment_id): string {
+	private function get_smush_media_column_content($blog_id, $attachment_id) {
 		if (is_multisite()) switch_to_blog($blog_id);
 
 		$content = Updraft_Smush_Manager()->get_smush_details($attachment_id);
@@ -758,24 +759,24 @@ class Updraft_Smush_Manager_Commands extends Updraft_Task_Manager_Commands_1_0 {
 	 * @param array $images Array of image data to sanitize
 	 * @return array
 	 */
-	private function sanitize_images(array $images) : array {
+	private function sanitize_images($images) {
 		$result = array();
-		
+
 		foreach ($images as $image) {
 			$attachment_id = isset($image['attachment_id']) ? absint($image['attachment_id']) : 0;
 			$blog_id = isset($image['blog_id']) ? absint($image['blog_id']) : 0;
-			
+	
 			// Skip entries where either value is zero
 			if (0 === $attachment_id || 0 === $blog_id) {
 				continue;
 			}
-			
+	
 			$result[] = array(
 				'attachment_id' => $attachment_id,
 				'blog_id'       => $blog_id,
 			);
 		}
-		
+
 		return $result;
 	}
 }

@@ -2,31 +2,15 @@
 
 <tbody id="the-list">
 <?php
-
-	// Check for InnoDB tables.
-	// Check for windows servers.
-	$sqlversion = $wp_optimize->get_db_info()->get_version();
-	$tablesstatus = $wp_optimize->get_optimizer()->get_tables();
-	$is_multisite_mode = $wp_optimize->is_multisite_mode();
-	$total_gain = 0;
-	$no = 0;
-	$row_usage = 0;
-	$data_usage = 0;
-	$index_usage = 0;
-	$overhead_usage = 0;
-	$non_inno_db_tables = 0;
-	$inno_db_tables = 0;
-	$small_overhead_size = 1048576;
 	
-	foreach ($tablesstatus as $tablestatus) {
-		$no++;
+	foreach ($table_list_object_format as $index => $tablestatus) {
 		echo '<tr 
 			data-tablename="'.esc_attr($tablestatus->Name).'"
 			data-type="'.esc_attr($tablestatus->Engine).'"
 			data-optimizable="'.($tablestatus->is_optimizable ? 1 : 0).'"
 			'.($is_multisite_mode ? 'data-blog_id="'.esc_attr($tablestatus->blog_id).'"' : '').'
 		>'."\n";
-		echo '<td data-colname="'.esc_attr__('No.', 'wp-optimize').'">'.esc_html(number_format_i18n($no)).'</td>'."\n";
+		echo '<td data-colname="'.esc_attr__('No.', 'wp-optimize').'">'.esc_html(number_format_i18n($table_list[$index]['index'])).'</td>'."\n";
 		echo '<td data-tablename="'.esc_attr($tablestatus->Name).'" data-colname="'.esc_attr__('Table', 'wp-optimize').'">'.esc_html($tablestatus->Name);
 
 		if (!empty($tablestatus->plugin_status)) {
@@ -47,8 +31,6 @@
 
 					echo '<br>';
 					
-					$closed_plugins = array('404-monitor', 'redirections');
-					
 					if (in_array($plugin, $closed_plugins)) {
 					  continue;
 					}
@@ -59,9 +41,9 @@
 						$wp_optimize->wp_optimize_url('https://wordpress.org/plugins/'.$plugin.'/', '', '<span style="font-size: 11px;">'.esc_html($plugin).'</span>');
 					}
 
-					if (false == $status['installed']) {
+					if (false === $status['installed']) {
 						echo ' <span style="font-size: 11px; color: #9B0000; font-weight: bold;">['.esc_html__('not installed', 'wp-optimize').']</span>';
-					} elseif (false == $status['active']) {
+					} elseif (false === $status['active']) {
 						echo ' <span style="font-size: 11px; color: #9B0000; font-weight: bold;">['.esc_html__('inactive', 'wp-optimize').']</span>';
 					}
 				}
@@ -84,24 +66,14 @@
 			echo esc_html($wp_optimize->format_size($tablestatus->Data_free));
 			echo '</span>';
 			echo '</td>'."\n";
-
-			$overhead_usage += $tablestatus->Data_free;
-			$total_gain += $tablestatus->Data_free;
-			$non_inno_db_tables++;
 		} else {
 			echo '<td data-colname="'.esc_attr__('Type', 'wp-optimize').'" data-optimizable="0">'.esc_html($tablestatus->Engine).'</td>'."\n";
 			echo '<td data-colname="'.esc_attr__('Overhead', 'wp-optimize').'">';
 			echo '<span style="color:#0000FF;">-</span>';
 			echo '</td>'."\n";
-
-			$inno_db_tables++;
 		}
 
 		echo '<td data-colname="'.esc_attr__('Actions', 'wp-optimize').'">'. wp_kses_post(apply_filters('wpo_tables_list_additional_column_data', '', $tablestatus)) .'</td>';
-
-		$row_usage += $tablestatus->Rows;
-		$data_usage += $tablestatus->Data_length;
-		$index_usage += $tablestatus->Index_length;
 
 		echo '</tr>'."\n";
 	}
@@ -112,16 +84,16 @@
 	echo '<tr class="thead">'."\n";
 	echo '<th>'.esc_html__('Total:', 'wp-optimize').'</th>'."\n";
 	// translators: %s is the number of tables
-	echo '<th>'.esc_html(sprintf(_n('%s Table', '%s Tables', $no, 'wp-optimize'), number_format_i18n($no))).'</th>'."\n";
-	echo '<th>'.esc_html(number_format_i18n($row_usage)).'</th>'."\n";
-	echo '<th>'.esc_html($wp_optimize->format_size($data_usage)).'</th>'."\n";
-	echo '<th>'.esc_html($wp_optimize->format_size($index_usage)).'</th>'."\n";
+	echo '<th>'.esc_html(sprintf(_n('%s Table', '%s Tables', $no, 'wp-optimize'), $no)).'</th>'."\n";
+	echo '<th>'.esc_html($row_usage).'</th>'."\n";
+	echo '<th>'.esc_html($data_usage).'</th>'."\n";
+	echo '<th>'.esc_html($index_usage).'</th>'."\n";
 	echo '<th>'.'-'.'</th>'."\n";
 	echo '<th>';
 
 	$font_colour = (($optimize_db) ? (($overhead_usage > $small_overhead_size) ? '#0000FF' : '#004600') : (($overhead_usage > $small_overhead_size) ? '#9B0000' : '#004600'));
 	
-	echo '<span style="color:'.esc_attr($font_colour).'">'.esc_html($wp_optimize->format_size($overhead_usage)).'</span>';
+	echo '<span style="color:'.esc_attr($font_colour).'">'.esc_html($overhead_usage_formatted).'</span>';
 	
 ?>
 	</th>

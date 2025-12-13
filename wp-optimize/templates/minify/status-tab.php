@@ -4,12 +4,12 @@
 		<div class="wpo-info wpo-show">
 			<a class="wpo-info__trigger" href="#"><span class="dashicons dashicons-sos"></span> <?php esc_html_e('How to use the minify feature', 'wp-optimize'); ?> <span class="wpo-info__close"><?php esc_html_e('Close', 'wp-optimize'); ?></span></a>
 			<div class="wpo-info__content">
-				<p><strong><?php esc_html_e('Not sure how to use the Minify feature?', 'wp-optimize'); ?></strong> <br><?php esc_html_e('Watch our how-to video below.', 'wp-optimize'); ?></p>
+				<p><strong><?php esc_html_e('Not sure how to use the Minify feature?', 'wp-optimize'); ?></strong> <br><?php esc_html_e('Watch our how to video below.', 'wp-optimize'); ?></p>
 				<div class="wpo-video-preview">
-					<a href="https://vimeo.com/402556749" data-embed="https://player.vimeo.com/video/402556749?color=df6926&title=0&byline=0&portrait=0" target="_blank"><img src="<?php echo esc_url(trailingslashit(WPO_PLUGIN_URL) . 'images/notices/minify-video-preview.png'); // phpcs:ignore PluginCheck.CodeAnalysis.ImageFunctions.NonEnqueuedImage -- N/A ?>" alt="<?php esc_attr_e('Minify video preview', 'wp-optimize');?>"></a>
+					<a href="https://vimeo.com/1015123805" data-embed="https://player.vimeo.com/video/1015123805?color=df6926&title=0&byline=0&portrait=0" target="_blank"><img src="<?php echo esc_url(trailingslashit(WPO_PLUGIN_URL) . 'images/notices/video-thumb.jpg'); ?>" alt="<?php esc_attr_e('Minify video preview', 'wp-optimize');?>"></a>
 				</div>
-				<small>(<?php esc_html_e('Loads a video hosted on vimeo.com', 'wp-optimize'); ?>) - <?php $wp_optimize->wp_optimize_url('https://vimeo.com/402556749', __('Open the video in a new window', 'wp-optimize')); ?></small>
-				<p><a href="<?php echo esc_url(WP_Optimize()->maybe_add_affiliate_params('https://getwpo.com/faqs/category/minification/')); ?>"><?php esc_html_e('Read the documentation', 'wp-optimize'); ?></a></p>
+				<small>(<?php esc_html_e('Loads a video hosted on vimeo.com', 'wp-optimize'); ?>) - <?php $wp_optimize->wp_optimize_url('https://vimeo.com/1015123805', __('Open the video in a new window', 'wp-optimize')); ?></small>
+				<p><a target="_blank" href="<?php echo esc_url(WP_Optimize()->maybe_add_affiliate_params('https://teamupdraft.com/documentation/wp-optimize/topics/minification/faqs/?utm_source=wpo-plugin&utm_medium=referral&utm_campaign=paac&utm_content=read-the-documentation-minification&utm_creative_format=text')); ?>"><?php esc_html_e('Read the documentation', 'wp-optimize'); ?></a></p>
 			</div>
 		</div>
 		<div id="wpo_settings_warnings"></div>
@@ -21,7 +21,7 @@
 					<?php echo esc_html_x('While enabling it will work just fine for most sites, it might need specific configuration to work properly on your website.', '"it" refers to the Minify feature.', 'wp-optimize'); ?><br>
 					<?php echo esc_html_x('If you encounter an issue and are not sure what to do, disable the feature and ask for help on the support forum.', '"it" refers to the Minify feature.', 'wp-optimize'); ?>
 					<?php echo esc_html_x('We will do our best to help you configure it.', '"it" refers to the Minify feature.', 'wp-optimize'); ?>
-					<a href="<?php echo esc_url(WP_Optimize()->maybe_add_affiliate_params('https://getwpo.com/faqs/category/minification/')); ?>"><?php esc_html_e('Read the documentation', 'wp-optimize'); ?></a>
+					<a target="_blank" href="<?php echo esc_url(WP_Optimize()->maybe_add_affiliate_params('https://teamupdraft.com/documentation/wp-optimize/topics/minification/faqs/?utm_source=wpo-plugin&utm_medium=referral&utm_campaign=paac&utm_content=read-the-documentation-minification&utm_creative_format=notice')); ?>"><?php esc_html_e('Read the documentation', 'wp-optimize'); ?></a>
 				</p>
 			</div>
 		<?php endif; ?>
@@ -97,8 +97,8 @@
 								$message .= ' ';
 								$message .= __('It takes effect only when cache pre-loading because it takes time.', 'wp-optimize');
 							?>
-							<span tabindex="0" data-tooltip="<?php echo esc_attr($message);?>"><span class="dashicons dashicons-editor-help"></span> </span>
 						</label>
+						<span tabindex="0" data-tooltip="<?php echo esc_attr($message);?>"><span class="dashicons dashicons-editor-help"></span> </span>
 					</div>
 				</div>
 
@@ -118,9 +118,9 @@
 						</label>
 						<label for="wpo_min_enable_minify_js">
 							<?php esc_html_e('Process JavaScript files', 'wp-optimize'); ?>
-							<span tabindex="0" data-tooltip="<?php esc_attr_e('The JavaScript files will be combined and minified to lower the number and size of requests.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
-							<a href="#" class="js--wpo-goto" data-tab="js"><?php esc_html_e('Settings', 'wp-optimize'); ?></a>
 						</label>
+						<span tabindex="0" data-tooltip="<?php esc_attr_e('The JavaScript files will be combined and minified to lower the number and size of requests.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
+						<a href="#" class="js--wpo-goto" data-tab="js"><?php esc_html_e('Settings', 'wp-optimize'); ?></a>
 					</div>
 				</div>
 
@@ -140,9 +140,9 @@
 						</label>
 						<label for="wpo_min_enable_minify_css">
 							<?php esc_html_e('Process CSS files', 'wp-optimize'); ?>
-							<span tabindex="0" data-tooltip="<?php esc_attr_e('The stylesheets will be combined and minified to lower the number and size of requests.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
-							<a href="#" class="js--wpo-goto" data-tab="css"><?php esc_html_e('Settings', 'wp-optimize'); ?></a>
 						</label>
+						<span tabindex="0" data-tooltip="<?php esc_attr_e('The stylesheets will be combined and minified to lower the number and size of requests.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
+						<a href="#" class="js--wpo-goto" data-tab="css"><?php esc_html_e('Settings', 'wp-optimize'); ?></a>
 					</div>
 				</div>			
 			</div>
@@ -160,7 +160,7 @@
 				<span class="save-done dashicons dashicons-yes display-none"></span>
 			</p>
 			<p>
-				<span><?php esc_html_e("The new minified files will be regenerated when visiting your website's pages.", "wp-optimize"); ?> <?php $wp_optimize->wp_optimize_url('https://getwpo.com/faqs/what-does-reset-the-minified-files-actually-do/', __('Read more about what this does in our FAQs.', 'wp-optimize')); ?> (<?php esc_html_e('This will also purge the page cache', 'wp-optimize'); ?>)</span>
+				<span><?php esc_html_e("The new minified files will be regenerated when visiting your website's pages.", "wp-optimize"); ?> <?php $wp_optimize->wp_optimize_url('https://teamupdraft.com/documentation/wp-optimize/topics/minification/faqs/what-does-reset-the-minified-files-do/?utm_source=wpo-plugin&utm_medium=referral&utm_campaign=paac&utm_content=what-does-purge-the-minified-files-do&utm_creative_format=text', __('Read more about what this does in our FAQs.', 'wp-optimize')); ?> (<?php esc_html_e('This will also purge the page cache', 'wp-optimize'); ?>)</span>
 			</p>
 
 			<?php esc_html_e('Minify cache size:', 'wp-optimize'); ?>

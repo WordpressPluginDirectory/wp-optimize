@@ -10,11 +10,11 @@
 <div class="wpo-info">
 	<a class="wpo-info__trigger" href="#"><span class="dashicons dashicons-sos"></span> <?php esc_html_e('How to use the cache feature', 'wp-optimize'); ?> <span class="wpo-info__close"><?php esc_html_e('Close', 'wp-optimize'); ?></span></a>
 	<div class="wpo-info__content">
-		<p><strong><?php esc_html_e('Not sure how to use the cache feature?', 'wp-optimize'); ?></strong> <br><?php esc_html_e('Watch our how-to video below.', 'wp-optimize'); ?></p>
+		<p><strong><?php esc_html_e('Not sure how to use the cache feature?', 'wp-optimize'); ?></strong> <br><?php esc_html_e('Watch our how to video below.', 'wp-optimize'); ?></p>
 		<div class="wpo-video-preview">
-			<a href="https://vimeo.com/337247770" data-embed="https://player.vimeo.com/video/337247770?color=df6926&title=0&byline=0&portrait=0" target="_blank"><img src="<?php echo esc_url(trailingslashit(WPO_PLUGIN_URL) . 'images/notices/cache-video-preview.png'); // phpcs:ignore PluginCheck.CodeAnalysis.ImageFunctions.NonEnqueuedImage -- N/A ?>" alt="<?php esc_attr_e('Cache video preview', 'wp-optimize');?>" /></a>
+			<a href="https://vimeo.com/1014288082" data-embed="https://player.vimeo.com/video/1014288082?color=df6926&title=0&byline=0&portrait=0" target="_blank"><img src="<?php echo esc_url(trailingslashit(WPO_PLUGIN_URL) . 'images/notices/video-thumb.jpg'); ?>" alt="<?php esc_attr_e('Cache video preview', 'wp-optimize');?>" /></a>
 		</div>
-		<small>(<?php esc_html_e('Loads a video hosted on vimeo.com', 'wp-optimize'); ?>) - <?php $wp_optimize->wp_optimize_url('https://vimeo.com/337247770', __('Open the video in a new window', 'wp-optimize')); ?></small>
+		<small>(<?php esc_html_e('Loads a video hosted on vimeo.com', 'wp-optimize'); ?>) - <?php $wp_optimize->wp_optimize_url('https://vimeo.com/1014288082', __('Open the video in a new window', 'wp-optimize')); ?></small>
 	</div>
 </div>
 <div class="wpo-fieldgroup wpo-first-child cache-options">

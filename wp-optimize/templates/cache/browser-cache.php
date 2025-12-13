@@ -8,7 +8,7 @@
 	</p>
 
 	<div class="wpo-fieldgroup">
-		<?php if ($is_cloudflare_site) : ?>
+		<?php if ($is_cloudflare_handling_browser_cache) : ?>
 		<p class="wpo-enabled"><span class="dashicons dashicons-yes"></span>
 			<em><?php esc_html_e('Your website seems to use Cloudflare, which handles the browser caching rules.', 'wp-optimize'); ?></em>
 		</p>
@@ -35,7 +35,7 @@
 		<?php
 
 		// add browser cache control section only if browser cache disabled or we added cache settings to .htaccess.
-		if (false == $wpo_browser_cache_enabled || $wpo_browser_cache_settings_added || is_wp_error($wpo_browser_cache_enabled)) {
+		if (false === $wpo_browser_cache_enabled || $wpo_browser_cache_settings_added || is_wp_error($wpo_browser_cache_enabled)) {
 			if (is_wp_error($wpo_browser_cache_enabled)) {
 				?>
 				<div id="wpo_browser_cache_error_message" class="notice error below-h2">
@@ -70,7 +70,7 @@
 			?>
 
 			<div id="wpo_browser_cache_message"><?php
-				if (false == $wpo_browser_cache_enabled && $wpo_browser_cache_settings_added) {
+				if (false === $wpo_browser_cache_enabled && $wpo_browser_cache_settings_added) {
 			?>
 				<div class="notice notice-error">
 					<p>

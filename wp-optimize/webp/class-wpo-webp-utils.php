@@ -16,8 +16,8 @@ class WPO_WebP_Utils {
 	 * @return bool
 	 */
 	public static function can_do_webp_conversion() {
-		$webp_conversion = WP_Optimize()->get_options()->get_option('webp_conversion', false);
-		$webp_converters = WP_Optimize()->get_options()->get_option('webp_converters', false);
+		$webp_conversion = WP_Optimize()->get_options()->get_option('webp_conversion');
+		$webp_converters = WP_Optimize()->get_options()->get_option('webp_converters');
 		return $webp_conversion && !empty($webp_converters);
 	}
 
@@ -88,21 +88,21 @@ class WPO_WebP_Utils {
 	 *
 	 * @return bool
 	 */
-	public static function is_browser_accepting_webp(): bool {
-		$http_accept =  sanitize_text_field(wp_unslash($_SERVER['HTTP_ACCEPT'] ?? ''));
+	public static function is_browser_accepting_webp() {
+		$http_accept =  TeamUpdraft\WP_Optimize\Includes\Fragments\fetch_superglobal('server', 'HTTP_ACCEPT', 'string', 'sanitize_text_field', '');
 		if (false !== strpos($http_accept, 'image/webp')) {
 			return true;
 		}
-		
+
 		// Link to compatibility site - https://caniuse.com/webp
-		$user_agent = sanitize_text_field(wp_unslash($_SERVER['HTTP_USER_AGENT'] ?? ''));
+		$user_agent = TeamUpdraft\WP_Optimize\Includes\Fragments\fetch_superglobal('server', 'HTTP_USER_AGENT', 'string', 'sanitize_text_field', '');
 		if (empty($user_agent)) return false;
-		
+
 		// Check Firefox version number
 		if (preg_match('/Firefox\/([\d\.]+[a-z\d]*)/', $user_agent, $matches)) {
 			if (version_compare('65.0.0', $matches[1], '<=')) return true;
 		}
-		
+
 		return false;
 	}
 }

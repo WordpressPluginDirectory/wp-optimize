@@ -5,61 +5,84 @@
 		<h3><?php esc_html_e('CSS options', 'wp-optimize'); ?></h3>
 		<div class="wpo-fieldgroup">
 			<fieldset>
-				<label for="enable_css_minification">
-					<input
-						name="enable_css_minification"
-						type="checkbox"
-						id="enable_css_minification"
-						value="1"
-						<?php echo checked($wpo_minify_options['enable_css_minification']); ?>
-					>
-					<?php esc_html_e('Enable minification of CSS files', 'wp-optimize'); ?>
-				</label>
-				<label for="enable_merging_of_css">
-					<input
-						name="enable_merging_of_css"
-						type="checkbox"
-						id="enable_merging_of_css"
-						value="1"
-						<?php echo checked($wpo_minify_options['enable_merging_of_css']); ?>
-					>
-					<?php esc_html_e('Enable merging of CSS files', 'wp-optimize'); ?>
-					<span tabindex="0" data-tooltip="<?php esc_attr_e('If some of the design is breaking on the frontend, disabling merging of CSS might fix the issues.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
-				</label>
-				<label for="inline_css">
-					<input
-						name="inline_css"
-						type="checkbox"
-						id="inline_css"
-						value="1"
-						<?php echo checked($wpo_minify_options['inline_css']); ?>
-					>
-					<?php esc_html_e('Inline CSS', 'wp-optimize'); ?> - <?php esc_html_e('Recommended if the CSS files are small enough.', 'wp-optimize'); ?>
-					<span tabindex="0" data-tooltip="<?php esc_attr_e('When enabled, small CSS files will be inlined.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
-				</label>
-				<label for="remove_print_mediatypes">
-					<input
-						name="remove_print_mediatypes"
-						type="checkbox"
-						id="remove_print_mediatypes"
-						value="1"
-						<?php echo checked($wpo_minify_options['remove_print_mediatypes']); ?>
-					>
-					<?php esc_html_e('Strip the "print" related stylesheets', 'wp-optimize'); ?>
-					<span tabindex="0" data-tooltip='<?php esc_attr_e('When selected, any CSS files with the media type "print" will be removed.', 'wp-optimize');?> <?php esc_html_e('Enable if your site does not need specific print styles.', 'wp-optimize');?>'><span class="dashicons dashicons-editor-help"></span> </span>
-				</label>
-				<?php if (WP_OPTIMIZE_SHOW_MINIFY_ADVANCED) : ?>
-					<label for="remove_css">
+				<div class="wpo-fieldgroup__subgroup">
+					<label for="enable_css_minification">
 						<input
-							name="remove_css"
+							name="enable_css_minification"
 							type="checkbox"
-							id="remove_css"
+							id="enable_css_minification"
 							value="1"
-							<?php echo checked($wpo_minify_options['remove_css']); ?>
+							<?php echo checked($wpo_minify_options['enable_css_minification']); ?>
 						>
-						<?php esc_html_e('Dequeue all CSS files', 'wp-optimize'); ?>
-						<span tabindex="0" data-tooltip="<?php esc_attr_e('This is useful if you want to test your critical path CSS', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
+						<?php esc_html_e('Enable minification of CSS files', 'wp-optimize'); ?>
 					</label>
+				</div> 
+				<div id="enable_unused_css_removal_wrapper" class="wpo-fieldgroup__subgroup" style="<?php echo $show_unused_css ? ' display:block;' : ' display:none'; ?>">
+					<label for="enable_unused_css" style="<?php echo 'margin-left: 20px;'; ?>">
+						<input
+								name="enable_unused_css"
+								type="checkbox"
+								id="enable_unused_css"
+								value="1"
+							<?php checked($wpo_minify_options['enable_unused_css']); ?>
+						>
+						<?php esc_html_e('Enable removal of unused rules from CSS files (Experimental)', 'wp-optimize'); ?>
+					</label>
+					<span tabindex="0" data-tooltip="<?php esc_attr_e('If some of the design is breaking on the frontend, disabling removal of unused CSS rules might fix the issues.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
+				</div>
+				<div class="wpo-fieldgroup__subgroup">
+					<label for="enable_merging_of_css">
+						<input
+							name="enable_merging_of_css"
+							type="checkbox"
+							id="enable_merging_of_css"
+							value="1"
+							<?php echo checked($wpo_minify_options['enable_merging_of_css']); ?>
+						>
+						<?php esc_html_e('Enable merging of CSS files', 'wp-optimize'); ?>
+					</label>
+					<span tabindex="0" data-tooltip="<?php esc_attr_e('If some of the design is breaking on the frontend, disabling merging of CSS might fix the issues.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
+				</div>
+				<div class="wpo-fieldgroup__subgroup">
+					<label for="inline_css" class="label-with-tooltip">
+						<input
+							name="inline_css"
+							type="checkbox"
+							id="inline_css"
+							value="1"
+							<?php echo checked($wpo_minify_options['inline_css']); ?>
+						>
+						<?php esc_html_e('Inline CSS', 'wp-optimize'); ?> - <?php esc_html_e('Recommended if the CSS files are small enough.', 'wp-optimize'); ?>
+					</label>
+					<span tabindex="0" data-tooltip="<?php esc_attr_e('When enabled, small CSS files will be inlined.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
+				</div>
+				<div class="wpo-fieldgroup__subgroup">
+					<label for="remove_print_mediatypes" class="label-with-tooltip">
+						<input
+							name="remove_print_mediatypes"
+							type="checkbox"
+							id="remove_print_mediatypes"
+							value="1"
+							<?php echo checked($wpo_minify_options['remove_print_mediatypes']); ?>
+						>
+						<?php esc_html_e('Strip the "print" related stylesheets', 'wp-optimize'); ?>
+					</label>
+					<span tabindex="0" data-tooltip='<?php esc_attr_e('When selected, any CSS files with the media type "print" will be removed.', 'wp-optimize');?> <?php esc_html_e('Enable if your site does not need specific print styles.', 'wp-optimize');?>'><span class="dashicons dashicons-editor-help"></span> </span>
+				</div>		
+				<?php if (WP_OPTIMIZE_SHOW_MINIFY_ADVANCED) : ?>
+					<div class="wpo-fieldgroup__subgroup">
+						<label for="remove_css">
+							<input
+								name="remove_css"
+								type="checkbox"
+								id="remove_css"
+								value="1"
+								<?php echo checked($wpo_minify_options['remove_css']); ?>
+							>
+							<?php esc_html_e('Dequeue all CSS files', 'wp-optimize'); ?>
+						</label>
+						<span tabindex="0" data-tooltip="<?php esc_attr_e('This is useful if you want to test your critical path CSS', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
+					</div>
 				<?php endif; ?>
 			</fieldset>
 		</div>
@@ -100,17 +123,19 @@
 					class="large-text code"
 					placeholder="<?php esc_attr_e('e.g.: /wp-content/themes/my-theme/css/custom-font.css', 'wp-optimize'); ?>"
 				><?php echo esc_textarea($wpo_minify_options['async_css']); ?></textarea>
-				<label for="exclude_css_from_page_speed_tools">
-					<input
-							name="exclude_css_from_page_speed_tools"
-							type="checkbox"
-							id="exclude_css_from_page_speed_tools"
-							value="1"
-						<?php echo checked($wpo_minify_options['exclude_css_from_page_speed_tools']); ?>
-					>
-					<?php esc_html_e('Exclude stylesheets from page speed tests (PageSpeed Insights, GTMetrix...)', 'wp-optimize'); ?>
+				<div class="wpo-fieldgroup__subgroup">
+					<label for="exclude_css_from_page_speed_tools">
+						<input
+								name="exclude_css_from_page_speed_tools"
+								type="checkbox"
+								id="exclude_css_from_page_speed_tools"
+								value="1"
+							<?php echo checked($wpo_minify_options['exclude_css_from_page_speed_tools']); ?>
+						>
+						<?php esc_html_e('Exclude stylesheets from page speed tests (PageSpeed Insights, GTMetrix...)', 'wp-optimize'); ?>
+					</label>
 					<span tabindex="0" data-tooltip="<?php esc_attr_e('Use this only for testing purpose to find out which stylesheets are slowing down your site.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span></span>
-				</label>
+				</div>
 			</fieldset>
 		</div>
 

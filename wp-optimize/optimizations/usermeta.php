@@ -127,6 +127,8 @@ class WP_Optimization_usermeta extends WP_Optimization {
 
 	/**
 	 * Get settings label.
+	 *
+	 * @return string
 	 */
 	public function settings_label() {
 		return __('Clean user metadata', 'wp-optimize');
@@ -134,6 +136,8 @@ class WP_Optimization_usermeta extends WP_Optimization {
 
 	/**
 	 * Get auto option description.
+	 *
+	 * @return string
 	 */
 	public function get_auto_option_description() {
 		return __('Remove orphaned user meta', 'wp-optimize');

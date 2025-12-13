@@ -89,14 +89,14 @@
 		<p>
 		<?php
 			// translators: %1$s is an opening anchor tag, %2$s is a closing anchor tag
-		printf(esc_html_x('Read more about this feature %1$son our website%2$s.', '%s will be replaced by a link tag', 'wp-optimize'), '<a href="'.esc_url(WP_Optimize()->maybe_add_affiliate_params('https://teamupdraft.com/documentation/wp-optimize/topics/minification/faqs/')).'" target="_blank">', '</a>');
+			printf(esc_html_x('Read more about this feature %1$son our website%2$s.', '%s will be replaced by a link tag', 'wp-optimize'), '<a href="'.esc_url(WP_Optimize()->maybe_add_affiliate_params('https://teamupdraft.com/documentation/wp-optimize/topics/minification/faqs/')).'" target="_blank">', '</a>');
 		?>
 		</p>
 		<?php if (!$is_premium) : ?>
 			<p class="wpo-introduction-notice__footer-links--premium">
 				<?php
 					// translators: %1$s is opening anchor tag, %2$s is closing anchor tag
-				printf(esc_html_x('PS - check out our new improved Premium version %1$shere%2$s.', '%s is replaced by a link tag', 'wp-optimize'), '<a href="'.esc_url('https://teamupdraft.com/wp-optimize/pricing/').'" target="_blank">', '</a>');
+					printf(esc_html_x('PS - check out our new improved Premium version %1$shere%2$s.', '%s is replaced by a link tag', 'wp-optimize'), '<a href="'.esc_url('https://teamupdraft.com/wp-optimize/pricing/').'" target="_blank">', '</a>');
 				?>
 			</p>
 		<?php endif; ?>

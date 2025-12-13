@@ -22,11 +22,6 @@ if (!defined('WPO_CACHE_EXT_DIR')) define('WPO_CACHE_EXT_DIR', dirname(__FILE__)
  */
 if (!defined('WPO_CACHE_CONFIG_DIR')) define('WPO_CACHE_CONFIG_DIR', WPO_CACHE_DIR.'/config');
 
-/**
- * Directory that stores the cache, including gzipped files and mobile specific cache
- */
-if (!defined('WPO_CACHE_FILES_DIR')) define('WPO_CACHE_FILES_DIR', untrailingslashit(WP_CONTENT_DIR).'/cache/wpo-cache');
-
 require_once dirname(__FILE__) . '/file-based-page-cache-functions.php';
 
 wpo_cache_load_extensions();
@@ -59,7 +54,7 @@ class WPO_Page_Cache {
 	/**
 	 * Instance of this class
 	 *
-	 * @var mixed
+	 * @var WPO_Page_Cache | null
 	 */
 	public static $instance;
 
@@ -92,6 +87,11 @@ class WPO_Page_Cache {
 	 */
 	private $_minimum_advanced_cache_file_version = '3.0.17';
 
+	/**
+	 * Flag to decide whether to purge or not
+	 *
+	 * @var bool
+	 */
 	public $should_purge;
 
 	/**
@@ -100,7 +100,7 @@ class WPO_Page_Cache {
 	 * @var bool
 	 */
 	private $files_to_ignore = array('index.php','.htaccess');
-	
+
 	/**
 	 * Set everything up here
 	 */
@@ -115,6 +115,7 @@ class WPO_Page_Cache {
 
 		WPO_Cache_Rules::instance();
 		WP_Optimize_Page_Cache_Preloader::instance();
+
 		$this->logger = new Updraft_PHP_Logger();
 		$this->file_logger = new Updraft_File_Logger(WP_Optimize_Utils::get_log_file_path('cache'));
 
@@ -145,7 +146,8 @@ class WPO_Page_Cache {
 
 		$this->check_compatibility_issues();
 
-		add_filter('cron_schedules', array($this, 'cron_schedules'));
+		$this->ensure_cron_schedules_filter_registered();
+
 		add_action('wpo_save_images_settings', array($this, 'update_webp_images_option'));
 
 		add_action('wpo_preload_url', array($this, 'maybe_preload_url'));
@@ -156,6 +158,37 @@ class WPO_Page_Cache {
 	}
 
 	/**
+	 * Ensures that the cron-related filter is registered.
+	 *
+	 * If `init` has already run, the filter is registered immediately.
+	 * Otherwise, it schedules the registration to occur during `init`.
+	 *
+	 * @return void
+	 */
+	private function ensure_cron_schedules_filter_registered() {
+		if (did_action('init')) {
+			$this->register_cron_schedules_filter();
+		} else {
+			add_action('init', array($this, 'register_cron_schedules_filter'));
+		}
+	}
+
+	/**
+	 * Registers the custom cron schedule filter for WP-Cron.
+	 *
+	 * This method hooks the class's `cron_schedules()` method into WordPress's
+	 * `cron_schedules` filter, allowing the plugin to define custom cron intervals.
+	 *
+	 * It is recommended to call this method on or after the `init` action to ensure
+	 * that translations and other dependencies are properly loaded before the filter runs.
+	 *
+	 * @return void
+	 */
+	public function register_cron_schedules_filter() {
+		add_filter('cron_schedules', array($this, 'cron_schedules'));
+	}
+
+	/**
 	 * Determines whether the current page should be cached.
 	 *
 	 * This method checks cache rules to identify if caching is possible.
@@ -163,7 +196,7 @@ class WPO_Page_Cache {
 	 *
 	 * @return bool True if the page should be cached, false otherwise.
 	 */
-	public function should_cache_page(): bool {
+	public function should_cache_page() {
 
 		if (!$this->is_enabled()) return false;
 
@@ -175,8 +208,10 @@ class WPO_Page_Cache {
 		if (false === $can_serve_from_cache) return false;
 
 		if (is_array($can_serve_from_cache)) $no_cache_because = $can_serve_from_cache;
-	
+
 		if (!empty($no_cache_because)) {
+			do_action('wpo_page_not_cached', $no_cache_because);
+
 			// Add http header
 			if (!wp_doing_cron()) {
 				$no_cache_because_message = join(", ", $no_cache_because);
@@ -185,7 +220,7 @@ class WPO_Page_Cache {
 				$not_cached_details = "";
 				
 				// Output the reason only when the user has turned on debugging
-				if (((defined('WP_DEBUG') && WP_DEBUG) || isset($_GET['wpo_cache_debug']))) {
+				if ((defined('WP_DEBUG') && WP_DEBUG) || !empty(TeamUpdraft\WP_Optimize\Includes\Fragments\fetch_superglobal('get', 'wpo_cache_debug'))) {
 					$not_cached_details = "because: ".$no_cache_because_message;
 				}
 				wpo_cache_add_footer_output(sprintf("Page not served from cache %s", $not_cached_details));
@@ -281,7 +316,7 @@ class WPO_Page_Cache {
 			'parent' => 'wpo_purge_cache',
 		);
 
-		if (!is_admin() || 'post.php' == $pagenow) {
+		if (!is_admin() || 'post.php' === $pagenow) {
 			$menu_items[] = array(
 				'id'    => 'wpo_purge_this_page_cache',
 				'title' => __('Purge cache for this page', 'wp-optimize'),
@@ -610,7 +645,7 @@ class WPO_Page_Cache {
 		if (is_dir($cache_folder) && wp_is_writable($cache_folder)) {
 			if ($handle = opendir($cache_folder)) {
 				while (false !== ($d = readdir($handle))) {
-					if (0 == strcmp($d, '.') || 0 == strcmp($d, '..')) {
+					if (0 === strcmp($d, '.') || 0 === strcmp($d, '..')) {
 						continue;
 					}
 					
@@ -703,7 +738,7 @@ class WPO_Page_Cache {
 	/**
 	 * Create the folder structure needed for cache to work
 	 *
-	 * @return bool - true on success, false otherwise
+	 * @return bool | WP_Error - true on success, false otherwise
 	 */
 	public function create_folders() {
 		$permissions_str = __('Please check your file permissions.', 'wp-optimize');
@@ -909,7 +944,7 @@ EOF;
 		if (preg_match('/WP\-Optimize advanced\-cache\.php \(written by version\: (.+)\) (\(homeurl: (.+)\)) (\(abspath: (.+)\)) \(do not change/Ui', $content, $match)) {
 			$wpo_home_url = trailingslashit(network_home_url());
 			$abspath = ABSPATH;
-			return ($wpo_home_url != $match[3] || $abspath != $match[5]);
+			return ($wpo_home_url !== $match[3] || $abspath !== $match[5]);
 		} elseif (preg_match('/WP\-Optimize advanced\-cache\.php \(written by version\: (.+)\)/Ui', $content, $match)) {
 			return true;
 		}
@@ -1066,7 +1101,7 @@ EOF;
 	 */
 	public function update_option_permalink_structure($old_value, $value, $option) {
 		$current_config = $this->config->get();
-		if ($old_value != $value) {
+		if ($old_value !== $value) {
 			$current_config[$option] = $value;
 			$this->config->update($current_config, true);
 		}
@@ -1075,7 +1110,7 @@ EOF;
 	/**
 	 * Update cache config. Used to support 3d party plugins.
 	 *
-	 * @return {boolean|WP_Error}
+	 * @return bool | WP_Error
 	 */
 	public function update_cache_config() {
 		// get current cache settings.
@@ -1134,12 +1169,12 @@ EOF;
 
 		$filtered = apply_filters('wpo_cache_size_files_to_ignore', $this->files_to_ignore);
 		$this->files_to_ignore = is_array($filtered) ? $filtered : array();
-		
+
 		$file = readdir($handle);
 
 		while (false !== $file) {
 
-			if ('.' != $file && '..' != $file) {
+			if ('.' !== $file && '..' !== $file) {
 				$current_file = $dir.'/'.$file;
 
 				if (is_dir($current_file)) {
@@ -1204,7 +1239,7 @@ EOF;
 	 * @return bool
 	 */
 	public static function delete_cache_by_url($url, $recursive = false) {
-		if (!defined('WPO_CACHE_FILES_DIR') || '' == $url) return;
+		if (!defined('WPO_CACHE_FILES_DIR') || '' === $url) return false;
 
 		$path = self::get_full_path_from_url($url);
 
@@ -1266,7 +1301,7 @@ EOF;
 	 */
 	public static function really_delete_single_post_cache($post_id) {
 
-		if (!defined('WPO_CACHE_FILES_DIR')) return;
+		if (!defined('WPO_CACHE_FILES_DIR')) return false;
 
 		$post_url = get_permalink($post_id);
 	
@@ -1320,6 +1355,8 @@ EOF;
 
 	/**
 	 * Delete post feed from cache.
+	 *
+	 * @param int $post_id Post ID
 	 */
 	public static function delete_post_feed_cache($post_id) {
 		self::really_delete_post_feed_cache($post_id);
@@ -1329,6 +1366,8 @@ EOF;
 
 	/**
 	 * Really delete post feed from cache.
+	 *
+	 * @param int $post_id Post ID
 	 */
 	public static function really_delete_post_feed_cache($post_id) {
 		if (!defined('WPO_CACHE_FILES_DIR')) return;
@@ -1403,7 +1442,7 @@ EOF;
 	/**
 	 * Returns an instance of the current class, creates one if it doesn't exist
 	 *
-	 * @return object
+	 * @return self
 	 */
 	public static function instance() {
 		if (empty(self::$instance)) {
@@ -1416,17 +1455,17 @@ EOF;
 	/**
 	 * Update gmt_offset and timezone_string cache config value, used with hook `update_gmt_offset_timezone_string_config`.
 	 *
-	 * @param {float|string} $old_value GMT offset as a float value or timezone value supported by PHP as a string (https://www.php.net/manual/en/timezones.php)
-	 * @param {float|string} $new_value
-	 * @param {string}    	 $option    gmt_offset|timezone_string
+	 * @param float | string  $old_value GMT offset as a float value or timezone value supported by PHP as a string (https://www.php.net/manual/en/timezones.php)
+	 * @param float | string  $new_value
+	 * @param string    	  $option    gmt_offset|timezone_string
 	 *
 	 * @return null
 	 */
 	public function update_gmt_offset_timezone_string_config($old_value, $new_value, $option) {
-		if ('' == $new_value) return;
+		if ('' === $new_value) return;
 
 		$current_config = $this->config->get();
-		if ('timezone_string' == $option) {
+		if ('timezone_string' === $option) {
 			$timeZone = new DateTimeZone($new_value);
 			$dateTime = new DateTime("now");
 			$gmt_offset = $timeZone->getOffset($dateTime);
@@ -1544,7 +1583,7 @@ EOF;
 	 *
 	 * @return bool
 	 */
-	public function is_pagespeedninja_gzip_active(): bool {
+	public function is_pagespeedninja_gzip_active() {
 		if (!class_exists('PagespeedNinja')) return false;
 
 		$options = get_option('pagespeedninja_config');
@@ -1569,7 +1608,7 @@ EOF;
 		if (!class_exists('farFutureExpiration')) return false;
 
 		$options = get_option('far_future_expiration_settings');
-		$gzip = !empty($options) ? (bool) $options['enable_gzip'] : false;
+		$gzip = !empty($options) && $options['enable_gzip'];
 
 		return $gzip;
 	}
@@ -1636,7 +1675,7 @@ EOF;
 	}
 
 	/**
-	 * May be regenerate cache config file, in case of migrations
+	 * Maybe regenerate cache config file, in case of migrations
 	 */
 	public function maybe_regenerate_cache_config_file() {
 		$config_file = WPO_CACHE_CONFIG_DIR . '/'.$this->config->get_cache_config_filename();
@@ -1657,7 +1696,7 @@ EOF;
 		
 		if ($handle = opendir($path)) {
 			while (false !== ($entry = readdir($handle))) {
-				if ("." == $entry || ".." == $entry) {
+				if ("." === $entry || ".." === $entry) {
 					continue;
 				}
 				
@@ -1691,9 +1730,9 @@ EOF;
 	 * @return bool
 	 */
 	public function should_auto_preload_purged_contents() {
-		
+
 		if (!$this->is_enabled()) return false; // as Page Cache is not enabled we should not auto preload purged content.
-		
+
 		$wpo_cache = WP_Optimize()->get_page_cache();
 		$wpo_cache_options = $wpo_cache->config->get();
 
@@ -1769,8 +1808,13 @@ EOF;
 				'RewriteCond %{DOCUMENT_ROOT}'.$site_root.'wp-content/cache/wpo-cache/%{HTTP_HOST}%{REQUEST_URI}index.html -f',
 				'RewriteRule ^(.*)$ '.$site_root.'wp-content/cache/wpo-cache/%{HTTP_HOST}%{REQUEST_URI}index.html [L]',
 				array(
+					'<IfModule mod_setenvif.c>',
+					'SetEnvIf Request_URI "/wp-content/cache/wpo-cache/" FROM_CACHE=1',
+					'</IfModule>',
+				),
+				array(
 					'<IfModule mod_headers.c>',
-					'Header always set X-WP-Optimize-Cache-Header "Loaded from WP-Optimize cache" env=REDIRECT_STATUS',
+					'Header always set X-WP-Optimize-Cache-Header "Loaded from WP-Optimize cache" env=FROM_CACHE',
 					'</IfModule>',
 				),
 				'</IfModule>',
@@ -1780,6 +1824,8 @@ EOF;
 
 	/**
 	 * Get relative site root path, if site is placed in the subdirectory then it returns /subdirectory otherwise /
+	 *
+	 * @param string $default
 	 *
 	 * @return string
 	 */

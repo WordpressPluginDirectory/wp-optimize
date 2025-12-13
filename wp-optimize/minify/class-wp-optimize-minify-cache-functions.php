@@ -14,7 +14,8 @@ class WP_Optimize_Minify_Cache_Functions {
 	/**
 	 * Fix the permission bits on generated files
 	 *
-	 * @param String $file - full path to a file
+	 * @param string $file - full path to a file
+	 * @return bool
 	 */
 	public static function fix_permission_bits($file) {
 		if (function_exists('stat')) {
@@ -35,7 +36,7 @@ class WP_Optimize_Minify_Cache_Functions {
 		}
 				
 		if (file_exists($file)) {
-			if (($perms & ~umask() != $perms)) {
+			if (($perms & ~umask() !== $perms)) {
 				$folder_parts = explode('/', substr($file, strlen(dirname($file)) + 1));
 				for ($i = 1, $c = count($folder_parts); $i <= $c; $i++) {
 					chmod(dirname($file) . '/' . implode('/', array_slice($folder_parts, 0, $i)), $perms); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_chmod -- N/A
@@ -48,7 +49,7 @@ class WP_Optimize_Minify_Cache_Functions {
 	/**
 	 * Get cache directories and urls
 	 *
-	 * @return Array
+	 * @return array
 	 */
 	public static function cache_path() {
 		// get latest time stamp
@@ -63,7 +64,7 @@ class WP_Optimize_Minify_Cache_Functions {
 		// Create directories
 		$dirs = array($cache_dir, $tmp_dir, $header_dir);
 		foreach ($dirs as $target) {
-			$enabled = wp_optimize_minify_config()->get('enabled');
+			$enabled = (bool) wp_optimize_minify_config()->get('enabled');
 			if (false === $enabled) break;
 
 			if (!is_dir($target) && !wp_mkdir_p($target)) {
@@ -81,6 +82,8 @@ class WP_Optimize_Minify_Cache_Functions {
 
 	/**
 	 * Increment file names
+	 *
+	 * @return int
 	 */
 	public static function cache_increment() {
 		$stamp = time();
@@ -111,10 +114,10 @@ class WP_Optimize_Minify_Cache_Functions {
 
 		// delete temporary directories only
 		if (is_dir($tmp_dir)) {
-			wpo_delete_files($tmp_dir, true);
+			wpo_delete_files($tmp_dir);
 		}
 		if (is_dir($header_dir)) {
-			wpo_delete_files($header_dir, true);
+			wpo_delete_files($header_dir);
 		}
 		
 		/**
@@ -239,7 +242,7 @@ class WP_Optimize_Minify_Cache_Functions {
 			}
 		}
 
-		// Purge Pressidum
+		// Purge Pressidium
 		if (defined('WP_NINUKIS_WP_NAME') && class_exists('Ninukis_Plugin') && is_callable(array('Ninukis_Plugin', 'get_instance'))) {
 			$purge_pressidum = Ninukis_Plugin::get_instance();
 			if (is_callable(array($purge_pressidum, 'purgeAllCaches'))) {
@@ -310,7 +313,7 @@ class WP_Optimize_Minify_Cache_Functions {
 	public static function purge() {
 		$log = '';
 		if (is_dir(WPO_CACHE_MIN_FILES_DIR)) {
-			if (wpo_delete_files(WPO_CACHE_MIN_FILES_DIR, true)) {
+			if (wpo_delete_files(WPO_CACHE_MIN_FILES_DIR)) {
 				$log = "[Minify] files and folders are deleted recursively";
 			} else {
 				$log = "[Minify] recursive files and folders deletion unsuccessful";
@@ -346,16 +349,16 @@ class WP_Optimize_Minify_Cache_Functions {
 		if (is_dir(WPO_CACHE_MIN_FILES_DIR) && wp_is_writable(dirname(WPO_CACHE_MIN_FILES_DIR))) {
 			if ($handle = opendir(WPO_CACHE_MIN_FILES_DIR)) {
 				while (false !== ($d = readdir($handle))) {
-					if (strcmp($d, '.')==0 || strcmp($d, '..')==0) {
+					if ('.' === $d || '..' === $d) {
 						continue;
 					}
 					$log[] = "cache expiration time - $expires";
 					$log[] = "checking if cache has expired - $d";
-					if ($d != $cache_time && (is_numeric($d) && $d <= $expires)) {
+					if ($d !== $cache_time && (is_numeric($d) && $d <= $expires)) {
 						$dir = WPO_CACHE_MIN_FILES_DIR.'/'.$d;
 						if (is_dir($dir)) {
 							$log[] = "deleting cache in $dir";
-							if (wpo_delete_files($dir, true)) {
+							if (wpo_delete_files($dir)) {
 								$log[] = "files and folders are deleted recursively - $dir";
 							} else {
 								$log[] = "recursive files and folders deletion unsuccessful - $dir";
@@ -385,7 +388,8 @@ class WP_Optimize_Minify_Cache_Functions {
 	/**
 	 * Get transients from the disk
 	 *
-	 * @return String|Boolean
+	 * @param string $key
+	 * @return string|boolean
 	 */
 	public static function get_transient($key) {
 		$cache_path = self::cache_path();
@@ -402,10 +406,10 @@ class WP_Optimize_Minify_Cache_Functions {
 	/**
 	 * Set cache on disk
 	 *
-	 * @param String $key
-	 * @param Mixed  $code
+	 * @param string $key
+	 * @param mixed  $code
 	 *
-	 * @return Boolean
+	 * @return boolean
 	 */
 	public static function set_transient($key, $code) {
 		if (is_null($code) || empty($code)) {
@@ -423,7 +427,7 @@ class WP_Optimize_Minify_Cache_Functions {
 	 * Get the cache size and count
 	 *
 	 * @param string $folder
-	 * @return String
+	 * @return string
 	 */
 	public static function get_cachestats($folder) {
 		clearstatcache();
@@ -447,8 +451,8 @@ class WP_Optimize_Minify_Cache_Functions {
 	 *
 	 * Source: https://github.com/wp-media/wp-rocket/blob/master/inc/3rd-party/hosting/godaddy.php
 	 *
-	 * @param String      $method
-	 * @param String|Null $url
+	 * @param string      $method
+	 * @param string|null $url
 	 */
 	public static function godaddy_request($method, $url = null) {
 		$url  = empty($url) ? home_url() : $url;
@@ -475,7 +479,7 @@ class WP_Optimize_Minify_Cache_Functions {
 		$size = self::get_cachestats($cache_dir);
 		$total_size = self::get_cachestats(WPO_CACHE_MIN_FILES_DIR);
 		$o = wp_optimize_minify_config()->get();
-		$cache_time = (0 == $o['last-cache-update']) ? __('Never.', 'wp-optimize') : self::format_date_time($o['last-cache-update']);
+		$cache_time = (0 === $o['last-cache-update']) ? __('Never.', 'wp-optimize') : self::format_date_time($o['last-cache-update']);
 		$return = array(
 			'js' => array(),
 			'css' => array(),
@@ -498,10 +502,10 @@ class WP_Optimize_Minify_Cache_Functions {
 					$minjs = substr($file, 0, -3).'.min.js';
 					$file_name = basename($file);
 					$file_url = trailingslashit($cache_path['cachedirurl']).$file_name;
-					if ('css' == $ext && file_exists($min_css)) {
+					if ('css' === $ext && file_exists($min_css)) {
 						$file_name = basename($min_css);
 					}
-					if ('js' == $ext && file_exists($minjs)) {
+					if ('js' === $ext && file_exists($minjs)) {
 						$file_name = basename($minjs);
 					}
 					$file_size = WP_Optimize()->format_size(filesize($file));
@@ -520,7 +524,7 @@ class WP_Optimize_Minify_Cache_Functions {
 	 *
 	 * @param string $file Full path of log file.
 	 *
-	 * @return object Could be either a 'json_decode' object upon successful parsing of the JSON file, or a stdClass object
+	 * @return mixed Could be either a 'json_decode' object upon successful parsing of the JSON file, or a stdClass object
 	 *                upon failure. In the case of stdClass object, $obj->error will contain the error message.
 	 */
 	public static function generate_log($file) {
@@ -539,7 +543,7 @@ class WP_Optimize_Minify_Cache_Functions {
 
 		$log = json_decode(file_get_contents($file));
 
-		$is_valid_json = json_last_error() === JSON_ERROR_NONE ? true : false;
+		$is_valid_json = json_last_error() === JSON_ERROR_NONE;
 
 		if (!$is_valid_json) {
 			// translators: %1$s is a log file link, %2$s is the error message
@@ -557,7 +561,7 @@ class WP_Optimize_Minify_Cache_Functions {
 	}
 
 	/**
-	 * Format a timestamp using WP's date_format and time_format
+	 * Format a timestamp using WordPress's date_format and time_format
 	 *
 	 * @param integer $timestamp - The timestamp
 	 * @return string

@@ -16,10 +16,11 @@ class WP_Optimize_UpdraftCentral {
 	/**
 	 * Register our class
 	 *
-	 * @param string $command_classes Passing over an array of command classes.
+	 * @param array $command_classes Passing over an array of command classes.
+	 * @return array
 	 */
 	public function updraftcentral_remotecontrol_command_classes($command_classes) {
-		if (is_array($command_classes)) $command_classes['wpoptimize'] = 'UpdraftCentral_WP_Optimize_Commands';
+		$command_classes['wpoptimize'] = 'UpdraftCentral_WP_Optimize_Commands';
 		return $command_classes;
 	}
 	
@@ -29,7 +30,7 @@ class WP_Optimize_UpdraftCentral {
 	 * @param string $command_php_class Passing over if there are any command classes.
 	 */
 	public function updraftcentral_command_class_wanted($command_php_class) {
-		if ('UpdraftCentral_WP_Optimize_Commands' == $command_php_class) {
+		if ('UpdraftCentral_WP_Optimize_Commands' === $command_php_class) {
 			// This fragment is only needed for compatibility with UD < 1.12.30 - thenceforth, the class can be assumed to exist.
 			if (!class_exists('UpdraftCentral_Commands')) {
 				include_once(apply_filters('updraftcentral_command_base_class_at', UPDRAFTPLUS_DIR.'/central/commands.php'));

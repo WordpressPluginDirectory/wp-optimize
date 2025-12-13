@@ -46,7 +46,7 @@ class WPO_WebP_Self_Test {
 		$response = wp_remote_head($url, $args);
 
 		if (is_wp_error($response)) return false;
-		if (200 != $response['response']['code']) return false;
+		if (200 !== $response['response']['code']) return false;
 
 		$headers = wp_remote_retrieve_headers($response);
 		if (method_exists($headers, 'getAll')) {

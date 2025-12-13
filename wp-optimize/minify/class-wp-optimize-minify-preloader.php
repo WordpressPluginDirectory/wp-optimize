@@ -32,7 +32,7 @@ class WP_Optimize_Minify_Preloader extends WP_Optimize_Preloader {
 		if (!function_exists('wp_optimize_minify_config')) {
 			include_once WPO_PLUGIN_MAIN_PATH . 'minify/class-wp-optimize-minify-config.php';
 		}
-		return wp_optimize_minify_config()->get('enabled');
+		return (bool) wp_optimize_minify_config()->get('enabled');
 	}
 
 	/**
@@ -116,6 +116,11 @@ class WP_Optimize_Minify_Preloader extends WP_Optimize_Preloader {
 		);
 	}
 
+	/**
+	 * Returns preload data
+	 *
+	 * @return array
+	 */
 	protected function get_preload_data() {
 		$cache_path = WP_Optimize_Minify_Cache_Functions::cache_path();
 		$cache_dir = $cache_path['cachedir'];
@@ -124,40 +129,71 @@ class WP_Optimize_Minify_Preloader extends WP_Optimize_Preloader {
 		$minify_cache_data['total_size'] = esc_html(WP_Optimize_Minify_Cache_Functions::get_cachestats(WPO_CACHE_MIN_FILES_DIR));
 		return $minify_cache_data;
 	}
-
-	protected function get_preloading_message($minify_cache_data) {
+	
+	/**
+	 * Returns preloading message
+	 *
+	 * @param array $data
+	 *
+	 * @return array
+	 */
+	protected function get_preloading_message($data) {
 		return array(
 			'done' => false,
 			'message' => __('Loading URLs...', 'wp-optimize'),
-			'size' => WP_Optimize()->format_size($minify_cache_data['size']),
-			'total_size' => $minify_cache_data['total_size']
+			'size' => WP_Optimize()->format_size($data['size']),
+			'total_size' => $data['total_size']
 		);
 	}
-
-	protected function get_last_preload_message($minify_cache_data, $last_preload_time_str) {
+	
+	/**
+	 * Returns last preload message
+	 *
+	 * @param array  $data
+	 * @param string $last_preload_time_str
+	 *
+	 * @return array
+	 */
+	protected function get_last_preload_message($data, $last_preload_time_str) {
 		return array(
 			'done' => true,
 			// translators: %s: last preload time
 			'message' => sprintf(__('Last preload finished at %s', 'wp-optimize'), $last_preload_time_str),
-			'size' => WP_Optimize()->format_size($minify_cache_data['size']),
-			'total_size' => $minify_cache_data['total_size']
+			'size' => WP_Optimize()->format_size($data['size']),
+			'total_size' => $data['total_size']
 		);
 	}
-
-	protected function get_preload_success_message($minify_cache_data) {
+	
+	/**
+	 * Returns preload success message
+	 *
+	 * @param array $data
+	 *
+	 * @return array
+	 */
+	protected function get_preload_success_message($data) {
 		return array(
 			'done' => true,
-			'size' => WP_Optimize()->format_size($minify_cache_data['size']),
-			'total_size' => $minify_cache_data['total_size']
+			'size' => WP_Optimize()->format_size($data['size']),
+			'total_size' => $data['total_size']
 		);
 	}
-
-	protected function get_preload_progress_message($minify_cache_data, $preloaded_message, $preload_resuming_in) {
+	
+	/**
+	 * Returns preload progress message
+	 *
+	 * @param array  $data
+	 * @param string $preloaded_message
+	 * @param int $preload_resuming_in
+	 *
+	 * @return array
+	 */
+	protected function get_preload_progress_message($data, $preloaded_message, $preload_resuming_in) {
 		return array(
 			'done' => false,
 			'message' => $preloaded_message,
-			'size' => WP_Optimize()->format_size($minify_cache_data['size']),
-			'total_size' => $minify_cache_data['total_size'],
+			'size' => WP_Optimize()->format_size($data['size']),
+			'total_size' => $data['total_size'],
 			'resume_in' => $preload_resuming_in
 		);
 	}

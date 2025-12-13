@@ -50,7 +50,7 @@ $read_more_link = 'https://developers.google.com/web/fundamentals/performance/la
 		</p>
 
 		<div class="wpo-unused-image-sizes__premium-mask">
-			<a class="wpo-unused-images__premium-link" href="<?php echo esc_url($wp_optimize->premium_version_link); ?>" target="_blank"><?php esc_html_e('Enable Lazy-loading with WP-Optimize Premium.', 'wp-optimize'); ?></a>
+			<a class="wpo-unused-images__premium-link" href="<?php echo esc_url($wp_optimize->premium_version_link);?>&utm_content=enable-lazy-loading" target="_blank"><?php esc_html_e('Enable Lazy-loading with WP-Optimize Premium.', 'wp-optimize'); ?></a>
 		</div>
 	</div>
 </div>

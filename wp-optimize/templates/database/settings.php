@@ -4,8 +4,8 @@
 	<form action="#" method="post" enctype="multipart/form-data" name="database_settings_form" id="database_settings_form">
 		<div id="wpo_database_settings_warnings"></div>
 		<?php
-		WP_Optimize()->include_template('database/settings-general.php');
-		WP_Optimize()->include_template('database/settings-auto-cleanup.php', false, array('show_innodb_option' => false));
+		WP_Optimize()->include_template('database/settings-general.php', false, $settings_general_data);
+		WP_Optimize()->include_template('database/settings-auto-cleanup.php', false, array('show_innodb_option' => false, 'settings_cleanup_data' => $settings_cleanup_data));
 		?>
 
 		<div id="wp-optimize-save-database-settings-results"></div>

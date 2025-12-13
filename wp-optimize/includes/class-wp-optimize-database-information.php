@@ -83,8 +83,8 @@ class WP_Optimize_Database_Information {
 	/**
 	 * Return table type by $table_name.
 	 *
-	 * @param String $table_name Database table name.
-	 * @return String|Boolean - returns false upon failure
+	 * @param string $table_name Database table name.
+	 * @return string|boolean - returns false upon failure
 	 */
 	public function get_table_type($table_name) {
 		$table_info = $this->get_table_status($table_name);
@@ -103,13 +103,13 @@ class WP_Optimize_Database_Information {
 	 *
 	 * @param string $table_name
 	 * @param bool   $update     if true, then force request to database and don't use cached values.
-	 * @return bool|mixed
+	 * @return mixed
 	 */
 	public function get_table_status($table_name, $update = false) {
 		$tables_info = $this->get_show_table_status($update, $table_name);
 
 		foreach ($tables_info as $table_info) {
-			if ($table_name == $table_info->Name) return $table_info;
+			if ($table_name === $table_info->Name) return $table_info;
 		}
 
 		return false;
@@ -119,7 +119,7 @@ class WP_Optimize_Database_Information {
 	 * Returns result for query SHOW TABLE STATUS.
 	 *
 	 * @param bool $update refresh or no cached data
-	 * @return array
+	 * @return array|object|stdClass[]|null
 	 */
 	public function get_show_table_status($update = false, $table_name = '') {
 		global $wpdb;
@@ -149,7 +149,7 @@ class WP_Optimize_Database_Information {
 		// If option innodb_file_per_table is disabled then Data_free column will have summary overhead value for all table.
 		if (!empty($tables_info)) {
 			foreach ($tables_info as $i => $table) {
-				if (self::INNODB_ENGINE == $table->Engine && false == $this->is_option_enabled('innodb_file_per_table')) {
+				if (self::INNODB_ENGINE == $table->Engine && !$this->is_option_enabled('innodb_file_per_table')) {
 					$tables_info[$i]->Data_free = 0;
 				}
 			}
@@ -161,6 +161,8 @@ class WP_Optimize_Database_Information {
 	/**
 	 * Whether a table exists
 	 *
+	 * @param string $table_name         Name of the table
+	 * @param bool   $use_default_prefix Whether to use default prefix
 	 * @return boolean
 	 */
 	public function table_exists($table_name, $use_default_prefix = true) {
@@ -202,7 +204,7 @@ class WP_Optimize_Database_Information {
 
 		if (!array_key_exists($table_name, $tables_info)) return false;
 
-		return ('VIEW' == $tables_info[$table_name]);
+		return ('VIEW' === $tables_info[$table_name]);
 	}
 
 	/**
@@ -211,13 +213,13 @@ class WP_Optimize_Database_Information {
 	 * @return bool
 	 */
 	public function has_online_ddl() {
-		if (self::MYSQL_DB == $this->get_server_type()) {
+		if (self::MYSQL_DB === $this->get_server_type()) {
 			if (version_compare($this->get_version(), '5.7', '>=')) {
 				return true;
 			} else {
 				return false;
 			}
-		} elseif (self::MARIA_DB == $this->get_server_type()) {
+		} elseif (self::MARIA_DB === $this->get_server_type()) {
 			if (version_compare($this->get_version(), '10.0.0', '>=')) {
 				return true;
 			} else {
@@ -261,8 +263,7 @@ class WP_Optimize_Database_Information {
 	public function is_option_enabled($option_name) {
 		$option_value = $this->get_option_value($option_name);
 
-		if ('ON' == strtoupper($option_value)) return true;
-		return false;
+		return 'ON' === strtoupper($option_value);
 	}
 
 	/**
@@ -277,20 +278,20 @@ class WP_Optimize_Database_Information {
 		$table_type = $this->get_table_type($table_name);
 
 		// return true if table is MyISAM.
-		if (self::MYISAM_ENGINE == $table_type) return true;
+		if (self::MYISAM_ENGINE === $table_type) return true;
 
 		// return true if table is Archive or Aria.
-		if (self::ARCHIVE_ENGINE == $table_type || self::ARIA_ENGINE == $table_type) return true;
+		if (self::ARCHIVE_ENGINE === $table_type || self::ARIA_ENGINE === $table_type) return true;
 
 		// if InnoDB then check if we can optimize.
-		if (self::INNODB_ENGINE == $table_type) {
+		if (self::INNODB_ENGINE === $table_type) {
 			// check for MysqlDB.
-			if (self::MYSQL_DB == $server_type && $this->has_online_ddl()) {
+			if (self::MYSQL_DB === $server_type && $this->has_online_ddl()) {
 				return true;
 			}
 
 			// check for MariaDB.
-			if (self::MARIA_DB == $server_type) {
+			if (self::MARIA_DB === $server_type) {
 				// if innodb_file_per_table enabled or version not older than 10.1.1 and innodb_defragment enabled.
 				if ($this->is_option_enabled('innodb_file_per_table') || (version_compare($server_version, '10.1.1', '>=') && $this->is_option_enabled('innodb_defragment'))) {
 					return true;
@@ -343,6 +344,7 @@ class WP_Optimize_Database_Information {
 	 * Run CHECK TABLE query and returns statuses for single or list of tables.
 	 *
 	 * @param array|string $table
+	 * @return array
 	 */
 	public function check_table($table) {
 		global $wpdb;
@@ -370,7 +372,7 @@ class WP_Optimize_Database_Information {
 				);
 			}
 
-			if ('error' == $row->Msg_type) {
+			if ('error' === $row->Msg_type) {
 				$result[$table_name]['status'] = $row->Msg_type;
 
 				if (preg_match('/corrupt/i', $row->Msg_text)) {
@@ -380,7 +382,7 @@ class WP_Optimize_Database_Information {
 				}
 			}
 
-			if ('status' == $row->Msg_type) {
+			if ('status' === $row->Msg_type) {
 				$result[$table_name]['status'] = $row->Msg_text;
 			}
 		}
@@ -402,7 +404,7 @@ class WP_Optimize_Database_Information {
 		$supported_tables = array();
 
 		foreach ($tables as $table) {
-			if ('' == $table->Engine || $this->is_table_type_repair_supported($table->Name)) {
+			if ('' === $table->Engine || $this->is_table_type_repair_supported($table->Name)) {
 				$supported_tables[] = $table->Name;
 			}
 		}
@@ -422,11 +424,7 @@ class WP_Optimize_Database_Information {
 
 		if (!$this->is_table_type_repair_supported($table_name)) return false;
 
-		if (is_array($table_statuses) && array_key_exists($table_name, $table_statuses) && $table_statuses[$table_name]['corrupted']) {
-			return true;
-		} else {
-			return false;
-		}
+		return (array_key_exists($table_name, $table_statuses) && $table_statuses[$table_name]['corrupted']);
 	}
 
 	/**
@@ -439,13 +437,14 @@ class WP_Optimize_Database_Information {
 		$plugin_names = $this->get_table_plugin($table);
 
 		// if we can't determine which plugin use $table then return true.
-		if (false == $plugin_names) {
+		if (!$plugin_names) {
 			return true;
 		}
 
 		// is WordPress core table or using by any of installed plugins then return true.
 		foreach ($plugin_names as $plugin_name) {
-			if (__('WordPress core', 'wp-optimize') == $plugin_name || in_array($plugin_name, $this->get_all_installed_plugins())) {
+			// $plugin_name is a translatable string, so we compare it with a translated string
+			if (__('WordPress core', 'wp-optimize') === $plugin_name || in_array($plugin_name, $this->get_all_installed_plugins())) {
 				return true;
 			}
 		}
@@ -468,7 +467,7 @@ class WP_Optimize_Database_Information {
 			// if match with base_prefix_(number)_
 			if (preg_match('/^'.$wpdb->base_prefix.'(\d+)_/', $table_name, $match)) {
 				// check if matched number in available sites.
-				if (false !== array_search($match[1], $blogs_ids)) return $match[1];
+				if (in_array($match[1], $blogs_ids)) return absint($match[1]);
 			}
 		}
 
@@ -528,8 +527,14 @@ class WP_Optimize_Database_Information {
 
 		// add WP-Optimize tables.
 		$wpo = 'wp-optimize';
-		if (false === array_search($wpo, $plugin_tables['tm_taskmeta']) && false === array_search($wpo, $plugin_tables['tm_tasks'])) {
+		$plugin_tables['tm_taskmeta'] = $plugin_tables['tm_taskmeta'] ?? array();
+		$plugin_tables['tm_tasks']    = $plugin_tables['tm_tasks'] ?? array();
+
+		if (!in_array($wpo, $plugin_tables['tm_taskmeta'], true)) {
 			$plugin_tables['tm_taskmeta'][] = $wpo;
+		}
+
+		if (!in_array($wpo, $plugin_tables['tm_tasks'], true)) {
 			$plugin_tables['tm_tasks'][] = $wpo;
 		}
 
@@ -563,7 +568,8 @@ class WP_Optimize_Database_Information {
 	 */
 	private function get_plugin_json_file_path() {
 		$uploads_dir = wp_upload_dir(null, false);
-		return apply_filters('wpo_get_plugin_json_file_path', trailingslashit($uploads_dir['basedir']).'wpo/wpo-plugins-tables-list.json');
+		$filtered_path = apply_filters('wpo_get_plugin_json_file_path', trailingslashit($uploads_dir['basedir']).'wpo/wpo-plugins-tables-list.json');
+		return is_string($filtered_path) ? $filtered_path : '';
 	}
 
 	/**
@@ -583,7 +589,7 @@ class WP_Optimize_Database_Information {
 		$plugins = get_plugins();
 
 		foreach ($plugins as $plugin_file => $plugin_data) {
-			if ('' != $plugin_data['TextDomain']) {
+			if ('' !== $plugin_data['TextDomain']) {
 				$installed_plugins[] = $plugin_data['TextDomain'];
 			} else {
 				$plugin_file_parts = explode('/', $plugin_file);
@@ -606,7 +612,7 @@ class WP_Optimize_Database_Information {
 		$plugins = get_plugins();
 
 		// return true for wp-optimize without checking.
-		if ('wp-optimize' == $plugin) {
+		if ('wp-optimize' === $plugin) {
 			return array(
 				'installed' => true,
 				'active' => true,
@@ -618,9 +624,9 @@ class WP_Optimize_Database_Information {
 
 		foreach ($plugins as $plugin_file => $plugin_data) {
 			$plugin_file_parts = explode('/', $plugin_file);
-			$plugin_slug = $plugin_file_parts[0];
+			$plugin_slug = $plugin_file_parts[0] ?? '';
 
-			if ($plugin == $plugin_slug) {
+			if ($plugin === $plugin_slug) {
 				$installed = true;
 				$active = is_plugin_active($plugin_file);
 			}
@@ -645,8 +651,31 @@ class WP_Optimize_Database_Information {
 		if (200 !== wp_remote_retrieve_response_code($update_request)) return;
 		$json_content = wp_remote_retrieve_body($update_request);
 		if (json_decode($json_content)) {
-			file_put_contents($this->get_plugin_json_file_path(), $json_content);
+			// phpcs:disable
+			// WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- WP_Filesystem not available this early
+			// Generic.PHP.NoSilencedErrors.Discouraged -- suppress PHP warning in case of failure
+			if (false === @file_put_contents($this->get_plugin_json_file_path(), $json_content)) {
+				error_log("WP-Optimize: wpo-plugins-tables-list.json couldn't be updated");
+				return;
+			}
+			// phpcs:enable
+			$this->change_plugin_json_permissions();
 		}
+	}
+
+	/**
+	 * Set permissions to 640 for plugin.json
+	 *
+	 * @return void
+	 */
+	public function change_plugin_json_permissions() {
+		$plugin_json_file_path = $this->get_plugin_json_file_path();
+		// phpcs:disable
+		// Generic.PHP.NoSilencedErrors.Discouraged -- suppress PHP warning in case of failure
+		if (is_file($plugin_json_file_path)) {
+			@chmod($plugin_json_file_path, 0640);
+		}
+		// phpcs:enable
 	}
 
 	/**

@@ -1221,7 +1221,8 @@ var WP_Optimize_Smush = function() {
 
 		data = {
 			selected_image: selected_image,
-			smush_options: smush_options
+			smush_options: smush_options,
+			skip_notice: true
 		}
 
 		block_ui(wposmush.compress_single_image_dialog, {}, false, true);
@@ -1309,7 +1310,9 @@ var WP_Optimize_Smush = function() {
 				}
 			}
 		} else {
-			block_ui(resp.error_message);
+			// Update the error message to be user-friendly
+			if (/exceeded_max_filesize/.test(resp.error_message)) resp.error_message = wposmush.exceeded_max_filesize
+			block_ui(resp.error_message, {}, 4000);
 		}
 	}
 

@@ -30,11 +30,11 @@ if (!function_exists('wp_normalize_path')) {
 }
 
 /**
- * Unschedules all events attached to the hook.
+ * Un schedules all events attached to the hook.
  */
 if (!function_exists('wp_unschedule_hook')) {
 	/**
-	 * Unschedules all events attached to the hook.
+	 * Un schedules all events attached to the hook.
 	 *
 	 * Can be useful for plugins when deactivating to clean up the cron queue.
 	 *
@@ -48,22 +48,22 @@ if (!function_exists('wp_unschedule_hook')) {
 	 *
 	 * @param string $hook Action hook, the execution of which will be unscheduled.
 	 * @return int|false On success an integer indicating number of events unscheduled (0 indicates no
-	 *                   events were registered on the hook), false if unscheduling fails.
+	 *                   events were registered on the hook), false if un scheduling fails.
 	 */
 	function wp_unschedule_hook($hook) {
 		/**
 		 * Filter to preflight or hijack clearing all events attached to the hook.
 		 *
-		 * Returning a non-null value will short-circuit the normal unscheduling
+		 * Returning a non-null value will short-circuit the normal un scheduling
 		 * process, causing the function to return the filtered value instead.
 		 *
 		 * For plugins replacing wp-cron, return the number of events successfully
 		 * unscheduled (zero if no events were registered with the hook) or false
-		 * if unscheduling one or more events fails.
+		 * if un scheduling one or more events fails.
 		 *
 		 * @since 5.1.0
 		 *
-		 * @param null|int|false $pre  Value to return instead. Default null to continue unscheduling the hook.
+		 * @param null|int|false $pre  Value to return instead. Default null to continue un scheduling the hook.
 		 * @param string         $hook Action hook, the execution of which will be unscheduled.
 		 */
 		$pre = apply_filters('pre_unschedule_hook', null, $hook);

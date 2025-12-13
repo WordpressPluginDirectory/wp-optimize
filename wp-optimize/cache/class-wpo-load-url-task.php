@@ -21,7 +21,7 @@ class WP_Optimize_Load_Url_Task extends Updraft_Task_1_2 {
 	public function run() {
 		$url = $this->get_option('url');
 
-		if (empty($url)) return;
+		if (empty($url)) return false;
 
 		$cache_preloader = WP_Optimize_Page_Cache_Preloader::instance();
 

@@ -87,7 +87,7 @@ class WP_Optimize_Detect_Cache_Plugins {
 	private function is_plugin_active($plugin) {
 		$status = WP_Optimize()->get_db_info()->get_plugin_status($plugin);
 
-		return $status['active'];
+		return (bool) $status['active'];
 	}
 
 	/**

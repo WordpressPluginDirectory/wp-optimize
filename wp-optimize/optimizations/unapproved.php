@@ -25,7 +25,7 @@ class WP_Optimization_unapproved extends WP_Optimization {
 
 		$retention_subquery = '';
 
-		if ('true' == $this->retention_enabled) {
+		if ('true' === $this->retention_enabled) {
 			$retention_subquery = ' and comment_date < NOW() - INTERVAL ' . $this->retention_period . ' WEEK';
 		}
 
@@ -59,7 +59,7 @@ class WP_Optimization_unapproved extends WP_Optimization {
 		if (!empty($comments)) {
 			foreach ($comments as $key => $comment) {
 				$comments[$key]['post_title'] = array(
-					'text' => '' == $comment['post_title'] ? '('.__('no title', 'wp-optimize').')' : $comment['post_title'],
+					'text' => '' === $comment['post_title'] ? '('.__('no title', 'wp-optimize').')' : $comment['post_title'],
 					'url' => get_edit_post_link($comment['ID'], ''),
 				);
 				$args = array(
@@ -124,7 +124,7 @@ class WP_Optimization_unapproved extends WP_Optimization {
 	public function optimize() {
 		$clean = "DELETE c, cm FROM `" . $this->wpdb->comments . "` c LEFT JOIN `" . $this->wpdb->commentmeta . "` cm ON c.comment_ID = cm.comment_id WHERE comment_approved = '0' ";
 
-		if ('true' == $this->retention_enabled) {
+		if ('true' === $this->retention_enabled) {
 			$clean .= ' and c.comment_date < NOW() - INTERVAL ' . $this->retention_period . ' WEEK';
 		}
 
@@ -156,7 +156,7 @@ class WP_Optimization_unapproved extends WP_Optimization {
 		}
 
 		// add preview link for output.
-		if (0 != $this->found_count && null != $this->found_count) {
+		if ($this->found_count > 0) {
 			$message = $this->get_preview_link($message);
 		}
 
@@ -169,7 +169,7 @@ class WP_Optimization_unapproved extends WP_Optimization {
 	public function get_info() {
 		$sql = "SELECT COUNT(*) FROM `" . $this->wpdb->comments . "` WHERE comment_approved = '0'";
 
-		if ('true' == $this->retention_enabled) {
+		if ('true' === $this->retention_enabled) {
 			$sql .= ' and comment_date < NOW() - INTERVAL ' . $this->retention_period . ' WEEK';
 		}
 		$sql .= ';';
@@ -178,6 +178,11 @@ class WP_Optimization_unapproved extends WP_Optimization {
 		$this->found_count += $comments;
 	}
 
+	/**
+	 * Returns settings label
+	 *
+	 * @return string
+	 */
 	public function settings_label() {
 		if ('true' == $this->retention_enabled) {
 			// translators: %d is the number of weeks
@@ -187,6 +192,11 @@ class WP_Optimization_unapproved extends WP_Optimization {
 		}
 	}
 
+	/**
+	 * Returns description
+	 *
+	 * @return string
+	 */
 	public function get_auto_option_description() {
 		return __('Remove unapproved comments', 'wp-optimize');
 	}

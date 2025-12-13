@@ -16,6 +16,7 @@ class WPO_WebP_Convert {
 	 * Converts uploaded image to webp format
 	 *
 	 * @param string $source - path of the source file
+	 * @return false|void
 	 */
 	public function convert($source) {
 		if (count($this->converters) < 1) return false;
@@ -31,10 +32,9 @@ class WPO_WebP_Convert {
 	 *
 	 * @return string $destination - path of destination file
 	 */
-	protected function get_destination_path($source) {
+	public function get_destination_path($source) {
 		$path_parts = pathinfo($source);
-		$destination =   $path_parts['dirname'] . '/'. basename($source) . '.webp';
-		return $destination;
+		return $path_parts['dirname'] . '/'. basename($source) . '.webp';
 	}
 
 	/**

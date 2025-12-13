@@ -21,7 +21,11 @@ class WPO_Uninstall {
 		if (class_exists('WPO_Gravatar_Data')) {
 			wpo_delete_files(WPO_Gravatar_Data::WPO_CACHE_GRAVATAR_DIR);
 		}
-		
+
+		if (class_exists('WP_Optimize_Minify_Analytics')) {
+			wpo_delete_files(WP_Optimize_Minify_Analytics::WPO_CACHE_GTAG_DIR);
+		}
+
 		if (class_exists('WP_Optimize_Lazy_Load')) {
 			WP_Optimize_Lazy_Load::instance()->delete_image_cache();
 		}
@@ -63,7 +67,8 @@ class WPO_Uninstall {
 			'server-signature',
 			'logs',
 		);
-		return apply_filters('wpo_uploads_sub_folders', $sub_folders);
+		$filtered_sub_folders = apply_filters('wpo_uploads_sub_folders', $sub_folders);
+		return is_array($filtered_sub_folders) ? $filtered_sub_folders : $sub_folders;
 	}
 
 	/**

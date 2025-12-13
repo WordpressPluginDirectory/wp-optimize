@@ -26,7 +26,7 @@ class WP_Optimize_Minify_Admin {
 		add_action('elementor/editor/after_save', array('WP_Optimize_Minify_Cache_Functions', 'reset'));
 		add_action('fusion_cache_reset_after', array('WP_Optimize_Minify_Cache_Functions', 'reset'));
 		// Output asset preload placeholder, replaced by premium
-		add_action('wpo_minify_settings_tabs', array($this, 'output_assets_preload_placeholder'), 10, 1);
+		add_action('wpo_minify_settings_tabs', array($this, 'output_assets_preload_placeholder'));
 
 		add_action('wp_optimize_register_admin_content', array($this, 'register_content'));
 	}
@@ -161,9 +161,9 @@ class WP_Optimize_Minify_Admin {
 	 */
 	public function output_analytics_settings() {
 		$config = wp_optimize_minify_config()->get();
-		$id = isset($config['tracking_id']) ? $config['tracking_id'] : '';
-		$method = isset($config['analytics_method']) ? $config['analytics_method'] : '';
-		$is_enabled = isset($config['enable_analytics']) ? $config['enable_analytics'] : false;
+		$id = $config['tracking_id'] ?? '';
+		$method = $config['analytics_method'] ?? '';
+		$is_enabled = $config['enable_analytics'] ?? false;
 	
 		WP_Optimize()->include_template(
 			'minify/analytics-settings-tab.php',
@@ -187,7 +187,8 @@ class WP_Optimize_Minify_Admin {
 			'minify/css-settings-tab.php',
 			false,
 			array(
-				'wpo_minify_options' => $wpo_minify_options
+				'wpo_minify_options' => $wpo_minify_options,
+				'show_unused_css' => WP_Optimize()::is_premium() && $wpo_minify_options['enable_css_minification']
 			)
 		);
 	}
@@ -257,7 +258,7 @@ class WP_Optimize_Minify_Admin {
 			array(
 				'is_cache_enabled' => $cache_config->get_option('enable_page_caching'),
 				'is_running' => $is_running,
-				'status_message' => isset($status['message']) ? $status['message'] : '',
+				'status_message' => $status['message'] ?? '',
 			)
 		);
 	}

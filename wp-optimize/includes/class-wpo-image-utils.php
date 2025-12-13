@@ -51,11 +51,11 @@ class WPO_Image_Utils {
 	 *
 	 * @param string $file
 	 *
-	 * @return mixed
+	 * @return string
 	 */
 	public static function get_extension($file) {
 		$file_type = wp_check_filetype($file);
-		return $file_type['ext'];
+		return (string) $file_type['ext'];
 	}
 
 	/**

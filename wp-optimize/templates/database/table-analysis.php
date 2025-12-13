@@ -22,6 +22,6 @@
 	
 	</div>
 	<div class="wpo-table-usage__premium-mask">
-		<a class="wpo-table-usage__premium-link" href="<?php echo esc_url($wp_optimize->premium_version_link); ?>" target="_blank"><?php esc_html_e('Enable table usage analysis with WP-Optimize Premium.', 'wp-optimize'); ?></a>
+		<a class="wpo-table-usage__premium-link" href="<?php echo esc_url($wp_optimize->premium_version_link);?>&utm_content=enable_table_usage" target="_blank"><?php esc_html_e('Enable table usage analysis with WP-Optimize Premium.', 'wp-optimize'); ?></a>
 	</div>
 </div><!-- end #wp-optimize-database-table-analysis -->

@@ -14,6 +14,11 @@ if (class_exists('Updraft_Logger')) return;
  */
 class Updraft_Logger implements Updraft_Logger_Interface {
 	
+	/**
+	 * Array of loggers
+	 *
+	 * @var Updraft_Logger_Interface[]
+	 */
 	protected $_loggers = array();
 
 	/**
@@ -21,7 +26,7 @@ class Updraft_Logger implements Updraft_Logger_Interface {
 	 *
 	 * @param Updraft_Logger_Interface|null $logger
 	 */
-	public function __construct(?Updraft_Logger_Interface $logger = null) {
+	public function __construct($logger = null) {
 		if (!empty($logger)) $this->_loggers = array($logger);
 	}
 
@@ -37,17 +42,18 @@ class Updraft_Logger implements Updraft_Logger_Interface {
 		}
 		return $_instance;
 	}
-
+	
 	/**
 	 * Add logger to loggers list
 	 *
 	 * @param Updraft_Logger_Interface $logger
+	 * @return false|void
 	 */
-	public function add_logger(Updraft_Logger_Interface $logger) {
+	public function add_logger($logger) {
 		$logger_id = $logger_class = get_class($logger);
 
 		// don't add logger if it doesn't support multiple loggers.
-		if (!empty($this->_loggers) && array_key_exists($logger_id, $this->_loggers) && false == $logger->is_allow_multiple()) return false;
+		if (!empty($this->_loggers) && array_key_exists($logger_id, $this->_loggers) && false === $logger->is_allow_multiple()) return false;
 
 		$index = 0;
 
@@ -74,11 +80,11 @@ class Updraft_Logger implements Updraft_Logger_Interface {
 	 *
 	 * @param  string $message
 	 * @param  array  $context
-	 * @return null
+	 * @return void
 	 */
-	public function emergency($message, array $context = array()) {
+	public function emergency($message, $context = array()) {
 
-		if (empty($this->_loggers)) return false;
+		if (empty($this->_loggers)) return;
 
 		foreach ($this->_loggers as $logger) {
 			$logger->emergency($message, $context);
@@ -94,11 +100,11 @@ class Updraft_Logger implements Updraft_Logger_Interface {
 	 *
 	 * @param  string $message
 	 * @param  array  $context
-	 * @return null
+	 * @return void
 	 */
-	public function alert($message, array $context = array()) {
+	public function alert($message, $context = array()) {
 
-		if (empty($this->_loggers)) return false;
+		if (empty($this->_loggers)) return;
 
 		foreach ($this->_loggers as $logger) {
 			$logger->alert($message, $context);
@@ -113,11 +119,11 @@ class Updraft_Logger implements Updraft_Logger_Interface {
 	 *
 	 * @param  string $message
 	 * @param  array  $context
-	 * @return null
+	 * @return void
 	 */
-	public function critical($message, array $context = array()) {
+	public function critical($message, $context = array()) {
 
-		if (empty($this->_loggers)) return false;
+		if (empty($this->_loggers)) return;
 
 		foreach ($this->_loggers as $logger) {
 			$logger->critical($message, $context);
@@ -131,11 +137,11 @@ class Updraft_Logger implements Updraft_Logger_Interface {
 	 *
 	 * @param  string $message
 	 * @param  array  $context
-	 * @return null
+	 * @return void
 	 */
-	public function error($message, array $context = array()) {
+	public function error($message, $context = array()) {
 
-		if (empty($this->_loggers)) return false;
+		if (empty($this->_loggers)) return;
 
 		foreach ($this->_loggers as $logger) {
 			$logger->error($message, $context);
@@ -151,11 +157,11 @@ class Updraft_Logger implements Updraft_Logger_Interface {
 	 *
 	 * @param  string $message
 	 * @param  array  $context
-	 * @return null
+	 * @return void
 	 */
-	public function warning($message, array $context = array()) {
+	public function warning($message, $context = array()) {
 
-		if (empty($this->_loggers)) return false;
+		if (empty($this->_loggers)) return;
 
 		foreach ($this->_loggers as $logger) {
 			$logger->warning($message, $context);
@@ -168,11 +174,11 @@ class Updraft_Logger implements Updraft_Logger_Interface {
 	 *
 	 * @param  string $message
 	 * @param  array  $context
-	 * @return null
+	 * @return void
 	 */
-	public function notice($message, array $context = array()) {
+	public function notice($message, $context = array()) {
 
-		if (empty($this->_loggers)) return false;
+		if (empty($this->_loggers)) return;
 
 		foreach ($this->_loggers as $logger) {
 			$logger->notice($message, $context);
@@ -187,11 +193,11 @@ class Updraft_Logger implements Updraft_Logger_Interface {
 	 *
 	 * @param  string $message
 	 * @param  array  $context
-	 * @return null
+	 * @return void
 	 */
-	public function info($message, array $context = array()) {
+	public function info($message, $context = array()) {
 
-		if (empty($this->_loggers)) return false;
+		if (empty($this->_loggers)) return;
 
 		foreach ($this->_loggers as $logger) {
 			$logger->info($message, $context);
@@ -204,11 +210,11 @@ class Updraft_Logger implements Updraft_Logger_Interface {
 	 *
 	 * @param  string $message
 	 * @param  array  $context
-	 * @return null
+	 * @return void
 	 */
-	public function debug($message, array $context = array()) {
+	public function debug($message, $context = array()) {
 
-		if (empty($this->_loggers)) return false;
+		if (empty($this->_loggers)) return;
 
 		foreach ($this->_loggers as &$logger) {
 			$logger->debug($message, $context);
@@ -219,14 +225,14 @@ class Updraft_Logger implements Updraft_Logger_Interface {
 	/**
 	 * Logs with an arbitrary level.
 	 *
-	 * @param  mixed  $level
-	 * @param  string $message
-	 * @param  array  $context
-	 * @return null
+	 * @param string $message
+	 * @param mixed  $level
+	 * @param array  $context
+	 * @return void
 	 */
-	public function log($level, $message, array $context = array()) {
+	public function log($message, $level, $context = array()) {
 
-		if (empty($this->_loggers)) return false;
+		if (empty($this->_loggers)) return;
 
 		foreach ($this->_loggers as $logger) {
 			$logger->log($message, $level, $context);

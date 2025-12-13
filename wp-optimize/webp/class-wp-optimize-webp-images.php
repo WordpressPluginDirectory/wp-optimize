@@ -23,7 +23,7 @@ class WP_Optimize_WebP_Images {
 	 * Constructor
 	 */
 	private function __construct() {
-		add_action('delete_attachment', array($this, 'delete_related_images'), 10, 1);
+		add_action('delete_attachment', array($this, 'delete_related_images'));
 	}
 
 	/**
@@ -76,7 +76,7 @@ class WP_Optimize_WebP_Images {
 		$this->filename = $file_path_info['filename'];
 		$this->original_extension = '.' . $file_path_info['extension'];
 
-		$file = isset($this->meta['file']) ? $this->meta['file'] : '';
+		$file = $this->meta['file'] ?? '';
 		$basename = $file_path_info['basename'];
 		$sub_directory = '';
 		if (!empty($file)) {
@@ -92,7 +92,7 @@ class WP_Optimize_WebP_Images {
 	 */
 	private function set_sizes() {
 		if (false !== $this->meta) {
-			$this->sizes = isset($this->meta['sizes']) ? $this->meta['sizes'] : array();
+			$this->sizes = $this->meta['sizes'] ?? array();
 		}
 	}
 

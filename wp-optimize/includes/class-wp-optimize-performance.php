@@ -27,7 +27,7 @@ class WP_Optimize_Performance {
 	 * @param WP_Optimize_404_Detector $detector Helper class to be able to call the 404 request detector
 	 * @return WP_Optimize_Performance
 	 */
-	public static function get_instance(WP_Optimize_404_Detector $detector) {
+	public static function get_instance($detector) {
 		static $instance = null;
 		if (null === $instance) {
 			$instance = new WP_Optimize_Performance($detector);
@@ -46,6 +46,11 @@ class WP_Optimize_Performance {
 		add_action('site_health_tab_content', array($this, 'site_health_tab_content'));
 
 		add_action('wp_dashboard_setup', array($this, 'add_dashboard_widgets'));
+
+		// Network admin dashboard (multisite)
+		if (is_multisite()) {
+			add_action('wp_network_dashboard_setup', array($this, 'add_dashboard_widgets'));
+		}
 	}
 
 	/**
@@ -100,10 +105,25 @@ class WP_Optimize_Performance {
 	private function get_404_requests_summary() {
 		$detector = $this->obj_404_detector;
 
-		$count = $detector->get_suspicious_requests_count();
-		if ($count > $detector->get_dashboard_alert_request_count_threshold()) {
+		$counts = $detector->get_suspicious_requests_count();
+		if ($counts['total_requests'] > $detector->get_dashboard_alert_request_count_threshold()) {
+			$url_count = $counts['unique_urls'];
+			$total_count = $counts['total_requests'];
+
 			$admin_url = is_multisite() ? network_admin_url('admin.php') : admin_url('admin.php');
-			return '<b>' . esc_html($count) . '</b> ' . esc_html__('URLs with many 404 Not Found requests', 'wp-optimize') . ' <a href="' . esc_url(add_query_arg(array('page' => 'wpo_performance'), $admin_url)) . '">' . esc_html__('Check', 'wp-optimize') . '</a>';
+
+			$performance_url = esc_url(add_query_arg(array('page' => 'wpo_performance'), $admin_url));
+
+			$url_label = _n('URL', 'URLs', $url_count, 'wp-optimize');
+
+			return sprintf(
+				// translators: %1$d is count of unique URLs, %2$s is "URL" or "URLs", %3$d is count of 404 requests, %4$s is the performance page URL.
+				__('<b>%1$d</b> %2$s generated <b>%3$d</b> 404 Not Found requests <a href="%4$s">Check</a>', 'wp-optimize'),
+				$url_count,
+				esc_html($url_label),
+				$total_count,
+				$performance_url
+			);
 		}
 
 		return "";
@@ -121,6 +141,7 @@ class WP_Optimize_Performance {
 	/**
 	 * Add a tab on the site health check
 	 *
+	 * @param array $tabs
 	 * @return array
 	 */
 	public function add_health_tab($tabs) {
@@ -135,7 +156,7 @@ class WP_Optimize_Performance {
 	 * @return void
 	 */
 	public function site_health_tab_content($tab) {
-		if ('wpo_performance' == $tab) {
+		if ('wpo_performance' === $tab) {
 			WP_Optimize()->include_template('performance/site-health.php', false, array(
 				'alerts' => $this->dashboard_widget()
 			));

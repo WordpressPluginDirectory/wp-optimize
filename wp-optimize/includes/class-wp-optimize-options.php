@@ -39,6 +39,7 @@ class WP_Optimize_Options {
 	/**
 	 * Returns url to WP-Optimize admin dashboard.
 	 *
+	 * @param string $page
 	 * @return string
 	 */
 	public function admin_page_url($page = 'WP-Optimize') {
@@ -53,7 +54,7 @@ class WP_Optimize_Options {
 	 * Returns WP-Optimize option value.
 	 *
 	 * @param string $option  Option name.
-	 * @param bool   $default
+	 * @param mixed   $default
 	 * @return mixed|void
 	 */
 	public function get_option($option, $default = false) {
@@ -77,7 +78,7 @@ class WP_Optimize_Options {
 			if ($blog_changed) restore_current_blog();
 			// check option value for new plugin versions.
 			$new_version_option_value = get_site_option('wp-optimize-mu-'.$option, null);
-			// if it is exists old version value and doesn't exists new version option then return value.
+			// if it exists old version value and doesn't exist new version option then return value.
 			if (null !== $old_version_option_value && null === $new_version_option_value) return $old_version_option_value;
 
 			return get_site_option('wp-optimize-mu-'.$option, $default);
@@ -114,20 +115,27 @@ class WP_Optimize_Options {
 		}
 	}
 
+	/**
+	 * Get option keys
+	 *
+	 * @return array
+	 */
 	public function get_option_keys() {
-
-		return apply_filters(
+		$keys = array('defaults', 'weekly-schedule', 'schedule', 'retention-enabled', 'retention-period', 'last-optimized', 'enable-admin-menu', 'schedule-type', 'total-cleaned', 'current-cleaned', 'email-address', 'email', 'auto', 'settings', 'dismiss_page_notice_until', 'dismiss_dash_notice_until', 'enable_cache_in_admin_bar');
+		$filtered_option_keys = apply_filters(
 			'wp_optimize_option_keys',
-			array('defaults', 'weekly-schedule', 'schedule', 'retention-enabled', 'retention-period', 'last-optimized', 'enable-admin-menu', 'schedule-type', 'total-cleaned', 'current-cleaned', 'email-address', 'email', 'auto', 'settings', 'dismiss_page_notice_until', 'dismiss_dash_notice_until', 'enable_cache_in_admin_bar')
+			$keys
 		);
+
+		return is_array($filtered_option_keys) ? $filtered_option_keys : $keys;
 	}
 	
 	/**
-	 * This particular option has its own functions abstracted to make it easier to change the format in future.
+	 * This particular option has its own functions abstracted to make it easier to change the format in the future.
 	 * To allow callers to always assume the latest format (because get_main_settings() will convert, if needed).
 	 *
 	 * @param  array $settings Array of optimization settings.
-	 * @return array
+	 * @return bool
 	 */
 	private function save_manual_run_optimizations_settings($settings) {
 		$settings['last_saved_in'] = WPO_VERSION;
@@ -182,6 +190,7 @@ class WP_Optimize_Options {
 	/**
 	 * Save options
 	 *
+	 * @param array $settings
 	 * @return array
 	 */
 	public function save_settings($settings) {
@@ -224,7 +233,7 @@ class WP_Optimize_Options {
 		// Get saved admin menu value before check.
 		$saved_admin_bar = $this->get_option('enable-admin-menu', 'false');
 
-		// Set refresh of default false so it doesnt refresh after save.
+		// Set refresh of default false so it doesn't refresh after save.
 		$output['refresh'] = false;
 
 		if (!empty($settings['enable-admin-bar'])) {
@@ -237,14 +246,14 @@ class WP_Optimize_Options {
 		$updated_admin_bar = (isset($settings['enable-admin-bar']) && $settings['enable-admin-bar']) ? 'true' : 'false';
 		
 		// Check if the value is refreshed .
-		if ($saved_admin_bar != $updated_admin_bar) {
+		if ($saved_admin_bar !== $updated_admin_bar) {
 			// Set refresh to true as the values have changed.
 			$output['refresh'] = true;
 		}
 
 		// Save cache toolbar display setting
-		$saved_enable_cache_in_admin_bar = $this->get_option('enable_cache_in_admin_bar', true);
-		if ($saved_enable_cache_in_admin_bar != $settings['enable_cache_in_admin_bar']) {
+		$saved_enable_cache_in_admin_bar = (bool) $this->get_option('enable_cache_in_admin_bar', true);
+		if ($saved_enable_cache_in_admin_bar !== (bool) $settings['enable_cache_in_admin_bar']) {
 			$this->update_option('enable_cache_in_admin_bar', $settings['enable_cache_in_admin_bar']);
 			$output['refresh'] = true;
 		}
@@ -261,8 +270,8 @@ class WP_Optimize_Options {
 		}
 
 		/** Save logging options */
-		$logger_type = isset($settings['wpo-logger-type']) ? $settings['wpo-logger-type'] : '';
-		$logger_options = isset($settings['wpo-logger-options']) ? $settings['wpo-logger-options'] : '';
+		$logger_type = $settings['wpo-logger-type'] ?? '';
+		$logger_options = $settings['wpo-logger-options'] ?? '';
 		
 		$this->update_option('logging', $logger_type);
 		$this->update_option('logging-additional', $logger_options);
@@ -283,7 +292,7 @@ class WP_Optimize_Options {
 		$enable_db_force_optimize = (isset($settings['innodb-force-optimize']) ? 'true' : 'false');
 		$this->update_option('enable-db-force-optimize', $enable_db_force_optimize);
 
-		$wpo_404_detector = isset($settings['404_detector']) ? $settings['404_detector'] : 0;
+		$wpo_404_detector = $settings['404_detector'] ?? 0;
 		$this->update_option('404_detector', $wpo_404_detector);
 
 		$output['messages'][] = __('Settings updated.', 'wp-optimize');
@@ -295,7 +304,7 @@ class WP_Optimize_Options {
 	/**
 	 * Wipe all options from database options tables.
 	 *
-	 * @return bool|false|int
+	 * @return bool|int
 	 */
 	public function wipe_settings() {
 		global $wpdb;
@@ -332,9 +341,9 @@ class WP_Optimize_Options {
 		// phpcs:disable
 		// WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Only hardcoded strings are used
 		if (is_multisite()) {
-			$result = $wpdb->query("DELETE FROM {$wpdb->sitemeta} WHERE `meta_key` LIKE 'wp-optimize-mu-%' OR `meta_key` IN ({$keys})");
+			$result = $wpdb->query("DELETE FROM `{$wpdb->sitemeta}` WHERE `meta_key` LIKE 'wp-optimize-mu%' OR `meta_key` IN ($keys)");
 		} else {
-			$result = $wpdb->query("DELETE FROM {$wpdb->options} WHERE `option_name` LIKE 'wp-optimize-%' OR `option_name` IN ({$keys})");
+			$result = $wpdb->query("DELETE FROM `{$wpdb->options}` WHERE `option_name` LIKE 'wp-optimize%' OR `option_name` IN ($keys)");
 		}
 		// phpcs:enable
 
@@ -366,7 +375,7 @@ class WP_Optimize_Options {
 		$optimizer = WP_Optimize()->get_optimizer();
 
 		if (!empty($settings["schedule_type"])) {
-			$options_from_user = isset($settings['wp-optimize-auto']) ? $settings['wp-optimize-auto'] : array();
+			$options_from_user = $settings['wp-optimize-auto'] ?? array();
 			
 			if (!is_array($options_from_user)) $options_from_user = array();
 			
@@ -408,7 +417,7 @@ class WP_Optimize_Options {
 	 * @param  array   $sent_options 			  Options sent from Ajax.
 	 * @param  boolean $use_dom_id   			  Parameter is legacy.
 	 * @param  boolean $available_for_saving_only Save only available for saving optimization state.
-	 * @return array User Options
+	 * @return bool    User Options
 	 */
 	public function save_sent_manual_run_optimization_options($sent_options, $use_dom_id = false, $available_for_saving_only = true) {
 		$optimizations = WP_Optimize()->get_optimizer()->get_optimizations();
@@ -436,29 +445,25 @@ class WP_Optimize_Options {
 	 * Setup options if not exists already.
 	 */
 	public function set_default_options() {
-		$deprecated = null;
-		$autoload_no = 'no';
-
 		if (false === $this->get_option('schedule')) {
-			// The option hasn't been added yet. We'll add it with $autoload_no set to 'no'.
-			$this->update_option('schedule', 'false', $deprecated, $autoload_no);
-			$this->update_option('last-optimized', 'Never', $deprecated, $autoload_no);
-			$this->update_option('schedule-type', 'wpo_weekly', $deprecated, $autoload_no);
+			$this->update_option('schedule', 'false');
+			$this->update_option('last-optimized', 'Never');
+			$this->update_option('schedule-type', 'wpo_weekly');
 			// Deactivate cron.
 			wpo_cron_deactivate();
 		}
 
 		if (false === $this->get_option('retention-enabled')) {
-			$this->update_option('retention-enabled', 'false', $deprecated, $autoload_no);
-			$this->update_option('retention-period', '2', $deprecated, $autoload_no);
+			$this->update_option('retention-enabled', 'false');
+			$this->update_option('retention-period', '2');
 		}
 
 		if (false === $this->get_option('enable-admin-menu')) {
-			$this->update_option('enable-admin-menu', 'false', $deprecated, $autoload_no);
+			$this->update_option('enable-admin-menu', 'false');
 		}
 
 		if (false === $this->get_option('total-cleaned')) {
-			$this->update_option('total-cleaned', '0', $deprecated, $autoload_no);
+			$this->update_option('total-cleaned', '0');
 		}
 
 		$optimizer = WP_Optimize()->get_optimizer();
@@ -510,7 +515,7 @@ class WP_Optimize_Options {
 		// Save additional auto backup option values.
 		foreach ($settings as $key => $value) {
 			if (preg_match('/enable\-auto\-backup\-/', $key)) {
-				$value = ('true' == $value) ? 'true' : 'false';
+				$value = ('true' === $value) ? 'true' : 'false';
 				$this->update_option($key, $value);
 			}
 		}

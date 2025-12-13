@@ -6,9 +6,15 @@ if (!defined('ABSPATH')) die('No direct access allowed');
  * All cache commands that are intended to be available for calling from any sort of control interface (e.g. wp-admin, UpdraftCentral) go in here. All public methods should either return the data to be returned, or a WP_Error with associated error code, message and error data.
  */
 class WP_Optimize_Cache_Commands {
-
+	
+	/**
+	 * @var WP_Optimizer
+	 */
 	private $optimizer;
-
+	
+	/**
+	 * @var WP_Optimize_Options
+	 */
 	private $options;
 
 	/**
@@ -46,7 +52,7 @@ class WP_Optimize_Cache_Commands {
 		$previous_settings = WPO_Cache_Config::instance()->get();
 
 		// Attempt to change current status if required
-		if (isset($previous_settings['enable_page_caching']) && $previous_settings['enable_page_caching'] != $data['cache-settings']['enable_page_caching']) {
+		if (isset($previous_settings['enable_page_caching']) && (bool) $previous_settings['enable_page_caching'] !== (bool) $data['cache-settings']['enable_page_caching']) {
 			// Disable cache.
 			if (empty($data['cache-settings']['enable_page_caching'])) {
 				$disabled = WPO_Page_Cache::instance()->disable();

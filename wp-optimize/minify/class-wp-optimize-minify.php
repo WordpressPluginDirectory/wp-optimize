@@ -36,7 +36,7 @@ class WP_Optimize_Minify {
 
 		$this->load_admin();
 
-		add_filter('wpo_cache_admin_bar_menu_items', array($this, 'admin_bar_menu'), 30, 1);
+		add_filter('wpo_cache_admin_bar_menu_items', array($this, 'admin_bar_menu'), 30);
 		
 		if (WP_Optimize::is_premium()) {
 			$this->load_premium();
@@ -130,7 +130,8 @@ class WP_Optimize_Minify {
 		$wpo_minify_options = wp_optimize_minify_config()->get();
 		if (!$wpo_minify_options['enabled'] || !current_user_can('manage_options')) return;
 
-		if (isset($_GET['wpo_minify_cache_purged'])) {
+		$is_cache_purged = TeamUpdraft\WP_Optimize\Includes\Fragments\fetch_superglobal('get', 'wpo_minify_cache_purged');
+		if (null !== $is_cache_purged) {
 			if (is_admin()) {
 				add_action('admin_notices', array($this, 'notice_purge_minify_cache_success'));
 				return;
@@ -141,14 +142,14 @@ class WP_Optimize_Minify {
 			}
 		}
 
-		if (!isset($_GET['_wpo_purge_minify_cache'])) return;
+		$nonce = TeamUpdraft\WP_Optimize\Includes\Fragments\verify_nonce('_wpo_purge_minify_cache', 'wpo_purge_minify_cache');
 		
-		if (wp_verify_nonce($_GET['_wpo_purge_minify_cache'], 'wpo_purge_minify_cache')) {
+		if ($nonce) {
 			$success = false;
 
 			// Purge minify
 			$results = $this->minify_commands->purge_minify_cache();
-			if ("caches cleared" == $results['result']) $success = true;
+			if ("caches cleared" === $results['result']) $success = true;
 
 			// remove nonce from url and reload page.
 			wp_redirect(add_query_arg('wpo_minify_cache_purged', $success, remove_query_arg('_wpo_purge_minify_cache')));

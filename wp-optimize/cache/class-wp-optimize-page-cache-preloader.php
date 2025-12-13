@@ -7,11 +7,20 @@ if (!class_exists('WP_Optimize_Load_Url_Task')) {
 }
 
 class WP_Optimize_Page_Cache_Preloader extends WP_Optimize_Preloader {
-
+	
+	/**
+	 * @var string
+	 */
 	protected $preload_type = 'page_cache';
-
+	
+	/**
+	 * @var string
+	 */
 	protected $task_type = 'load-url-task';
-
+	
+	/**
+	 * @var null | WP_Optimize_Page_Cache_Preloader
+	 */
 	static protected $_instance = null;
 
 	/**
@@ -59,7 +68,7 @@ class WP_Optimize_Page_Cache_Preloader extends WP_Optimize_Preloader {
 
 			$last_schedule_type = $previous_settings['preload_schedule_type'];
 
-			$last_use_nighttime = $this->options->get_option('page_cache_schedule_preload_nighttime');
+			$last_use_nighttime = (int) $this->options->get_option('page_cache_schedule_preload_nighttime');
 			// By default, we schedule preload events to the nighttime.
 			$use_nighttime = apply_filters('wpo_page_cache_schedule_preload_use_nighttime', 1);
 
@@ -67,11 +76,11 @@ class WP_Optimize_Page_Cache_Preloader extends WP_Optimize_Preloader {
 
 			if (wp_next_scheduled('wpo_page_cache_schedule_preload')) {
 				// if already scheduled this schedule type
-				if ($new_settings['preload_schedule_type'] == $last_schedule_type && ($last_use_nighttime === $use_nighttime)) {
+				if ($new_settings['preload_schedule_type'] === $last_schedule_type && ($last_use_nighttime === $use_nighttime)) {
 					// If the schedule type is cache lifespan, check if the cache lifespan changed.
-					if ('wpo_use_cache_lifespan' == $new_settings['preload_schedule_type']) {
+					if ('wpo_use_cache_lifespan' === $new_settings['preload_schedule_type']) {
 						// Else, if the settings cache lifespan settings haven't changed, returns
-						if ($new_settings['page_cache_length_value'] == $previous_settings['page_cache_length_value'] && $new_settings['page_cache_length_unit'] == $previous_settings['page_cache_length_unit']) {
+						if ($new_settings['page_cache_length_value'] === $previous_settings['page_cache_length_value'] && $new_settings['page_cache_length_unit'] === $previous_settings['page_cache_length_unit']) {
 							return;
 						}
 					} else {
@@ -139,7 +148,7 @@ class WP_Optimize_Page_Cache_Preloader extends WP_Optimize_Preloader {
 		if (!$schedule_type) return;
 
 		// Don't run preload if cache lifespan option enabled and cache not expired yet.
-		if ('wpo_use_cache_lifespan' == $schedule_type) {
+		if ('wpo_use_cache_lifespan' === $schedule_type) {
 
 			/**
 			 * Filters the allowed time difference between the cache exiry and the current time, in seconds.
@@ -180,6 +189,8 @@ class WP_Optimize_Page_Cache_Preloader extends WP_Optimize_Preloader {
 
 	/**
 	 * Get cache config option value.
+	 *
+	 * @param string $option
 	 *
 	 * @return mixed
 	 */
@@ -340,7 +351,7 @@ class WP_Optimize_Page_Cache_Preloader extends WP_Optimize_Preloader {
 			$response = @file_get_contents($sitemap_url); // phpcs:ignore Generic.PHP.NoSilencedErrors.Discouraged -- suppress warnings when there is network error
 
 			// if response is empty then try load from file.
-			if (empty($response) && '' == $sitemap_url) {
+			if (empty($response)) {
 				$sitemap_file = $this->get_local_sitemap_file();
 
 				if (is_file($sitemap_file)) {
@@ -419,7 +430,7 @@ class WP_Optimize_Page_Cache_Preloader extends WP_Optimize_Preloader {
 				if (count($matches[0])) {
 					$prefix = strpos($permalink, '?') ? '&page=' : '';
 					for ($page = 0; $page < count($matches[0]); $page++) {
-						if ('' != $prefix) {
+						if ('' !== $prefix) {
 							$urls[] = $permalink . $prefix . ($page+2);
 						} else {
 							$urls[] = trailingslashit($permalink) . ($page+2);
@@ -459,7 +470,7 @@ class WP_Optimize_Page_Cache_Preloader extends WP_Optimize_Preloader {
 	 */
 	public function is_domain_mapping_enabled() {
 		// SUNRISE constant is defined with installation WordPress MU Domain Mapping plugin.
-		$enabled = is_multisite() && defined('SUNRISE') && 'on' == strtolower(SUNRISE);
+		$enabled = is_multisite() && defined('SUNRISE') && 'on' === strtolower(SUNRISE);
 
 		/**
 		 * Filters if Multisite Domain mapping is enabled.
@@ -482,7 +493,7 @@ class WP_Optimize_Page_Cache_Preloader extends WP_Optimize_Preloader {
 		$domain = '';
 		$multisite_plugin_table_name = $wpdb->base_prefix.'domain_mapping';
 		// Check if table exists
-		if ($wpdb->get_var("SHOW TABLES LIKE '" . esc_sql($multisite_plugin_table_name) . "'") != $multisite_plugin_table_name) {
+		if ($wpdb->get_var("SHOW TABLES LIKE '" . esc_sql($multisite_plugin_table_name) . "'") !== $multisite_plugin_table_name) {
 			// This table created in WordPress MU Domain Mapping plugin.
 			$row = $wpdb->get_row($wpdb->prepare("SELECT `domain` FROM " .esc_sql($multisite_plugin_table_name) . " WHERE `blog_id` = %d AND `active` = %d", $blog_id, 1), ARRAY_A);
 			if (!empty($row)) {
@@ -533,8 +544,8 @@ class WP_Optimize_Page_Cache_Preloader extends WP_Optimize_Preloader {
 	/**
 	 * Captures and logs any interesting messages
 	 *
-	 * @param String $message    - the error message
-	 * @param String $error_type - the error type
+	 * @param string $message    - the error message
+	 * @param string $error_type - the error type
 	 */
 	public function log($message, $error_type = 'info') {
 
@@ -598,7 +609,7 @@ class WP_Optimize_Page_Cache_Preloader extends WP_Optimize_Preloader {
 		}
 
 		// if 0 == $regenerate_count, nothing all the expected files exist, and none were deleted.
-		return 0 == $regenerate_count;
+		return 0 === $regenerate_count;
 	}
 
 	/**
@@ -624,7 +635,7 @@ class WP_Optimize_Page_Cache_Preloader extends WP_Optimize_Preloader {
 		if (null === $is_preloader_scheduled) {
 			$is_preloader_scheduled = WPO_Cache_Config::instance()->get_option('enable_schedule_preload');
 			$schedule_type = WPO_Cache_Config::instance()->get_option('preload_schedule_type');
-			$lifespan = WPO_Cache_Config::instance()->get_option('page_cache_length');
+			$lifespan = (int) WPO_Cache_Config::instance()->get_option('page_cache_length');
 			$schedule_interval = $this->get_schedule_interval($schedule_type);
 
 			/**
@@ -648,14 +659,14 @@ class WP_Optimize_Page_Cache_Preloader extends WP_Optimize_Preloader {
 			$regenerate_file_when_no_expiry_date = apply_filters('wpo_regenerate_file_when_no_expiry_date', true);
 		}
 
-		if (($always_regenerate_file_if_preload_is_manual && 'manual' == $preload_type) || ($always_regenerate_file_if_preload_is_scheduled && 'scheduled' == $preload_type)) {
+		if (($always_regenerate_file_if_preload_is_manual && 'manual' === $preload_type) || ($always_regenerate_file_if_preload_is_scheduled && 'scheduled' === $preload_type)) {
 			$result = true;
 		} else {
 
 			$modified_time = (int) filemtime($path);
 
 			// cache lifespan is set.
-			if (0 != $lifespan) {
+			if (0 !== $lifespan) {
 				$expiry_time = $modified_time + $lifespan - $lifespan_expiry_threshold;
 				$result = time() > $expiry_time;
 			} elseif ($is_preloader_scheduled) {
@@ -672,6 +683,8 @@ class WP_Optimize_Page_Cache_Preloader extends WP_Optimize_Preloader {
 
 	/**
 	 * Add preloader headers
+	 *
+	 * @param array $headers Preload headers
 	 */
 	public function preload_headers($headers) {
 		$headers['X-WP-Optimize-Cache-Preload'] = 'Yes';
@@ -701,11 +714,23 @@ class WP_Optimize_Page_Cache_Preloader extends WP_Optimize_Preloader {
 			'error' => __('Probably page cache preload is running already.', 'wp-optimize')
 		);
 	}
-
+	
+	/**
+	 * Returns preload data
+	 *
+	 * @return array
+	 */
 	protected function get_preload_data() {
 		return WP_Optimize()->get_page_cache()->get_cache_size();
 	}
-
+	
+	/**
+	 * Returns preloading message
+	 *
+	 * @param array $cache_size
+	 *
+	 * @return array
+	 */
 	protected function get_preloading_message($cache_size) {
 		return array(
 			'done' => false,
@@ -714,7 +739,15 @@ class WP_Optimize_Page_Cache_Preloader extends WP_Optimize_Preloader {
 			'file_count' => $cache_size['file_count']
 		);
 	}
-
+	
+	/**
+	 * Returns last preload message
+	 *
+	 * @param array  $cache_size
+	 * @param string $last_preload_time_str
+	 *
+	 * @return array
+	 */
 	protected function get_last_preload_message($cache_size, $last_preload_time_str) {
 		return array(
 			'done' => true,
@@ -724,7 +757,14 @@ class WP_Optimize_Page_Cache_Preloader extends WP_Optimize_Preloader {
 			'file_count' => $cache_size['file_count']
 		);
 	}
-
+	
+	/**
+	 * Returns preload success message
+	 *
+	 * @param array $cache_size
+	 *
+	 * @return array
+	 */
 	protected function get_preload_success_message($cache_size) {
 		return array(
 			'done' => true,
@@ -732,7 +772,16 @@ class WP_Optimize_Page_Cache_Preloader extends WP_Optimize_Preloader {
 			'file_count' => $cache_size['file_count']
 		);
 	}
-
+	
+	/**
+	 * Returns preload progress message
+	 *
+	 * @param array  $cache_size
+	 * @param string $preloaded_message
+	 * @param int    $preload_resuming_in
+	 *
+	 * @return array
+	 */
 	protected function get_preload_progress_message($cache_size, $preloaded_message, $preload_resuming_in) {
 		return array(
 			'done' => false,

@@ -28,7 +28,7 @@ class WP_Optimization_transient extends WP_Optimization {
 	public function preview($params) {
 
 		// get type of data for return single site or multisite.
-		$type = isset($params['type']) && 'multisite' == $params['type'] ? 'multisite' : 'single';
+		$type = isset($params['type']) && 'multisite' === $params['type'] ? 'multisite' : 'single';
 
 		// set remove_all_transients for correctly handling "all" checkbox for preview transients.
 		if (isset($params['remove_all_transients'])) {
@@ -38,7 +38,7 @@ class WP_Optimization_transient extends WP_Optimization {
 		// get data requested for preview.
 		// `$this->wpdb->prepare` is global `$wpdb->prepare`
 		// phpcs:disable
-		if ('single' == $type) {
+		if ('single' === $type) {
 			$sql = $this->wpdb->prepare("
 				SELECT
 					a.option_id, 
@@ -140,7 +140,7 @@ class WP_Optimization_transient extends WP_Optimization {
 		// phpcs:enable
 
 		// define columns array depends on source type of request.
-		if ('single' == $type) {
+		if ('single' === $type) {
 			$columns = array(
 				'option_id' => __('ID', 'wp-optimize'),
 				'option_name' => __('Name', 'wp-optimize'),
@@ -155,7 +155,7 @@ class WP_Optimization_transient extends WP_Optimization {
 		}
 
 		return array(
-			'id_key' => ('single' == $type) ? 'option_id' : 'meta_id',
+			'id_key' => ('single' === $type) ? 'option_id' : 'meta_id',
 			'columns' => $columns,
 			'offset' => $params['offset'],
 			'limit' => $params['limit'],
@@ -254,7 +254,7 @@ class WP_Optimization_transient extends WP_Optimization {
 			}
 
 			$sitemeta_table_transients_deleted = $this->query($clean2);
-			if ('' != $clean2_timeouts) $this->query($clean2_timeouts);
+			if ('' !== $clean2_timeouts) $this->query($clean2_timeouts);
 
 			// translators: %s is the number of transient options deleted across network
 			$message2 = sprintf(_n('%s network-wide transient option deleted', '%s network-wide transient options deleted', $sitemeta_table_transients_deleted, 'wp-optimize'), number_format_i18n($sitemeta_table_transients_deleted));
@@ -341,7 +341,7 @@ class WP_Optimization_transient extends WP_Optimization {
 		$options_table_transients_deleted = $this->query($clean);
 		$this->processed_count += $options_table_transients_deleted;
 
-		if ('' != $clean_timeouts) $this->query($clean_timeouts);
+		if ('' !== $clean_timeouts) $this->query($clean_timeouts);
 	}
 
 	/**
@@ -375,7 +375,7 @@ class WP_Optimization_transient extends WP_Optimization {
 					)				 	
 				WHERE
 					a.meta_key LIKE '_site_transient_%' AND
-					a.meta_key NOT LIKE '_site_transient_timeout_%' AND
+					a.meta_key NOT LIKE '_site_transient_timeout_%' AND 
 					b.meta_key IS NOT NULL";
 
 			$expired_suffix_sql = " AND b.meta_value < UNIX_TIMESTAMP()";
@@ -391,8 +391,8 @@ class WP_Optimization_transient extends WP_Optimization {
 
 		if ($this->found_count_all > 0) {
 			$message = sprintf(
-				// translators: %1$s is the number of expired transient options, %2$s is the number of all transient options
-				_n('%1$s of %2$s transient option expired', '%1$s of %2$s transient options expired', $this->found_count, 'wp-optimize'),
+			// translators: %1$s is the number of expired transient options, %2$s is the number of all transient options
+			_n('%1$s of %2$s transient option expired', '%1$s of %2$s transient options expired', $this->found_count, 'wp-optimize'),
 				number_format_i18n($this->found_count),
 				number_format_i18n($this->found_count_all)
 			);
@@ -436,42 +436,52 @@ class WP_Optimization_transient extends WP_Optimization {
 	 */
 	public function get_info() {
 
-		$options_table_sql = "
-		SELECT
-			COUNT(*)
-		FROM
-			" . $this->wpdb->options . " a
-		LEFT JOIN
-			" . $this->wpdb->options . " b
-		ON
-			b.option_name = CONCAT(
-				'_transient_timeout_',
-				SUBSTRING(
-					a.option_name,
-					CHAR_LENGTH('_transient_') + 1
+			$options_table_sql = "
+			SELECT
+				COUNT(*)
+			FROM
+				" . $this->wpdb->options . " a 
+			LEFT JOIN 
+				" . $this->wpdb->options . " b
+			ON	
+				b.option_name = CONCAT(
+					'_transient_timeout_',
+					SUBSTRING(
+						a.option_name,
+						CHAR_LENGTH('_transient_') + 1
+					)
 				)
-			)
-		WHERE
-			a.option_name LIKE '_transient_%' AND
-			a.option_name NOT LIKE '_transient_timeout_%'
-		";
+			WHERE
+				a.option_name LIKE '_transient_%' AND
+				a.option_name NOT LIKE '_transient_timeout_%'
+			";
 
-		$expired_suffix_sql = " AND b.option_value < UNIX_TIMESTAMP()";
+			$expired_suffix_sql = " AND b.option_value < UNIX_TIMESTAMP()";
 
-		// get count of expired transients.
-		$options_table_transients = $this->wpdb->get_var($options_table_sql . $expired_suffix_sql); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- safe, no user input used
-		$this->found_count += $options_table_transients;
+			// get count of expired transients.
+			$options_table_transients = $this->wpdb->get_var($options_table_sql . $expired_suffix_sql); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- safe, no user input used
+			$this->found_count += $options_table_transients;
 
-		// get count of all transients.
-		$options_table_transients = $this->wpdb->get_var($options_table_sql); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- safe, no user input used
-		$this->found_count_all += $options_table_transients;
+			// get count of all transients.
+			$options_table_transients = $this->wpdb->get_var($options_table_sql); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- safe, no user input used
+			$this->found_count_all += $options_table_transients;
 
 	}
 
+	/**
+	 * Returns settings label
+	 *
+	 * @return string
+	 */
 	public function settings_label() {
 		return __('Remove expired transient options', 'wp-optimize');
 	}
 
+	/**
+	 * Returns description
+	 *
+	 * @return string
+	 */
 	public function get_auto_option_description() {
 		return __('Remove expired transient options', 'wp-optimize');
 	}

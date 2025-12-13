@@ -36,7 +36,7 @@
 
 		foreach ($schedule_options as $opt_id => $opt_description) {
 			?>
-			<option value="<?php echo esc_attr($opt_id); ?>" <?php selected($wpo_cache_options['preload_schedule_type'], $opt_id); ?> <?php if ('wpo_use_cache_lifespan' == $opt_id && $wpo_cache_options['page_cache_length_value'] <= 0) disabled(true); ?>><?php echo esc_html($opt_description); ?></option>
+			<option value="<?php echo esc_attr($opt_id); ?>" <?php selected($wpo_cache_options['preload_schedule_type'], $opt_id); ?> <?php if ('wpo_use_cache_lifespan' === $opt_id && $wpo_cache_options['page_cache_length_value'] <= 0) disabled(true); ?>><?php echo esc_html($opt_description); ?></option>
 			<?php
 		}
 

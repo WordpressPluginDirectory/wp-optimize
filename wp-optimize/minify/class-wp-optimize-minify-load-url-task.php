@@ -8,6 +8,8 @@ class WP_Optimize_Minify_Load_Url_Task extends Updraft_Task_1_2 {
 
 	/**
 	 * Default options.
+	 *
+	 * @return array
 	 */
 	public function get_default_options() {
 		return array();
@@ -21,7 +23,7 @@ class WP_Optimize_Minify_Load_Url_Task extends Updraft_Task_1_2 {
 	public function run() {
 		$url = $this->get_option('url');
 
-		if (empty($url)) return;
+		if (empty($url)) return false;
 
 		$minify_preloader = WP_Optimize_Minify_Preloader::instance();
 

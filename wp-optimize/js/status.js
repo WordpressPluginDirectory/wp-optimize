@@ -11,6 +11,11 @@ var WPO_Status_Report = (function($) {
 		 * Use WordPress Fetch API to show directory size information, update HTML and plain text report
 		 */
 		function fetch_directory_sizes() {
+			if ('undefined' === typeof wp || 'undefined' === typeof wp.apiFetch) {
+				// WordPress 4.9 fallback
+				data_not_available();
+				return;
+			}
 			wp.apiFetch({
 				path: 'wp-site-health/v1/directory-sizes'
 			}).then(function(data) {
@@ -32,10 +37,14 @@ var WPO_Status_Report = (function($) {
 					}
 				}
 			}).catch(function(e) {
-				var elems = document.querySelectorAll('.wpo-ajax-field-wp-paths-sizes');
-				elems.forEach(function(e) {
-					e.innerHTML = wpoptimize.data_not_available;
-				});
+				data_not_available();
+			});
+		}
+		
+		function data_not_available() {
+			var elems = document.querySelectorAll('.wpo-ajax-field-wp-paths-sizes');
+			elems.forEach(function(e) {
+				e.innerHTML = wpoptimize.data_not_available;
 			});
 		}
 

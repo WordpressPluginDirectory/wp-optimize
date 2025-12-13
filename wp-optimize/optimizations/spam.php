@@ -38,11 +38,11 @@ class WP_Optimization_spam extends WP_Optimization {
 	public function preview($params) {
 
 		// get clicked comment type link.
-		$type = isset($params['type']) && 'spam' == $params['type'] ? 'spam' : 'trash';
+		$type = isset($params['type']) && 'spam' === $params['type'] ? 'spam' : 'trash';
 
 		$retention_subquery = '';
 
-		if ('true' == $this->retention_enabled) {
+		if ('true' === $this->retention_enabled) {
 			$retention_subquery = ' and comment_date < NOW() - INTERVAL ' . $this->retention_period . ' WEEK';
 		}
 
@@ -147,12 +147,12 @@ class WP_Optimization_spam extends WP_Optimization {
 	 * Delete comments by $type along with comments meta from database.
 	 *
 	 * @param string $type comment type.
-	 * @return array
+	 * @return mixed
 	 */
 	public function delete_comments_by_type($type) {
 		$clean = "DELETE c, cm FROM `" . $this->wpdb->comments . "` c LEFT JOIN `" . $this->wpdb->commentmeta . "` cm ON c.comment_ID = cm.comment_id WHERE c.comment_approved = '{$type}'";
 
-		if ('true' == $this->retention_enabled) {
+		if ('true' === $this->retention_enabled) {
 			$clean .= ' and c.comment_date < NOW() - INTERVAL ' . $this->retention_period . ' WEEK';
 		}
 
@@ -243,7 +243,7 @@ class WP_Optimization_spam extends WP_Optimization {
 	 */
 	public function get_count_comments($type) {
 		$sql = "SELECT COUNT(*) FROM `" . $this->wpdb->comments . "` WHERE comment_approved = '{$type}'";
-		if ('true' == $this->retention_enabled) {
+		if ('true' === $this->retention_enabled) {
 			$sql .= ' and comment_date < NOW() - INTERVAL ' . $this->retention_period . ' WEEK';
 		}
 		$sql .= ';';
@@ -253,17 +253,24 @@ class WP_Optimization_spam extends WP_Optimization {
 
 	/**
 	 * Do actions after get_info() function.
+	 *
+	 * @return string
 	 */
 	public function settings_label() {
 	
-		if ('true' == $this->retention_enabled) {
+		if ('true' === $this->retention_enabled) {
 			// translators: %s is the number of weeks
 			return sprintf(__('Remove spam and trashed comments which are older than %d weeks', 'wp-optimize'), $this->retention_period);
 		} else {
 			return __('Remove spam and trashed comments', 'wp-optimize');
 		}
 	}
-
+	
+	/**
+	 * Returns description
+	 *
+	 * @return string
+	 */
 	public function get_auto_option_description() {
 		return __('Remove spam and trashed comments', 'wp-optimize');
 	}

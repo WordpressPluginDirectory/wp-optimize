@@ -10,7 +10,7 @@
 	foreach ($menu_items as $menu) :
 	?>
 
-		<?php if (isset($menu['icon']) && 'separator' == $menu['icon']) : ?>
+		<?php if (isset($menu['icon']) && 'separator' === $menu['icon']) : ?>
 			<span class="separator"></span>
 		<?php else : ?>
 			<a class="<?php echo ($active_page === $menu['menu_slug']) ? 'active' : ''; ?>" href="<?php echo esc_url(menu_page_url($menu['menu_slug'], false)); ?>" data-menuslug="<?php echo esc_attr($menu['menu_slug']); ?>">

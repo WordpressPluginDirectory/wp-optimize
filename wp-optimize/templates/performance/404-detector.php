@@ -18,6 +18,11 @@
 					<?php esc_html_e('Enable 404 Detector', 'wp-optimize');?>
 				</label>
 			</div>
+			<div id="wpo-404-clear-logs">
+				<a href="#" class="button button-primary button-large">
+					<?php esc_html_e('Clear All Logs', 'wp-optimize');?>
+				</a>
+			</div>
 		</div>
 	</form>
 </div>
@@ -39,7 +44,7 @@ $add_thickbox_for_urls = array();
 </span>
 <?php
 
-if (0 == count($requests) || !$report_has_data) {
+if (0 === count($requests) || !$report_has_data) {
 ?>
 <table class="wp-list-table widefat striped wpo-404-requests">
 	<tr><td><?php echo esc_html__('Nothing to show', 'wp-optimize'); ?></td></tr>
@@ -60,9 +65,9 @@ foreach ($requests as $url => $url_requests) {
 	<?php
 	
 	foreach ($url_requests as $row) {
-		if (1 < $row->occurrences && 'grouped' == $row->row_type) {
+		if (1 < $row->occurrences && 'grouped' === $row->row_type) {
 
-			if (0 == $row->non_suspicious_referrers && 1 == $row->total_referrers) {
+			if (0 === (int) $row->non_suspicious_referrers && 1 === (int) $row->total_referrers) {
 				// There is no additional information inside the group to be shown, no thickbox
 				continue;
 			}
@@ -74,8 +79,8 @@ foreach ($requests as $url => $url_requests) {
 		}
 		?>
 		<tr>
-			<td class="wpo-text-center"><?php echo sprintf('grouped' == $row->row_type ? '<b>%s</b>' : '%s', esc_html($row->total_count)); ?></td>
-			<td><?php echo '' != $row->referrer ? $row->referrer : ('<i>' . esc_html__('Not available', 'wp-optimize') . '</i>'); // phpcs:ignore WordPress.Security.EscapeOutput -- $row->referrer is already escaped ?></td>
+			<td class="wpo-text-center"><?php echo sprintf('grouped' === $row->row_type ? '<b>%s</b>' : '%s', esc_html($row->total_count)); ?></td>
+			<td><?php echo '' !== $row->referrer ? $row->referrer : ('<i>' . esc_html__('Not available', 'wp-optimize') . '</i>'); // phpcs:ignore WordPress.Security.EscapeOutput -- $row->referrer is already escaped ?></td>
 			<td><?php echo esc_html(WP_Optimize()->format_date_time($row->first_access, ' ')); ?></td>
 			<td><?php echo esc_html(WP_Optimize()->format_date_time($row->last_access, ' ')); ?></td>
 		</tr>
@@ -101,13 +106,13 @@ foreach ($requests as $url => $url_requests) {
 			$requests_groups = array('over', 'under');
 
 			foreach ($requests_groups as $group) {
-				if ('over' == $group && empty($url_requests['over'])) {
+				if ('over' === $group && empty($url_requests['over'])) {
 					// There are both over and under the threshold, split it with a title
 					// translators: %s is a number
 					$table_body[] = '<tr><td colspan=4><h4>' . esc_html__('No URLs with many 404 requests found', 'wp-optimize') . ' (' . sprintf(esc_html__('over %s hits in a single hour', 'wp-optimize'), $obj_404_detector->get_suspicious_request_count_threshold()) . ')</h4></td></tr>';
 				}
 
-				if ('under' == $group && (0 < count($url_requests['under']))) {
+				if ('under' === $group && (0 < count($url_requests['under']))) {
 					// There are both over and under the threshold, split it with a title
 					// translators: %s is a number
 					$table_body[] = '<tr><td colspan=4><h4>' . esc_html__('URLs with few 404 requests', 'wp-optimize') . ' (' . sprintf(esc_html__('under %s hits in a single hour', 'wp-optimize'), $obj_404_detector->get_suspicious_request_count_threshold()) . ')</h4></td></tr>';
@@ -115,7 +120,7 @@ foreach ($requests as $url => $url_requests) {
 
 				foreach ($url_requests[$group] as $item) {
 					$table_body[] = '<tr>
-										<td>' . ('' != $item->referrer ? esc_html($item->referrer) : ('<i>' . esc_html__('Not available', 'wp-optimize') . '</i>')) . '</td>
+										<td>' . ('' !== $item->referrer ? esc_html($item->referrer) : ('<i>' . esc_html__('Not available', 'wp-optimize') . '</i>')) . '</td>
 										<td class="wpo-text-center"><b>' . $item->total_count . '</b></td>
 										<td class="wpo-text-center">' . esc_html(WP_Optimize()->format_date_time($item->first_access, ' ')) . '</td>
 										<td class="wpo-text-center">' . esc_html(WP_Optimize()->format_date_time($item->last_access,  ' ')) . '</td>

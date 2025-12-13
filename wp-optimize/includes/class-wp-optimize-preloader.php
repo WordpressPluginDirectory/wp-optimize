@@ -34,7 +34,7 @@ abstract class WP_Optimize_Preloader extends Updraft_Task_Manager_1_4 {
 			$this->log('Could not get interval for event of type '.$schedule_key);
 			return 0;
 		}
-		return isset($schedules[$schedule_key]['interval']) ? $schedules[$schedule_key]['interval'] : 0;
+		return (int) $schedules[$schedule_key]['interval'] ?? 0;
 	}
 
 	/**
@@ -46,7 +46,8 @@ abstract class WP_Optimize_Preloader extends Updraft_Task_Manager_1_4 {
 		/**
 		 * Filters the interval between each preload attempt, in seconds.
 		 */
-		return (int) apply_filters('wpo_' . $this->preload_type . '_preload_continue_interval', 600);
+		$filtered_interval = apply_filters('wpo_' . $this->preload_type . '_preload_continue_interval', 600);
+		return is_int($filtered_interval) ? $filtered_interval : 600;
 	}
 
 	/**
@@ -57,7 +58,7 @@ abstract class WP_Optimize_Preloader extends Updraft_Task_Manager_1_4 {
 
 		// Action is still scheduled
 		if ($continue_in && $continue_in > 0) return;
-		// Action is overdue, delete it and re schedule it
+		// Action is overdue, delete it and re-schedule it
 		if ($continue_in && $continue_in < 0) $this->delete_preload_continue_action();
 
 		wp_schedule_event(time() + $this->get_schedule_interval('wpo_' . $this->preload_type . '_preload_continue_interval'), 'wpo_' . $this->preload_type . '_preload_continue_interval', 'wpo_' . $this->preload_type . '_preload_continue');
@@ -74,7 +75,7 @@ abstract class WP_Optimize_Preloader extends Updraft_Task_Manager_1_4 {
 	 * Run preload. If task queue is empty it creates tasks for site urls.
 	 *
 	 * @param string $type     - The preload type (schedule | manual)
-	 * @param array  $response - Specific response for echo into output thread when browser connection closing.
+	 * @param ?array  $response - Specific response for echo into output thread when browser connection closing.
 	 * @param bool   $silent   - If DOING_AJAX, close the connection without sending any additional data (default: false)
 	 * @return array|void - Void when closing the browser connection
 	 */
@@ -119,7 +120,7 @@ abstract class WP_Optimize_Preloader extends Updraft_Task_Manager_1_4 {
 
 		$status = $this->get_status($this->task_type);
 
-		if (0 == $status['all_tasks'] && $lock) {
+		if (0 === (int) $status['all_tasks'] && $lock) {
 			if (is_multisite()) {
 				$sites = WP_Optimize()->get_sites();
 
@@ -176,7 +177,7 @@ abstract class WP_Optimize_Preloader extends Updraft_Task_Manager_1_4 {
 		if ($interrupt) return $interrupt;
 
 		static $memory_threshold = null;
-		if (null == $memory_threshold) {
+		if (null === $memory_threshold) {
 			/**
 			 * Filters the minimum memory required before stopping a queue. Default: 10MB
 			 */
@@ -215,7 +216,7 @@ abstract class WP_Optimize_Preloader extends Updraft_Task_Manager_1_4 {
 	 * @return bool
 	 */
 	public function is_cancelled() {
-		return $this->options->get_option("last_{$this->preload_type}_preload_cancel", false);
+		return (bool) $this->options->get_option("last_{$this->preload_type}_preload_cancel", false);
 	}
 
 	/**
@@ -230,7 +231,7 @@ abstract class WP_Optimize_Preloader extends Updraft_Task_Manager_1_4 {
 	/**
 	 * Get current status of preloading urls.
 	 *
-	 * @return array
+	 * @return mixed
 	 */
 	public function get_status_info() {
 
@@ -240,7 +241,7 @@ abstract class WP_Optimize_Preloader extends Updraft_Task_Manager_1_4 {
 		if ($this->is_semaphore_locked('wpo_' . $this->preload_type . '_preloader_creating_tasks') && !$this->is_cancelled()) {
 			// we are still creating tasks.
 			return $this->get_preloading_message($preload_data);
-		} elseif ($status['complete_tasks'] == $status['all_tasks']) {
+		} elseif ((int) $status['complete_tasks'] === (int) $status['all_tasks']) {
 			$gmt_offset = (int) (3600 * get_option('gmt_offset'));
 
 			$last_preload_time = $this->options->get_option('wpo_last_' . $this->preload_type . '_preload');
@@ -256,14 +257,14 @@ abstract class WP_Optimize_Preloader extends Updraft_Task_Manager_1_4 {
 			$preload_resuming_in = $preload_resuming_time ? $preload_resuming_time - time() : 0;
 			// translators: %1$s: number of preloaded urls, %2$s: total number of urls
 			$preloaded_message = sprintf(_n('%1$s out of %2$s URL preloaded', '%1$s out of %2$s URLs preloaded', $status['all_tasks'], 'wp-optimize'), $status['complete_tasks'], $status['all_tasks']);
-			if ('sitemap' == $this->options->get_option('wpo_last_' . $this->preload_type . '_preload_type', '')) {
+			if ('sitemap' === $this->options->get_option('wpo_last_' . $this->preload_type . '_preload_type', '')) {
 				$preloaded_message = __('Preloading posts found in sitemap:', 'wp-optimize') .' '. $preloaded_message;
 			}
 			$return = $this->get_preload_progress_message($preload_data, $preloaded_message, $preload_resuming_in);
 			if (defined('DOING_AJAX') && DOING_AJAX) {
 				// if no cron was found or cron is overdue more than 20s, trigger it
 				if (!$preload_resuming_time || $preload_resuming_in < -20) {
-					$this->run($return);
+					$this->run('scheduled', $return);
 				}
 			}
 			return $return;
@@ -278,7 +279,7 @@ abstract class WP_Optimize_Preloader extends Updraft_Task_Manager_1_4 {
 	public function is_running() {
 		$status = $this->get_status($this->task_type);
 
-		if ($status['all_tasks'] > 0) return true;
+		return $status['all_tasks'] > 0;
 	}
 
 	/**
@@ -335,13 +336,15 @@ abstract class WP_Optimize_Preloader extends Updraft_Task_Manager_1_4 {
 	 * @return string
 	 */
 	protected function get_sitemap_filename() {
+		$sitemap_filename = 'sitemap.xml';
 		/**
 		 * Filter the sitemap file used to collect the URLs to preload
 		 *
 		 * @param string $filename - The sitemap name
 		 * @default sitemap.xml
 		 */
-		return apply_filters('wpo_cache_preload_sitemap_filename', 'sitemap.xml');
+		$filtered_sitemap_filename = apply_filters('wpo_cache_preload_sitemap_filename', $sitemap_filename);
+		return is_string($filtered_sitemap_filename) ? $filtered_sitemap_filename : $sitemap_filename;
 	}
 
 	/**
@@ -369,7 +372,8 @@ abstract class WP_Optimize_Preloader extends Updraft_Task_Manager_1_4 {
 		 * @param array $urls
 		 * @return array
 		 */
-		return apply_filters('wpo_preload_get_site_urls', $urls);
+		$filtered_url = apply_filters('wpo_preload_get_site_urls', $urls);
+		return is_array($filtered_url) ? $filtered_url : array();
 	}
 
 	/**
@@ -377,7 +381,7 @@ abstract class WP_Optimize_Preloader extends Updraft_Task_Manager_1_4 {
 	 *
 	 * @param string $sitemap_url
 	 *
-	 * @return array|bool
+	 * @return mixed
 	 */
 	public function get_sitemap_urls($sitemap_url = '') {
 
@@ -399,7 +403,7 @@ abstract class WP_Optimize_Preloader extends Updraft_Task_Manager_1_4 {
 			$response = file_get_contents($sitemap_url);
 
 			// if response is empty then try load from file.
-			if (empty($response) && '' == $sitemap_url) {
+			if (empty($response) && '' === $sitemap_url) {
 				$sitemap_file = $this->get_local_sitemap_file();
 
 				$response = file_get_contents($sitemap_file);
@@ -414,7 +418,7 @@ abstract class WP_Optimize_Preloader extends Updraft_Task_Manager_1_4 {
 		}
 
 		// xml file has not valid xml content then return false.
-		if (false === $xml) return false;
+		if (false === $xml) return array();
 
 		// if exists urls then return them.
 		if (isset($xml->url)) {
@@ -423,15 +427,12 @@ abstract class WP_Optimize_Preloader extends Updraft_Task_Manager_1_4 {
 				$urls[] = (string) $element->loc;
 			}
 		} elseif (isset($xml->sitemap)) {
-			// if has links to other sitemap files then get urls from them.
+			// if it has links to other sitemap files then get urls from them.
 			foreach ($xml->sitemap as $element) {
 				if (!isset($element->loc)) continue;
 
 				$sitemap_urls = $this->get_sitemap_urls($element->loc);
-
-				if (is_array($sitemap_urls)) {
-					$urls = array_merge($urls, $sitemap_urls);
-				}
+				$urls = array_merge($urls, $sitemap_urls);
 			}
 		}
 
@@ -486,7 +487,7 @@ abstract class WP_Optimize_Preloader extends Updraft_Task_Manager_1_4 {
 
 				// check page separators in the post content
 				preg_match_all('/\<\!--nextpage--\>/', $post->post_content, $matches);
-				// if there any separators add urls for each page
+				// if there are any separators add urls for each page
 				if (count($matches[0])) {
 					$prefix = strpos($permalink, '?') ? '&page=' : '';
 					for ($page = 0; $page < count($matches[0]); $page++) {
@@ -530,14 +531,14 @@ abstract class WP_Optimize_Preloader extends Updraft_Task_Manager_1_4 {
 	 */
 	public function is_domain_mapping_enabled() {
 		// SUNRISE constant is defined with installation WordPress MU Domain Mapping plugin.
-		$enabled = is_multisite() && defined('SUNRISE') && 'on' == strtolower(SUNRISE);
+		$enabled = is_multisite() && defined('SUNRISE') && 'on' === strtolower(SUNRISE);
 
 		/**
 		 * Filters if Multisite Domain mapping is enabled.
 		 * Currently, we can only detect if the WordPress MU Domain Mapping plugin is in use.
 		 * Using the WP Core functionality should not require this, unless if the domain name is set somewhere else but in the site url option.
 		 */
-		return apply_filters('wpo_is_domain_mapping_enabled', $enabled);
+		return (bool) apply_filters('wpo_is_domain_mapping_enabled', $enabled);
 	}
 
 	/**
@@ -570,14 +571,15 @@ abstract class WP_Optimize_Preloader extends Updraft_Task_Manager_1_4 {
 		 * @param string  $domain  The domain name
 		 * @param integer $blog_id The blog ID
 		 */
-		return apply_filters('wpo_get_mapped_domain', $domain, $blog_id);
+		$filtered_domain = apply_filters('wpo_get_mapped_domain', $domain, $blog_id);
+		return is_string($filtered_domain) ? $filtered_domain : $domain;
 	}
 
 	/**
 	 * Captures and logs any interesting messages
 	 *
-	 * @param String $message    - the error message
-	 * @param String $error_type - the error type
+	 * @param string $message    - the error message
+	 * @param string $error_type - the error type
 	 */
 	public function log($message, $error_type = 'info') {
 

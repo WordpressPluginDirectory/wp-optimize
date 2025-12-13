@@ -4,10 +4,9 @@
 	<form action="#" method="post" enctype="multipart/form-data" name="settings_form" id="settings_form">
 		<div id="wpo_settings_warnings"></div>
 
-
 		<?php WP_Optimize()->include_template('settings/settings-general.php'); ?>
-		<?php WP_Optimize()->include_template('settings/settings-trackback-and-comments.php'); ?>
-		<?php WP_Optimize()->include_template('settings/settings-logging.php'); ?>
+		<?php WP_Optimize()->include_template('settings/settings-trackback-and-comments.php', false, array('settings_trackback_data' => $settings_trackback_data, 'settings_comments_data' => $settings_comments_data)); ?>
+		<?php WP_Optimize()->include_template('settings/settings-logging.php', false, array('loggers_data' => $loggers_data)); ?>
 		<?php WP_Optimize()->include_template('settings/settings-export-import.php'); ?>
 
 		<?php do_action('wpo_after_general_settings'); ?>
@@ -15,7 +14,7 @@
 		<div id="wp-optimize-settings-save-results"></div>
 
 		<input type="hidden" name="action" value="save_redirect">
-		
+
 		<?php wp_nonce_field('wpo_optimization'); ?>
 
 		<h3 class="wpo-first-child"><?php esc_html_e('Wipe settings', 'wp-optimize'); ?></h3>
@@ -24,12 +23,12 @@
 			<p>
 				<small>
 					<?php
-						$message = __('This button will delete all of WP-Optimize\'s settings.', 'wp-optimize');
-						$message .= ' ';
-						$message .= __('You will then need to enter all your settings again.', 'wp-optimize');
-						$message .= ' ';
-						$message .= __('You can also do this before deactivating/deinstalling WP-Optimize if you wish.', 'wp-optimize');
-						echo esc_html($message);
+					$message = __('This button will delete all of WP-Optimize\'s settings.', 'wp-optimize');
+					$message .= ' ';
+					$message .= __('You will then need to enter all your settings again.', 'wp-optimize');
+					$message .= ' ';
+					$message .= __('You can also do this before deactivating/deinstalling WP-Optimize if you wish.', 'wp-optimize');
+					echo esc_html($message);
 					?>
 				</small>
 				<br>

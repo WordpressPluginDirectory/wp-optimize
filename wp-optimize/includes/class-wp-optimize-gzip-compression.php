@@ -1,4 +1,5 @@
 <?php
+if (!defined('ABSPATH')) die('Access denied.');
 
 /**
  * Class WP_Optimize_Gzip_Compression
@@ -12,17 +13,17 @@ class WP_Optimize_Gzip_Compression {
 	 *
 	 * @var WP_Optimize_Htaccess
 	 */
-	private $_htaccess = null;
+	private $_htaccess;
 
 	/**
 	 * WP_Optimize instance.
 	 *
 	 * @var WP_Optimize
 	 */
-	private $_wp_optimize = null;
+	private $_wp_optimize;
 
 	/**
-	 * Gzip section in htaccess will wrapped with this comment
+	 * Gzip section in htaccess will be wrapped with this comment
 	 *
 	 * @var string
 	 */
@@ -129,8 +130,8 @@ class WP_Optimize_Gzip_Compression {
 		// if we got error then trying to get info from api otherwise get result from check_headers_for_gzip().
 		// $is_gzip_compression_enabled = is_wp_error($is_gzip_compression_enabled) ? $this->check_api_for_gzip() : $is_gzip_compression_enabled;
 
-		// if Gzip is not enabled but we have added settings and Apache modules nt loaded then return error.
-		if (false == $is_gzip_compression_enabled && $this->is_gzip_compression_section_exists()) {
+		// if Gzip is not enabled, but we have added settings and Apache modules nt loaded then return error.
+		if (!$is_gzip_compression_enabled && $this->is_gzip_compression_section_exists()) {
 			if (false === $this->_wp_optimize->is_apache_module_loaded(array('mod_filter', 'mod_deflate'))) {
 				return new WP_Error('gzip_missing_module', __('We successfully added Gzip compression settings into .htaccess file.', 'wp-optimize').' '.__('However, the test file we fetched was not Gzip-compressed.', 'wp-optimize').' '.__('It seems one of Apache modules - mod_filter or mod_deflate - is not active.', 'wp-optimize'));
 			} elseif (WP_Optimize()->is_apache_server()) {
@@ -188,7 +189,7 @@ class WP_Optimize_Gzip_Compression {
 	public function enable_gzip_command_handler($params) {
 		$section_updated = false;
 
-		$enable = (isset($params['enable']) && $params['enable']) ? true : false;
+		$enable = isset($params['enable']) && $params['enable'];
 
 		if ($this->_htaccess->is_writable()) {
 

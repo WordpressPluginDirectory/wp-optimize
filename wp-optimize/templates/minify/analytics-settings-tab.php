@@ -7,7 +7,7 @@
 		<p class="wpo-description-show-links">
 			<?php esc_html_e('Reduce the performance impact caused by analytics scripts.', 'wp-optimize'); ?>
 			<?php esc_html_e('Serve Google Analytics (GA) scripts locally by selecting Gtag.js or choose a lightweight alternative to GA by selecting Minimal Analytics.', 'wp-optimize'); ?>
-			<a href="<?php echo esc_url(WP_Optimize()->maybe_add_affiliate_params('https://teamupdraft.com/documentation/wp-optimize/topics/general/faqs/how-to-set-up-google-analytics-in-wp-optimize/')); ?>" target="_blank"><?php esc_html_e('More information about the Google Analytics feature here', 'wp-optimize'); ?></a>
+			<a href="<?php echo esc_url(WP_Optimize()->maybe_add_affiliate_params('https://teamupdraft.com/documentation/wp-optimize/topics/general/faqs/how-to-set-up-google-analytics-in-wp-optimize/?utm_source=wpo-plugin&utm_medium=referral&utm_campaign=paac&utm_content=google-analytics-feature&utm_creative_format=text')); ?>" target="_blank"><?php esc_html_e('More information about the Google Analytics feature here', 'wp-optimize'); ?></a>
 		</p>
 		<div class="switch-container">
 			<label class="switch">
@@ -40,7 +40,7 @@
 						<th scope="row"><label for="analytics_method"><?php esc_html_e('Analytics Script', 'wp-optimize');?></label></th>
 						<td>
 							<select name="analytics_method" id="analytics_method" disabled="disabled">
-								<option value="gtagv4" <?php selected($method, 'gtagv4'); ?>><?php esc_html_e('Gtag.js v4 (~52KB GZipped)', 'wp-optimize');?></option>
+								<option value="gtagv4" <?php selected($method, 'gtagv4'); ?>><?php esc_html_e('Gtag.js v4 (~116KB GZipped)', 'wp-optimize');?></option>
 								<option value="minimal-analytics" <?php selected($method, 'minimal-analytics'); ?>><?php esc_html_e('Minimal Analytics.js (~3KB GZipped)', 'wp-optimize');?></option>
 							</select>
 							<p class="description"><a href="https://teamupdraft.com/documentation/wp-optimize/topics/general/faqs/how-to-set-up-google-analytics-in-wp-optimize/#which-one-should-i-use-google-analytics-or-minimal-analytics" target="_blank"><?php esc_html_e('Which analytics script should I use?', 'wp-optimize'); ?></a></p>
@@ -51,7 +51,7 @@
 		</div>
 	</div>
 	<div class="wpo-analytics__premium-mask">
-		<a class="wpo-analytics__premium-link" href="<?php echo esc_url($wp_optimize->premium_version_link); ?>" target="_blank"><?php esc_html_e('Upgrade to WP-Optimize Premium to unlock advanced analytics feature.', 'wp-optimize'); ?></a>
+		<a class="wpo-analytics__premium-link" href="<?php echo esc_url($wp_optimize->premium_version_link);?>&utm_content=advanced-analytics" target="_blank"><?php esc_html_e('Upgrade to WP-Optimize Premium to unlock advanced analytics feature.', 'wp-optimize'); ?></a>
 	</div>
 </form>
 </div>

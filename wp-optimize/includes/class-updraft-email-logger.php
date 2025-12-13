@@ -9,6 +9,9 @@ if (class_exists('Updraft_Email_Logger')) return;
  */
 class Updraft_Email_Logger extends Updraft_Abstract_Logger {
 
+	/**
+	 * @var bool
+	 */
 	protected $allow_multiple = true;
 
 	/**
@@ -45,9 +48,9 @@ class Updraft_Email_Logger extends Updraft_Abstract_Logger {
 	 *
 	 * @param  string $message
 	 * @param  array  $context
-	 * @return null|void
+	 * @return void
 	 */
-	public function emergency($message, array $context = array()) {
+	public function emergency($message, $context = array()) {
 		$this->log($message, Updraft_Log_Levels::EMERGENCY, $context);
 	}
 
@@ -56,9 +59,9 @@ class Updraft_Email_Logger extends Updraft_Abstract_Logger {
 	 *
 	 * @param  string $message
 	 * @param  array  $context
-	 * @return null|void
+	 * @return void
 	 */
-	public function alert($message, array $context = array()) {
+	public function alert($message, $context = array()) {
 		$this->log($message, Updraft_Log_Levels::ALERT, $context);
 	}
 
@@ -67,9 +70,9 @@ class Updraft_Email_Logger extends Updraft_Abstract_Logger {
 	 *
 	 * @param  string $message
 	 * @param  array  $context
-	 * @return null|void
+	 * @return void
 	 */
-	public function critical($message, array $context = array()) {
+	public function critical($message, $context = array()) {
 		$this->log($message, Updraft_Log_Levels::CRITICAL, $context);
 	}
 
@@ -78,9 +81,9 @@ class Updraft_Email_Logger extends Updraft_Abstract_Logger {
 	 *
 	 * @param  string $message
 	 * @param  array  $context
-	 * @return null|void
+	 * @return void
 	 */
-	public function error($message, array $context = array()) {
+	public function error($message, $context = array()) {
 		$this->log($message, Updraft_Log_Levels::ERROR, $context);
 	}
 
@@ -89,9 +92,9 @@ class Updraft_Email_Logger extends Updraft_Abstract_Logger {
 	 *
 	 * @param  string $message
 	 * @param  array  $context
-	 * @return null|void
+	 * @return void
 	 */
-	public function warning($message, array $context = array()) {
+	public function warning($message, $context = array()) {
 		$this->log($message, Updraft_Log_Levels::WARNING, $context);
 	}
 
@@ -100,9 +103,9 @@ class Updraft_Email_Logger extends Updraft_Abstract_Logger {
 	 *
 	 * @param  string $message
 	 * @param  array  $context
-	 * @return null|void
+	 * @return void
 	 */
-	public function notice($message, array $context = array()) {
+	public function notice($message, $context = array()) {
 		$this->log($message, Updraft_Log_Levels::NOTICE, $context);
 	}
 
@@ -111,9 +114,9 @@ class Updraft_Email_Logger extends Updraft_Abstract_Logger {
 	 *
 	 * @param  string $message
 	 * @param  array  $context
-	 * @return null|void
+	 * @return void
 	 */
-	public function info($message, array $context = array()) {
+	public function info($message, $context = array()) {
 		$this->log($message, Updraft_Log_Levels::INFO, $context);
 	}
 
@@ -122,9 +125,9 @@ class Updraft_Email_Logger extends Updraft_Abstract_Logger {
 	 *
 	 * @param  string $message
 	 * @param  array  $context
-	 * @return null|void
+	 * @return void
 	 */
-	public function debug($message, array $context = array()) {
+	public function debug($message, $context = array()) {
 		$this->log($message, Updraft_Log_Levels::DEBUG, $context);
 	}
 
@@ -134,11 +137,11 @@ class Updraft_Email_Logger extends Updraft_Abstract_Logger {
 	 * @param  string $message
 	 * @param  mixed  $level
 	 * @param  array  $context
-	 * @return null|void
+	 * @return void
 	 */
-	public function log($message, $level, array $context = array()) {
+	public function log($message, $level, $context = array()) {
 
-		if (!$this->is_enabled()) return false;
+		if (!$this->is_enabled()) return;
 
 		$log = WP_Optimize()->get_options()->get_option('updraft_mail_logger_log', array());
 
@@ -162,7 +165,7 @@ class Updraft_Email_Logger extends Updraft_Abstract_Logger {
 	/**
 	 * Return list of recipients email
 	 *
-	 * @return null
+	 * @return mixed
 	 */
 	public function get_emails() {
 		return $this->get_option('emails', get_option('admin_email'));
@@ -190,7 +193,7 @@ class Updraft_Email_Logger extends Updraft_Abstract_Logger {
 	/**
 	 * Return log messages
 	 *
-	 * @return mixed|void
+	 * @return mixed
 	 */
 	public function get_log() {
 		return WP_Optimize()->get_options()->get_option('updraft_mail_logger_log', array());

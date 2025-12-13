@@ -13,9 +13,6 @@ class WPO_TranslatePress_Compatibility {
 	 * Constructor.
 	 */
 	private function __construct() {
-		// Bail out if TranslatePress is not active
-		if (!class_exists('TRP_Translate_Press')) return;
-
 		// Using the TranslatePress instance retrieve the settings
 		$this->trp_settings = TRP_Translate_Press::get_trp_instance()->get_component('settings')->get_settings();
 		// Add action hooks to delete cache for all languages
