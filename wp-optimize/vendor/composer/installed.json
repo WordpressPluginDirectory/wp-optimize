@@ -545,17 +545,17 @@
         },
         {
             "name": "phpseclib/phpseclib",
-            "version": "1.0.24",
-            "version_normalized": "1.0.24.0",
+            "version": "1.0.25",
+            "version_normalized": "1.0.25.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpseclib/phpseclib.git",
-                "reference": "03d2bb4d2319c81e93e92e628c9ff9c540db1184"
+                "reference": "31842fcea3f976020899922962f5ed471909612e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/03d2bb4d2319c81e93e92e628c9ff9c540db1184",
-                "reference": "03d2bb4d2319c81e93e92e628c9ff9c540db1184",
+                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/31842fcea3f976020899922962f5ed471909612e",
+                "reference": "31842fcea3f976020899922962f5ed471909612e",
                 "shasum": ""
             },
             "require": {
@@ -573,7 +573,7 @@
                 "ext-xml": "Install the XML extension to load XML formatted public keys.",
                 "pear-pear/PHP_Compat": "Install PHP_Compat to get phpseclib working on PHP < 5.0.0."
             },
-            "time": "2025-10-06T01:04:39+00:00",
+            "time": "2025-12-15T11:46:26+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -646,7 +646,7 @@
             ],
             "support": {
                 "issues": "https://github.com/phpseclib/phpseclib/issues",
-                "source": "https://github.com/phpseclib/phpseclib/tree/1.0.24"
+                "source": "https://github.com/phpseclib/phpseclib/tree/1.0.25"
             },
             "funding": [
                 {
@@ -1514,12 +1514,12 @@
             "source": {
                 "type": "git",
                 "url": "ssh://git@source.updraftplus.com:20022/team-updraft/lib-onboarding-wizard.git",
-                "reference": "e20894a1c06b1ffd8d6d7c90df1ce76cbc2aa972"
+                "reference": "f69df2700ddb2b693121bfa1860b1594d73d0017"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://source.updraftplus.com/api/v4/projects/140/packages/composer/archives/team-updraft/lib-onboarding-wizard.zip?sha=e20894a1c06b1ffd8d6d7c90df1ce76cbc2aa972",
-                "reference": "e20894a1c06b1ffd8d6d7c90df1ce76cbc2aa972",
+                "url": "https://source.updraftplus.com/api/v4/projects/140/packages/composer/archives/team-updraft/lib-onboarding-wizard.zip?sha=f69df2700ddb2b693121bfa1860b1594d73d0017",
+                "reference": "f69df2700ddb2b693121bfa1860b1594d73d0017",
                 "shasum": ""
             },
             "require": {

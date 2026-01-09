@@ -1,4 +1,4 @@
-# Copyright (C) 2025 wp-optimize
+# Copyright (C) 2026 wp-optimize
 # This file is distributed under the same license as the wp-optimize package.
 msgid ""
 msgstr ""
@@ -8,7 +8,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language-Team: Team Updraft <mail@example.com>\n"
 "Last-Translator: John Doe <mail@example.com>\n"
-"POT-Creation-Date: 2025-12-12 13:23+0000\n"
+"POT-Creation-Date: 2026-01-08 14:23+0000\n"
 "Report-Msgid-Bugs-To: http://example.com\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-KeywordsList: __;_e;_ex:1,2c;_n:1,2;_n_noop:1,2;_nx:1,2,4c;_nx_noop:1,2,3c;_x:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c\n"
@@ -1080,7 +1080,7 @@ msgstr ""
 msgid "JavaScript"
 msgstr ""
 
-#: src/includes/class-wp-optimize-admin.php:63, src/includes/class-wp-optimize-admin.php:64, src/includes/class-wp-optimize-commands.php:1691, src/includes/class-wp-optimize-commands.php:1700, src/includes/class-wp-optimize-commands.php:1707
+#: src/includes/class-wp-optimize-admin.php:63, src/includes/class-wp-optimize-admin.php:64, src/includes/class-wp-optimize-commands.php:1690, src/includes/class-wp-optimize-commands.php:1699, src/includes/class-wp-optimize-commands.php:1706
 msgid "Disabled"
 msgstr ""
 
@@ -1124,19 +1124,19 @@ msgstr ""
 msgid "Same as cache lifespan"
 msgstr ""
 
-#: src/includes/class-wp-optimize-admin.php:398, src/includes/class-wp-optimize-commands.php:1945
+#: src/includes/class-wp-optimize-admin.php:398, src/includes/class-wp-optimize-commands.php:1944
 msgid "Daily"
 msgstr ""
 
-#: src/includes/class-wp-optimize-admin.php:399, src/includes/class-wp-optimize-commands.php:1950
+#: src/includes/class-wp-optimize-admin.php:399, src/includes/class-wp-optimize-commands.php:1949
 msgid "Weekly"
 msgstr ""
 
-#: src/includes/class-wp-optimize-admin.php:400, src/includes/class-wp-optimize-commands.php:1955
+#: src/includes/class-wp-optimize-admin.php:400, src/includes/class-wp-optimize-commands.php:1954
 msgid "Fortnightly"
 msgstr ""
 
-#: src/includes/class-wp-optimize-admin.php:401, src/includes/class-wp-optimize-commands.php:1960
+#: src/includes/class-wp-optimize-admin.php:401, src/includes/class-wp-optimize-commands.php:1959
 msgid "Monthly (approx. - every 30 days)"
 msgstr ""
 
@@ -1271,242 +1271,242 @@ msgstr[1] ""
 
 #. translators: %s is the number of table(s).
 #. translators: %s is the number of tables
-#: src/includes/class-wp-optimize-commands.php:1388, src/templates/database/tables-body.php:87
+#: src/includes/class-wp-optimize-commands.php:1387, src/templates/database/tables-body.php:87
 msgid "%s Table"
 msgid_plural "%s Tables"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/includes/class-wp-optimize-commands.php:1392
+#: src/includes/class-wp-optimize-commands.php:1391
 msgid "Database Name"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1393
+#: src/includes/class-wp-optimize-commands.php:1392
 msgid "Refresh Data"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1394
+#: src/includes/class-wp-optimize-commands.php:1393
 msgid "Refreshing..."
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1395, src/templates/database/tables-body.php:13, src/templates/database/tables.php:39
+#: src/includes/class-wp-optimize-commands.php:1394, src/templates/database/tables-body.php:13, src/templates/database/tables.php:39
 msgid "No."
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1396, src/templates/database/tables-body.php:14, src/templates/database/tables.php:40
+#: src/includes/class-wp-optimize-commands.php:1395, src/templates/database/tables-body.php:14, src/templates/database/tables.php:40
 msgid "Table"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1397, src/templates/database/tables-body.php:56, src/templates/database/tables.php:41
+#: src/includes/class-wp-optimize-commands.php:1396, src/templates/database/tables-body.php:56, src/templates/database/tables.php:41
 msgid "Records"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1398, src/templates/database/tables-body.php:57, src/templates/database/tables.php:42
+#: src/includes/class-wp-optimize-commands.php:1397, src/templates/database/tables-body.php:57, src/templates/database/tables.php:42
 msgid "Data Size"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1399, src/templates/database/tables-body.php:58, src/templates/database/tables.php:43
+#: src/includes/class-wp-optimize-commands.php:1398, src/templates/database/tables-body.php:58, src/templates/database/tables.php:43
 msgid "Index Size"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1400, src/templates/database/tables-body.php:70, src/templates/database/tables-body.php:61, src/templates/database/tables.php:44
+#: src/includes/class-wp-optimize-commands.php:1399, src/templates/database/tables-body.php:70, src/templates/database/tables-body.php:61, src/templates/database/tables.php:44
 msgid "Type"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1401, src/templates/database/tables-body.php:71, src/templates/database/tables-body.php:63, src/templates/database/tables.php:45
+#: src/includes/class-wp-optimize-commands.php:1400, src/templates/database/tables-body.php:71, src/templates/database/tables-body.php:63, src/templates/database/tables.php:45
 msgid "Overhead"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1402
+#: src/includes/class-wp-optimize-commands.php:1401
 msgid "Total"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1403
+#: src/includes/class-wp-optimize-commands.php:1402
 msgid "Search tables"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1404
+#: src/includes/class-wp-optimize-commands.php:1403
 msgid "Total size of database"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1457
+#: src/includes/class-wp-optimize-commands.php:1456
 msgid "Optimize selected"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1458
+#: src/includes/class-wp-optimize-commands.php:1457
 msgid "Optimize all"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1461
+#: src/includes/class-wp-optimize-commands.php:1460
 msgid "Take backup before optimize"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1479
+#: src/includes/class-wp-optimize-commands.php:1478
 msgid "Scheduled optimization is currently disabled."
 msgstr ""
 
 #. translators: %s is the last schedule optimization run date.
-#: src/includes/class-wp-optimize-commands.php:1492, src/templates/database/status-box-contents.php:14
+#: src/includes/class-wp-optimize-commands.php:1491, src/templates/database/status-box-contents.php:14
 msgid "Last scheduled optimization was at %s"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1484
+#: src/includes/class-wp-optimize-commands.php:1483
 msgid "There was no scheduled optimization."
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1498
+#: src/includes/class-wp-optimize-commands.php:1497
 msgid "Schedule Optimization"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1505
+#: src/includes/class-wp-optimize-commands.php:1504
 msgid "Schedule Cleaning"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1506
+#: src/includes/class-wp-optimize-commands.php:1505
 msgid "Scheduled cleaning is currently disabled."
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1506
+#: src/includes/class-wp-optimize-commands.php:1505
 msgid "Scheduled cleaning is enabled."
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1512
+#: src/includes/class-wp-optimize-commands.php:1511
 msgid "Data Retention"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1513
+#: src/includes/class-wp-optimize-commands.php:1512
 msgid "The system is not keeping recent data or any revisions."
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1513
+#: src/includes/class-wp-optimize-commands.php:1512
 msgid "Data retention enabled."
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1609
+#: src/includes/class-wp-optimize-commands.php:1608
 msgid "Performance Overview"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1610
+#: src/includes/class-wp-optimize-commands.php:1609
 msgid "Table Info"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1611, src/includes/class-wp-optimize-commands.php:1622
+#: src/includes/class-wp-optimize-commands.php:1610, src/includes/class-wp-optimize-commands.php:1621
 msgid "Performance Settings"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1623
+#: src/includes/class-wp-optimize-commands.php:1622
 msgid "Changes saved automatically"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1624
+#: src/includes/class-wp-optimize-commands.php:1623
 msgid "Changes not saved - please fill all the fields"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1639
+#: src/includes/class-wp-optimize-commands.php:1638
 msgid "WP-Optimize premium"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1641, src/templates/settings/may-also-like.php:92, src/templates/settings/may-also-like.php:93
+#: src/includes/class-wp-optimize-commands.php:1640, src/templates/settings/may-also-like.php:92, src/templates/settings/may-also-like.php:93
 msgid "Optimize individual tables"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1642, src/templates/settings/may-also-like.php:119
+#: src/includes/class-wp-optimize-commands.php:1641, src/templates/settings/may-also-like.php:119
 msgid "Sophisticated scheduling"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1643, src/includes/class-wp-optimize-commands.php:1690, src/includes/class-wpo-onboarding.php:524
+#: src/includes/class-wp-optimize-commands.php:1642, src/includes/class-wp-optimize-commands.php:1689, src/includes/class-wpo-onboarding.php:524
 msgid "Lazy loading"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1644
+#: src/includes/class-wp-optimize-commands.php:1643
 msgid "Optimization preview"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1645, src/templates/settings/may-also-like.php:222, src/templates/settings/may-also-like.php:223
+#: src/includes/class-wp-optimize-commands.php:1644, src/templates/settings/may-also-like.php:222, src/templates/settings/may-also-like.php:223
 msgid "More caching options"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1646, src/templates/settings/may-also-like.php:105, src/templates/settings/may-also-like.php:106
+#: src/includes/class-wp-optimize-commands.php:1645, src/templates/settings/may-also-like.php:105, src/templates/settings/may-also-like.php:106
 msgid "Remove unwanted images"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1647
+#: src/includes/class-wp-optimize-commands.php:1646
 msgid "Multi language & currency support"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1650
+#: src/includes/class-wp-optimize-commands.php:1649
 msgid "Upgrade Now"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1691, src/includes/class-wp-optimize-commands.php:1700, src/includes/class-wp-optimize-commands.php:1707
+#: src/includes/class-wp-optimize-commands.php:1690, src/includes/class-wp-optimize-commands.php:1699, src/includes/class-wp-optimize-commands.php:1706
 msgid "Enabled"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1699, src/includes/class-wpo-onboarding.php:602, src/templates/cache/page-cache.php:5
+#: src/includes/class-wp-optimize-commands.php:1698, src/includes/class-wpo-onboarding.php:602, src/templates/cache/page-cache.php:5
 msgid "Page caching"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1706
+#: src/includes/class-wp-optimize-commands.php:1705
 msgid "Scheduled clean-up"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1713
+#: src/includes/class-wp-optimize-commands.php:1712
 msgid "Next scheduled date"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1856, src/templates/settings/settings-logging.php:78
+#: src/includes/class-wp-optimize-commands.php:1855, src/templates/settings/settings-logging.php:78
 msgid "Active"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:1856
+#: src/includes/class-wp-optimize-commands.php:1855
 msgid "Inactive"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:2030
+#: src/includes/class-wp-optimize-commands.php:2029
 msgid "1st"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:2030
+#: src/includes/class-wp-optimize-commands.php:2029
 msgid "2nd"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:2126
+#: src/includes/class-wp-optimize-commands.php:2125
 msgid "Warning: you should read the FAQ about the risks of this operation first."
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:2132
+#: src/includes/class-wp-optimize-commands.php:2131
 msgid "Scheduled Optimization"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:2133
+#: src/includes/class-wp-optimize-commands.php:2132
 msgid "Next scheduled run"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:2134
+#: src/includes/class-wp-optimize-commands.php:2133
 msgid "No scheduled optimization"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:2135
+#: src/includes/class-wp-optimize-commands.php:2134
 msgid "Add optimization tasks"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:2136, src/templates/images/smush.php:164
+#: src/includes/class-wp-optimize-commands.php:2135, src/templates/images/smush.php:164
 msgid "Select all"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:2137
+#: src/includes/class-wp-optimize-commands.php:2136
 msgid "Un-Select All"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:2138
+#: src/includes/class-wp-optimize-commands.php:2137
 msgid "Select schedule"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:2139
+#: src/includes/class-wp-optimize-commands.php:2138
 msgid "Run an optimization every"
 msgstr ""
 
-#: src/includes/class-wp-optimize-commands.php:2140
+#: src/includes/class-wp-optimize-commands.php:2139
 msgid "Add optimization"
 msgstr ""
 

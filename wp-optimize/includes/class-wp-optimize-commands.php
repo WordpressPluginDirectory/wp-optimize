@@ -1319,7 +1319,6 @@ class WP_Optimize_Commands {
 	 */
 	public function get_table_list_data() {
 		$wp_optimize = WP_Optimize();
-		$wp_optimize->get_db_info()->update_plugin_json();
 
 		$size = $this->optimizer->get_current_db_size();
 

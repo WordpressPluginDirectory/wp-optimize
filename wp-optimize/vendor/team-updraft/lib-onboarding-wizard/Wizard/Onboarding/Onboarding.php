@@ -616,11 +616,10 @@ class Onboarding {
 			$asset_file['version'],
 			true
 		);
-		$rtl = is_rtl() ? '-rtl' : '';
 
 		wp_enqueue_style(
 			$this->prefix . '_onboarding',
-			$this->onboarding_url . "build/Onboarding$rtl.css",
+			$this->onboarding_url . "build/Onboarding.css",
 			[],
 			$asset_file['version']
 		);

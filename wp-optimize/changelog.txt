@@ -1,5 +1,10 @@
 == Changelog ==
 
+= 4.4.1 - 08/Jan/2026 =
+
+* FIX: Onboarding wizard RTL issue
+* FIX: Prevented plugin table JSON data in the uploads directory from being updated on every WP-Optimize admin page load
+
 = 4.4.0 - 12/Dec/2025 =
 
 * FEATURE: Added Onboarding Wizard
