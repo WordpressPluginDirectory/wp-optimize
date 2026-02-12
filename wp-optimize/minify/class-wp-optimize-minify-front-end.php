@@ -65,6 +65,12 @@ class WP_Optimize_Minify_Front_End {
 			$this->process_js();
 		}
 
+		if ($this->options['host_local_google_fonts']) {
+			// Add filter to replace Goole fonts urls to local if needed
+			add_filter('wpo_minify_css_string', array($this, 'replace_gfont_urls_with_local'));
+			add_filter('wpo_minify_get_css', array($this, 'replace_gfont_urls_with_local'));
+		}
+
 		if ($this->options['enable_css']) {
 			$this->process_css();
 		}
@@ -83,6 +89,16 @@ class WP_Optimize_Minify_Front_End {
 		}
 
 		$this->remove_query_string_from_static_assets();
+	}
+
+	/**
+	 * Replace Google fonts urls to local versions
+	 *
+	 * @param string $content
+	 * @return string
+	 */
+	public function replace_gfont_urls_with_local($content): string {
+		return WP_Optimize_Host_Google_Fonts::instance()->replace_gfont_urls_with_local($content);
 	}
 
 	/**
@@ -1723,7 +1739,6 @@ class WP_Optimize_Minify_Front_End {
 				}
 			}
 		}
-
 
 		// get groups of handles
 		$uniq = array();

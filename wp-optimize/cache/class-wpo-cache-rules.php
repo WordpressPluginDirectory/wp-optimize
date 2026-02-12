@@ -252,8 +252,7 @@ class WPO_Cache_Rules {
 		}
 		if ($post_obj->has_archive) {
 			// delete archive page for custom post type.
-			// recursive should be false as it should not delete all this cpt posts.
-			WPO_Page_Cache::delete_cache_by_url(get_post_type_archive_link($post_type));
+			WPO_Page_Cache::delete_cache_by_url(get_post_type_archive_link($post_type), true);
 			WPO_Page_Cache::instance()->file_log("Cache for archive page associated with post_type: " . $post_type . " and Title: {{title}} has been purged, triggered by action: " . current_filter(), $post_id);
 		}
 		if (post_type_supports($post_type, 'author')) {

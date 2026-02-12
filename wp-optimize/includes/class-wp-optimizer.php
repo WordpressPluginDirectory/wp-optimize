@@ -605,6 +605,12 @@ class WP_Optimizer {
 
 		$options->update_option('total-cleaned', $total_now);
 
+		$previously_saved = floatval($options->get_option('total-cleaned-current-month', '0'));
+
+		$total_now = strval($previously_saved + $converted_current);
+
+		$options->update_option('total-cleaned-current-month', $total_now);
+
 		return $total_now;
 	}
 	

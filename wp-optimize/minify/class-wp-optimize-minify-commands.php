@@ -215,13 +215,71 @@ class WP_Optimize_Minify_Commands {
 	}
 
 	/**
-	 * Hide the information notice for the current user
+	 * Toggle (hide or show) the information notice for the current user.
 	 *
-	 * @return array
+	 * @param array $params {type:(js|css|minify), merging_enabled:(true|false), force_hide:(true|false)}
+	 * @return array {success:(true|false), hide:(true|false), message:(string)}
 	 */
-	public function hide_minify_notice() {
+	public function toggle_minify_notice($params) {
+		if (empty($params['type'])) {
+			return array(
+				'success' => false,
+				'message' => __('The request did not include a notice type.', 'wp-optimize')
+			);
+		}
+
+		$notice_types = array(
+			'js'     => 'wpo_hide_js_merging_notice',
+			'css'    => 'wpo_hide_css_merging_notice',
+			'minify' => 'wpo-hide-minify-information-notice'
+		);
+
+		if (!isset($notice_types[$params['type']])) {
+			return array(
+				'success' => false,
+				'message' => __('The specified notice type is invalid.', 'wp-optimize')
+			);
+		}
+
+		$current_user_id = get_current_user_id();
+		if (!$current_user_id) {
+			return array(
+				'success' => false,
+				'message' => __('Invalid user context.', 'wp-optimize')
+			);
+		}
+
+		$meta_key = $notice_types[$params['type']];
+		$should_hide_notice = isset($params['force_hide']) ? filter_var($params['force_hide'], FILTER_VALIDATE_BOOLEAN) : true;
+		if (!$should_hide_notice) {
+			$merging_enabled = isset($params['merging_enabled']) ? filter_var($params['merging_enabled'], FILTER_VALIDATE_BOOLEAN) : true;
+			$is_http1 = WP_Optimize_Utils::is_request_protocol_http1();
+			$should_hide_notice = (($is_http1 && $merging_enabled) || (!$is_http1 && !$merging_enabled));
+		}
+
+		$updated = update_user_meta($current_user_id, $meta_key, $should_hide_notice);
+		$success = true;
+
+		if (false === $updated) {
+			/**
+			 * Function update_user_meta() returns false when:
+			 * the value is unchanged or the update failed.
+			 *
+			 * We verify by reading the stored value. If it matches the intended value,
+			 * treat it as a success; otherwise, treat it as a failure.
+			 */
+			$existing = get_user_meta($current_user_id, $meta_key, true);
+
+			/**
+			 * Loose comparison (==) is intentional because user meta-values are
+			 * stored as strings ('1', '0'), not booleans.
+			 */
+			$success  = ($existing == $should_hide_notice);
+		}
+
 		return array(
-			'success' => update_user_meta(get_current_user_id(), 'wpo-hide-minify-information-notice', true)
+			'success' => $success,
+			'hide' => $should_hide_notice,
 		);
 	}
 

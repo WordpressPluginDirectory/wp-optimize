@@ -1,6 +1,13 @@
 <?php if (!defined('WPO_VERSION'))  die('No direct access allowed'); ?>
 <div id='wpo_section_css' class="wpo_section wpo_group">
 	<div id="wpo_settings_warnings"></div>
+	<div class="notice notice-warning wpo-warning is-dismissible wpo_section_notice_css" style="<?php echo $show_section_notice ? '' : 'display:none;'; ?>">
+		<p>
+			<span class="dashicons dashicons-shield"></span>
+			<strong><?php esc_html_e('Enable merging of CSS files into one to reduce HTTP requests.', 'wp-optimize'); ?></strong><br>
+			<?php echo wp_kses_post($notice_text);?>
+		</p>
+	</div>
 	<form>
 		<h3><?php esc_html_e('CSS options', 'wp-optimize'); ?></h3>
 		<div class="wpo-fieldgroup">
@@ -41,7 +48,7 @@
 						>
 						<?php esc_html_e('Enable merging of CSS files', 'wp-optimize'); ?>
 					</label>
-					<span tabindex="0" data-tooltip="<?php esc_attr_e('If some of the design is breaking on the frontend, disabling merging of CSS might fix the issues.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
+					<span tabindex="0" data-tooltip="<?php echo esc_attr($tooltip); ?>"><span class="dashicons dashicons-editor-help"></span> </span>
 				</div>
 				<div class="wpo-fieldgroup__subgroup">
 					<label for="inline_css" class="label-with-tooltip">

@@ -569,7 +569,7 @@ class WPO_Page_Cache {
 		// First try to remove (so that it doesn't look to any other plugin like the file is already 'claimed')
 		// We only touch advanched-cache.php and wp-config.php if it appears that we were in control of advanced-cache.php
 		if (!file_exists($advanced_cache_file) || false !== strpos(file_get_contents($advanced_cache_file), 'WP-Optimize advanced-cache.php')) {
-			if (file_exists($advanced_cache_file) && (!wp_delete_file($advanced_cache_file) && false === file_put_contents($advanced_cache_file, "<?php\n// WP-Optimize: page cache disabled"))) {
+			if (file_exists($advanced_cache_file) && (!WP_Optimize_Utils::wp_delete_file($advanced_cache_file) && false === file_put_contents($advanced_cache_file, "<?php\n// WP-Optimize: page cache disabled"))) {
 				$disabled_advanced_cache = false;
 				$this->log("The request to the filesystem to remove or empty advanced-cache.php failed");
 				$this->add_warning('error_disabling', __('The request to the filesystem to remove or empty advanced-cache.php failed', 'wp-optimize'));
@@ -1158,42 +1158,10 @@ EOF;
 	 * @return array
 	 */
 	private function get_dir_infos($dir) {
-		$dir_size = 0;
-		$file_count = 0;
-
-		$handle = is_dir($dir) ? opendir($dir) : false;
-
-		if (false === $handle) {
-			return array('size' => 0, 'file_count' => 0);
-		}
-
 		$filtered = apply_filters('wpo_cache_size_files_to_ignore', $this->files_to_ignore);
 		$this->files_to_ignore = is_array($filtered) ? $filtered : array();
 
-		$file = readdir($handle);
-
-		while (false !== $file) {
-
-			if ('.' !== $file && '..' !== $file) {
-				$current_file = $dir.'/'.$file;
-
-				if (is_dir($current_file)) {
-					$sub_dir_infos = $this->get_dir_infos($current_file);
-					$dir_size += $sub_dir_infos['size'];
-					$file_count += $sub_dir_infos['file_count'];
-				} elseif (is_file($current_file)) {
-					if (!in_array($file, $this->files_to_ignore)) {
-						$dir_size += filesize($current_file);
-						$file_count++;
-					}
-				}
-			}
-
-			$file = readdir($handle);
-
-		}
-
-		return array('size' => $dir_size, 'file_count' => $file_count);
+		return WP_Optimize_Utils::get_folder_stats($dir, $this->files_to_ignore);
 	}
 
 	/**

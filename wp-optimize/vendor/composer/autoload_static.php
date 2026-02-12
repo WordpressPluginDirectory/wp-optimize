@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitf9e8a04eb5f867b12e78877be4718f92
+class ComposerStaticInit652feadfc531fc3984030b8f5894ec1a
 {
     public static $files = array (
         'decc78cc4436b1292c6c0d151b19445c' => __DIR__ . '/..' . '/phpseclib/phpseclib/phpseclib/bootstrap.php',
@@ -216,11 +216,6 @@ class ComposerStaticInitf9e8a04eb5f867b12e78877be4718f92
         'Minify_YUICompressor' => __DIR__ . '/..' . '/mrclay/minify/lib/Minify/YUICompressor.php',
         'MrClay\\Cli' => __DIR__ . '/..' . '/mrclay/minify/lib/MrClay/Cli.php',
         'MrClay\\Cli\\Arg' => __DIR__ . '/..' . '/mrclay/minify/lib/MrClay/Cli/Arg.php',
-        'lessc' => __DIR__ . '/..' . '/marcusschwarz/lesserphp/lessc.inc.php',
-        'lessc_formatter_classic' => __DIR__ . '/..' . '/marcusschwarz/lesserphp/lessc.inc.php',
-        'lessc_formatter_compressed' => __DIR__ . '/..' . '/marcusschwarz/lesserphp/lessc.inc.php',
-        'lessc_formatter_lessjs' => __DIR__ . '/..' . '/marcusschwarz/lesserphp/lessc.inc.php',
-        'lessc_parser' => __DIR__ . '/..' . '/marcusschwarz/lesserphp/lessc.inc.php',
         'simplehtmldom\\Debug' => __DIR__ . '/..' . '/simplehtmldom/simplehtmldom/Debug.php',
         'simplehtmldom\\HtmlDocument' => __DIR__ . '/..' . '/simplehtmldom/simplehtmldom/HtmlDocument.php',
         'simplehtmldom\\HtmlElement' => __DIR__ . '/..' . '/simplehtmldom/simplehtmldom/HtmlElement.php',
@@ -231,10 +226,10 @@ class ComposerStaticInitf9e8a04eb5f867b12e78877be4718f92
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitf9e8a04eb5f867b12e78877be4718f92::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitf9e8a04eb5f867b12e78877be4718f92::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInitf9e8a04eb5f867b12e78877be4718f92::$prefixesPsr0;
-            $loader->classMap = ComposerStaticInitf9e8a04eb5f867b12e78877be4718f92::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit652feadfc531fc3984030b8f5894ec1a::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit652feadfc531fc3984030b8f5894ec1a::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInit652feadfc531fc3984030b8f5894ec1a::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInit652feadfc531fc3984030b8f5894ec1a::$classMap;
 
         }, null, ClassLoader::class);
     }

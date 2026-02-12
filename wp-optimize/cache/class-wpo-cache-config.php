@@ -226,6 +226,8 @@ class WPO_Cache_Config {
 			'page_cache_length_unit'           => 'hours',
 			'page_cache_length'                => 86400,
 			'cache_exception_conditional_tags' => array(),
+			'cache_specific_urls_only'        => false,
+			'cache_include_urls'               => array(),
 			'cache_exception_urls'             => array(),
 			'cache_ignore_query_variables' 	   => array(),
 			'cache_exception_cookies'          => array(),

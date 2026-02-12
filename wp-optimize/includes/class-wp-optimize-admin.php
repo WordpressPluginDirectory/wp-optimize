@@ -264,10 +264,7 @@ class WP_Optimize_Admin {
 	 */
 	public function output_database_settings_tab() {
 		
-		if (!WP_Optimize()->does_server_allows_table_optimization()) {
-			$message = __('Your server takes care of database optimization, no scheduled optimization needed', 'wp-optimize');
-			$this->prevent_run_optimizations_message($message);
-		} elseif (WP_Optimize()->can_run_optimizations()) {
+		if (WP_Optimize()->can_run_optimizations()) {
 			$wp_optimize_commands = new WP_Optimize_Commands();
 			$settings_general_data = $wp_optimize_commands->get_widgets_data(array('widgets' => array('wp_optimize_general_settings')));
 			$settings_cleanup_data = $wp_optimize_commands->get_widgets_data(array('widgets' => array('wp_optimize_schedule_cleanup_settings')));
@@ -388,18 +385,23 @@ class WP_Optimize_Admin {
 		$wpo_cache_preloader = WP_Optimize_Page_Cache_Preloader::instance();
 		$is_running = $wpo_cache_preloader->is_busy() && !$wpo_cache_preloader->is_cancelled();
 		$status = $wpo_cache_preloader->get_status_info();
+
+		$scheduled_types = WP_Optimize::get_schedule_types();
+		$scheduled_types = array_filter($scheduled_types, function($type) {
+			return 'wpo_once' !== $type;
+		}, ARRAY_FILTER_USE_KEY);
+		$schedule_options = array_merge(
+			array(
+				'wpo_use_cache_lifespan' => __('Same as cache lifespan', 'wp-optimize')
+			),
+			$scheduled_types
+		);
 		
 		WP_Optimize()->include_template('cache/page-cache-preload.php', false, array(
 			'wpo_cache_options' => $wpo_cache_options,
 			'is_running' => $is_running,
 			'status_message' => $status['message'] ?? '',
-			'schedule_options' => array(
-				'wpo_use_cache_lifespan' => __('Same as cache lifespan', 'wp-optimize'),
-				'wpo_daily' => __('Daily', 'wp-optimize'),
-				'wpo_weekly' => __('Weekly', 'wp-optimize'),
-				'wpo_fortnightly' => __('Fortnightly', 'wp-optimize'),
-				'wpo_monthly' => __('Monthly (approx. - every 30 days)', 'wp-optimize')
-			)
+			'schedule_options' => $schedule_options
 		));
 	}
 	
@@ -411,6 +413,7 @@ class WP_Optimize_Admin {
 		$wpo_cache_options = $wpo_cache->config->get();
 		
 		$cache_exception_conditional_tags = is_array($wpo_cache_options['cache_exception_conditional_tags']) ? join("\n", $wpo_cache_options['cache_exception_conditional_tags']) : '';
+		$cache_include_urls = is_array($wpo_cache_options['cache_include_urls']) ? join("\n", $wpo_cache_options['cache_include_urls']) : '';
 		$cache_exception_urls = is_array($wpo_cache_options['cache_exception_urls']) ? join("\n", $wpo_cache_options['cache_exception_urls']) : '';
 		$cache_ignore_query_variables = is_array($wpo_cache_options['cache_ignore_query_variables']) ? join("\n", $wpo_cache_options['cache_ignore_query_variables']) : '';
 		$cache_exception_cookies = is_array($wpo_cache_options['cache_exception_cookies']) ? join("\n", $wpo_cache_options['cache_exception_cookies']) : '';
@@ -419,6 +422,7 @@ class WP_Optimize_Admin {
 		WP_Optimize()->include_template('cache/page-cache-advanced.php', false, array(
 			'wpo_cache' => $wpo_cache,
 			'wpo_cache_options' => $wpo_cache_options,
+			'cache_include_urls' => $cache_include_urls,
 			'cache_exception_urls' => $cache_exception_urls,
 			'cache_ignore_query_variables' => $cache_ignore_query_variables,
 			'cache_exception_conditional_tags' => $cache_exception_conditional_tags,
@@ -525,10 +529,7 @@ class WP_Optimize_Admin {
 		$optimization_results = (($nonce_passed) ? $optimizer->do_optimizations($_POST) : false);  // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Only isset is used to check, and compared again literal string
 		
 		// display optimizations table or restricted access message.
-		if (!WP_Optimize()->does_server_allows_table_optimization()) {
-			$message = __('Your server takes care of database optimization', 'wp-optimize');
-			$this->prevent_run_optimizations_message($message);
-		} elseif (WP_Optimize()->can_run_optimizations()) {
+		if (WP_Optimize()->can_run_optimizations()) {
 			$wp_optimize_commands = new WP_Optimize_Commands();
 			$status_data = $wp_optimize_commands->get_widgets_data(array('widgets' => array('all_status')));
 			$optimizations_table_data = $wp_optimize_commands->get_widgets_data(array('widgets' => array('wp_optimize')));

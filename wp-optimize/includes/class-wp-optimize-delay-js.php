@@ -39,12 +39,12 @@ class WP_Optimize_Delay_JS {
 	}
 	
 	/**
-	 * If JavaScript optimizations are enabled and delay or preload JavaScript is enabled, process the output.
+	 * If delay or preload JavaScript is enabled, process the output.
 	 *
 	 * @return bool
 	 */
 	private function should_process() {
-		return $this->options['enabled'] && $this->options['enable_js'] && ($this->is_delay_js_enabled() || $this->is_preload_js_enabled()) && !$this->is_edit_mode();
+		return ($this->is_delay_js_enabled() || $this->is_preload_js_enabled()) && !$this->is_edit_mode();
 	}
 
 	/**

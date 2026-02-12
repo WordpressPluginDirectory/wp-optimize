@@ -1,9 +1,16 @@
 <?php if (!defined('WPO_VERSION'))  die('No direct access allowed'); ?>
 <div id='wpo_section_js' class="wpo_section wpo_group">
 	<div id="wpo_settings_warnings"></div>
+	<div class="notice notice-warning wpo-warning is-dismissible wpo_section_notice_js show-if-enabled" style="<?php echo $show_section_notice ? '' : 'display:none;'; ?>">
+		<p>
+			<span class="dashicons dashicons-shield"></span>
+			<strong><?php esc_html_e('Enable merging of JavaScript files into one to reduce HTTP requests.', 'wp-optimize'); ?></strong><br>
+			<?php echo wp_kses_post($notice_text);?>
+		</p>
+	</div>
 	<form>
-		<h3><?php esc_html_e('JavaScript options', 'wp-optimize'); ?></h3>
-		<div class="wpo-fieldgroup">
+		<h3 class="show-if-enabled"><?php esc_html_e('JavaScript options', 'wp-optimize'); ?></h3>
+		<div class="wpo-fieldgroup show-if-enabled">
 			<fieldset>
 				<div class="wpo-fieldgroup__subgroup">
 					<label for="enable_js_minification">
@@ -28,7 +35,7 @@
 						>
 						<?php esc_html_e('Enable merging of JavaScript files', 'wp-optimize'); ?>
 					</label>
-					<span tabindex="0" data-tooltip="<?php esc_attr_e('If some functionality is breaking on the frontend, disabling merging of JavaScript might fix the issues.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span><br>
+					<span tabindex="0" data-tooltip="<?php echo esc_attr($tooltip); ?>"><span class="dashicons dashicons-editor-help"></span> </span>
 				</div>
 				<div class="wpo-fieldgroup__subgroup">
 					<label for="enable_js_trycatch">
@@ -51,8 +58,11 @@
 				</div>
 			</fieldset>
 		</div>
-		<h3><?php esc_html_e('Exclude JavaScript from processing', 'wp-optimize'); ?></h3>
-		<div class="wpo-fieldgroup">
+
+		<?php do_action('wpo_after_minify_javascript_options'); ?>
+
+		<h3 class="show-if-enabled"><?php esc_html_e('Exclude JavaScript from processing', 'wp-optimize'); ?></h3>
+		<div class="wpo-fieldgroup show-if-enabled">
 			<fieldset>
 				<label for="exclude_js">
 					<?php esc_html_e('Any JavaScript files that match the paths below will be completely ignored', 'wp-optimize'); ?>
@@ -70,8 +80,8 @@
 			</fieldset>
 		</div>
 
-		<h3><?php esc_html_e('Defer JavaScript', 'wp-optimize'); ?></h3>
-		<div class="wpo-fieldgroup">
+		<h3 class="show-if-enabled"><?php esc_html_e('Defer JavaScript', 'wp-optimize'); ?></h3>
+		<div class="wpo-fieldgroup show-if-enabled">
 			<fieldset class="async-js-manual-list">
 				<div class="wpo-fieldgroup__subgroup">
 					<h4><label>

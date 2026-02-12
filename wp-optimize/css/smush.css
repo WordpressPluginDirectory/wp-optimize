@@ -724,10 +724,6 @@ img#wpo_smush_images_clear_stats_spinner {
   margin-top: 10px;
 }
 
-.wpo-smush-compress-popup-content label {
-  display: block;
-}
-
 .wpo-smush-compress-popup-content .wpo-advanced-options {
   display: none;
 }

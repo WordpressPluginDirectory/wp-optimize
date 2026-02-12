@@ -121,7 +121,7 @@ class WP_Optimize_Options {
 	 * @return array
 	 */
 	public function get_option_keys() {
-		$keys = array('defaults', 'weekly-schedule', 'schedule', 'retention-enabled', 'retention-period', 'last-optimized', 'enable-admin-menu', 'schedule-type', 'total-cleaned', 'current-cleaned', 'email-address', 'email', 'auto', 'settings', 'dismiss_page_notice_until', 'dismiss_dash_notice_until', 'enable_cache_in_admin_bar');
+		$keys = array('defaults', 'weekly-schedule', 'schedule', 'retention-enabled', 'retention-period', 'last-optimized', 'enable-admin-menu', 'schedule-type', 'total-cleaned', 'current-cleaned', 'email-address', 'email', 'auto', 'settings', 'dismiss_page_notice_until', 'dismiss_dash_notice_until', 'enable_cache_in_admin_bar', 'total-cleaned-current-month', 'total-cleaned-previous-month');
 		$filtered_option_keys = apply_filters(
 			'wp_optimize_option_keys',
 			$keys
@@ -315,6 +315,9 @@ class WP_Optimize_Options {
 			'wpo-ignores-table-deletion-warning',
 			'wpo-ignores-post-meta-deletion-warning',
 			'wpo-ignores-orphaned-relationship-data-deletion-warning',
+			'wpo-hide-minify-information-notice',
+			'wpo_hide_css_merging_notice',
+			'wpo_hide_js_merging_notice',
 		);
 		
 		foreach ($settings as $setting) {
@@ -464,6 +467,16 @@ class WP_Optimize_Options {
 
 		if (false === $this->get_option('total-cleaned')) {
 			$this->update_option('total-cleaned', '0');
+		}
+
+		// For UDC monthly reports.
+		if (false === $this->get_option('total-cleaned-current-month')) {
+			$this->update_option('total-cleaned-current-month', '0');
+		}
+
+		// For UDC monthly reports.
+		if (false === $this->get_option('total-cleaned-previous-month')) {
+			$this->update_option('total-cleaned-previous-month', '0');
 		}
 
 		$optimizer = WP_Optimize()->get_optimizer();

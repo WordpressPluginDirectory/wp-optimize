@@ -2544,7 +2544,7 @@ textarea.cache-settings {
 #wp-optimize-wrap .wpo-page:not(.is-enabled) .wpo-minify-features {
   display: none;
 }
-#wp-optimize-wrap .wpo-page[data-whichpage=wpo_minify]:not(.is-enabled) .nav-tab-wrapper > a:not([data-tab=status]):not([data-tab=analytics]):not([role=toggle-menu]) {
+#wp-optimize-wrap .wpo-page[data-whichpage=wpo_minify]:not(.is-enabled) .nav-tab-wrapper > a:not([data-tab=status]):not([data-tab=analytics]):not([role=toggle-menu]):not([data-tab=js]):not([data-tab=font]) {
   display: none;
 }
 #wp-optimize-wrap .wpo-minify-features {
@@ -2573,7 +2573,7 @@ textarea.cache-settings {
   margin-left: 0.5em;
 }
 #wp-optimize-wrap {
-  /* 
+  /*
   	Asset preload table
   */
 }

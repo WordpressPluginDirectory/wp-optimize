@@ -48,6 +48,7 @@
 			<input type="radio" id="enable_lossy_compression" name="compression_level" <?php checked($smush_options['image_quality'], 60); ?> class="smush-options compression_level"> 
 			<label for="enable_lossy_compression"><?php esc_html_e('Prioritize maximum compression', 'wp-optimize');?></label>
 			<?php
+				// This tooltip message is also located in /templates/admin-metabox-smush-settings.php.
 				$message = __('Uses lossy compression to ensure maximum savings per image.', 'wp-optimize');
 				$message .= ' ';
 				$message .= __('The resulting images are of a slightly lower quality', 'wp-optimize');

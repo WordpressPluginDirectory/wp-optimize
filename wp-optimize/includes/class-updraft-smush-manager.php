@@ -420,7 +420,7 @@ class Updraft_Smush_Manager extends Updraft_Task_Manager_1_4 {
 			$error =  new WP_Error('restore_failed', __('The destination could not be written to.', 'wp-optimize').' '.__("Please check your folder's permissions", 'wp-optimize'));
 		} elseif (!copy($backup_path, $image_path)) {
 			$error =  new WP_Error('restore_failed', __('The file could not be copied; check your PHP error logs for details', 'wp-optimize'));
-		} elseif (!wp_delete_file($backup_path)) {
+		} elseif (!WP_Optimize_Utils::wp_delete_file($backup_path)) {
 			// translators: %s is the backup file path
 			$error =  new WP_Error('restore_failed', sprintf(__('The backup file %s could not be deleted.', 'wp-optimize'), $backup_path));
 		}

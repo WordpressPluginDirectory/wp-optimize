@@ -5,7 +5,7 @@ Tags: cache, caching, image cache, minify, performance cache, page speed, image 
 Requires PHP: 7.2
 Requires at least: 4.9
 Tested up to: 6.9
-Stable tag: 4.4.1
+Stable tag: 4.5.0
 License: GPLv2+
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -382,6 +382,27 @@ If none of the above works, disable processing of JavaScript files in the minify
 
 
 == Changelog ==
+
+= 4.5.0 - 11/Feb/2026 =
+
+* FEATURE: Premium - Cache – Added ability to cache only selected URLs
+* FEATURE: Premium - Minify - Host Google Fonts locally
+* FEATURE: Premium - Option to enhance page performance by applying Capo.js rules
+* FIX: Cache - fixed sitemap caching issue 
+* FIX: Improved compatibility with WordPress versions earlier than 6.1
+* FIX: Reset WebP conversion failure no longer appears in the popup
+* FIX: Resolved issues with detecting WebP conversion availability
+* FIX: Smush – Fixed missing tooltip in the 'Compress' pop-up in Media Library
+* FIX: Stop initialization of page optimizer for non-HTML requests
+* FIX: Remove marcusschwarz/lessc lib from autoload
+* TWEAK: Added support for bypassing WPO features via a URL query parameter defined by the WPO_DISABLE_MODE_URL_PARAM constant
+* TWEAK: Allow some database records cleanup for Kinsta users
+* TWEAK: Clear cache of archived pages when a related post is updated
+* TWEAK: Disabled CSS/JS merging by default.
+* TWEAK: Enhanced 404 detector compatibility with plain permalinks
+* TWEAK: WP_Optimize_Options::auto_option_settings() is not called in Premium version
+* TWEAK: Improved timestamp handling to prevent fatal errors on WordPress 4.9
+* TWEAK: Improved Minify settings UI so JavaScript options correctly show/hide when JS minification is enabled/disabled
 
 = 4.4.1 - 08/Jan/2026 =
 
@@ -798,20 +819,7 @@ If none of the above works, disable processing of JavaScript files in the minify
 
 * SECURITY: Today's 3.2.11 release (free version only - there was no 3.2.11 Premium release) checked nonces incorrectly, opening up the possibility of an attacker tricking an admin into clicking links crafted to perform unauthorised actions on the WP Optimize configuration on his site.
 
-= 3.2.11 - 06/Feb/2023 =
-
-* FIX: Empty query string updates cache
-* FIX: Cache - Purge cache after string translation update in WPML
-* FIX: Cache - Preload stuck and fails to complete
-* FIX: Prevent PHP warning when `.htaccess` files don't have write permission
-* FIX: Premium – Fixed compatibility issue with WP Hide plugin
-* FIX: Minify - Less than 20KB stylesheets loading order
-* TWEAK: Add cron event only if clear backup images is enabled
-* TWEAK: Cache - Use WordPress GMT offset for cache comment
-* TWEAK: Only allow image types that can be compressed
-* TWEAK: Cached page is not served for sites that have own directory for WordPress files
-
 [See changelog for all versions](https://plugins.svn.wordpress.org/wp-optimize/trunk/changelog.txt).
 
 == Upgrade Notice ==
-* 4.4.1: Fix for RTL issue in onboarding wizard, and a performance improvement fix - a recommended update for all
+* 4.5.0: Added three premium features, and lot of bug fixes and tweaks - a recommended update for all

@@ -75,7 +75,6 @@
 				$.unblockUI();
 			});
 		});
-		
 
 		// ======= SLIDERS ========
 		// Generic slider save
@@ -116,20 +115,39 @@
 			
 			$(this).closest('.wpo_section').toggleClass('wpo-feature-is-disabled', !$(this).is(':checked'));
 		});
-
+		
 		// Toggle wpo-feature-is-disabled class
 		$('#wpo_min_enable_minify_css, #wpo_min_enable_minify_js')
-			// Set value on status change
+			// Update UI when setting is saved
 			.on('wp-optimize/minify/saved_setting', function() {
-				$('#wp-optimize-nav-tab-wrapper__wpo_minify a[data-tab="' + $(this).data('tabname') + '"] span.disabled').toggleClass('hidden', $(this).is(':checked'));
-				$('#wpo_section_' + $(this).data('tabname')).toggleClass('wpo-disabled-section', $(this).is(':not(:checked)'));
+				toggle_minify_tab_section($(this));
 			})
-			// Set value on page load
+			// Initialize UI on page load
 			.each(function() {
-				$('#wp-optimize-nav-tab-wrapper__wpo_minify a[data-tab="' + $(this).data('tabname') + '"] span.disabled').toggleClass('hidden', $(this).is(':checked'));
-				$('#wpo_section_' + $(this).data('tabname')).toggleClass('wpo-disabled-section', $(this).is(':not(:checked)'));
+				toggle_minify_tab_section($(this));
 			});
-
+		
+		/**
+		 * Toggle the UI state of a minify tab section based on the associated checkbox state.
+		 *
+		 * - For JS minification, only elements marked with `.show-if-enabled` are toggled.
+		 *
+		 * @param {jQuery} $el The checkbox element controlling the minified setting
+		 *
+		 * @return {void}
+		 */
+		function toggle_minify_tab_section($el) {
+			var tab_name = $el.data('tabname');
+			var tab_id = '#wpo_section_' + tab_name;
+			var is_checked = $el.is(':checked');
+			
+			var $section = $el.is('#wpo_min_enable_minify_js') ? $(tab_id + ' .show-if-enabled') : $(tab_id);
+			
+			$('#wp-optimize-nav-tab-wrapper__wpo_minify a[data-tab="' + tab_name + '"] span.disabled').toggleClass('hidden', is_checked);
+			
+			$section.toggleClass('wpo-disabled-section', !is_checked);
+		}
+		
 		// slider enable Debug mode
 		$('#wpo_min_enable_minify_debug').on('wp-optimize/minify/saved_setting', function() {
 			// Refresh the page as it's needed to show the extra options
@@ -146,7 +164,7 @@
 		var disable_google_fonts_processing = $('#disable_google_fonts_processing');
 
 		function handle_disable_google_fonts_processing() {
-			$('#wp-optimize-nav-tab-wpo_minify-font-contents .google_fonts_option').prop('disabled', disable_google_fonts_processing.is(':checked'));
+			$('#wp-optimize-nav-tab-wpo_minify-font-contents .google_fonts_option:not(.skip-disable-processing)').prop('disabled', disable_google_fonts_processing.is(':checked'));
 		}
 
 		disable_google_fonts_processing.on('change', handle_disable_google_fonts_processing);
@@ -165,6 +183,11 @@
 			block_ui(wpoptimize.saving);
 
 			var data = {};
+			
+			var merge_state = {
+				js: null,
+				css: null
+			};
 
 			var tabs = $('[data-whichpage="wpo_minify"] .wp-optimize-nav-tab-contents form');
 			tabs.each(function() {
@@ -172,6 +195,14 @@
 				if (true === tab.data('need_saving')) {
 					data = Object.assign(data, gather_data(tab));
 					tab.data('need_saving', false);
+					
+					if (typeof data.enable_merging_of_js !== 'undefined') {
+						merge_state.js = data.enable_merging_of_js === 'true';
+					}
+					
+					if (typeof data.enable_merging_of_css !== 'undefined') {
+						merge_state.css = data.enable_merging_of_css === 'true';
+					}
 				}
 			});
 
@@ -188,6 +219,12 @@
 					minify.updateFilesLists(response.files);
 					minify.updateStats(response.files);
 				}
+				
+				$.each(merge_state, function(type, enabled) {
+					if (null !== enabled) {
+						toggle_minify_notice(type, enabled, false);
+					}
+				});
 
 				spinner.hide();
 				success_icon.show();
@@ -200,12 +237,51 @@
 				$.unblockUI();
 			});
 		})
-
+		
 		// Dismiss information notice
-		$('.wp-optimize-minify-status-information-notice').on('click', '.notice-dismiss', function(e) {
+		$('.wpo_section_notice_minify').on('click', '.notice-dismiss', function(e) {
 			e.preventDefault();
-			send_command('hide_minify_notice');
+			toggle_minify_notice('minify', null, true);
 		});
+		
+		$('.wpo_section_notice_js').on('click', '.notice-dismiss', function(e) {
+			e.preventDefault();
+			toggle_minify_notice('js', null, true);
+		});
+		
+		$('.wpo_section_notice_css').on('click', '.notice-dismiss', function(e) {
+			e.preventDefault();
+			toggle_minify_notice('css', null, true);
+		});
+		
+		/**
+		 * Toggle visibility of a WP-Optimize minify notice and persist user preference.
+		 *
+		 * @param {string} type - Notice type ('minify', 'js', 'css').
+		 * @param {boolean|null} merging_enabled  - Whether the JS/CSS merging checkbox is enabled (true = checked, false = unchecked, null = not applicable).
+		 * @param {boolean} force_hide - Whether to hide forcefully (true) or (false).
+		 *
+		 * @returns {void}
+		 */
+		function toggle_minify_notice(type, merging_enabled, force_hide) {
+			var $notice = $('.wpo_section_notice_' + type);
+			if (!$notice.length) return;
+			
+			send_command('toggle_minify_notice', { type: type, merging_enabled: merging_enabled, force_hide: force_hide }, function(response) {
+				if (response.hasOwnProperty('success') && response.success === true) {
+					if (response.hasOwnProperty('hide') && response.hide === true) {
+						$notice.stop(true, true).slideUp(300);
+					}
+					
+					if (response.hasOwnProperty('hide') && response.hide === false) {
+						$notice.stop(true, true).slideDown(300);
+					}
+				}
+				if (response.hasOwnProperty('message') && response.success !== true) {
+					wp_optimize.notices.show_notice('error', response.message);
+				}
+			});
+		}
 
 		// Show logs
 		$('#wpo_min_jsprocessed, #wpo_min_cssprocessed').on('click', '.log', function(e) {

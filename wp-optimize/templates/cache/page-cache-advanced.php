@@ -19,6 +19,34 @@
 	</div>
 	<p><a href="<?php echo esc_url(WP_Optimize()->premium_version_link); ?>&utm_content=host-gravatars-locally" target="_blank"><?php esc_html_e('Upgrade to WP-Optimize Premium to unlock this feature.', 'wp-optimize'); ?></a></p>
 </div>
+
+<h3 class="wpo-first-child"><?php esc_html_e('URLs to include in caching', 'wp-optimize'); ?></h3>
+
+<div class="wpo-fieldgroup">
+	<div class="wpo-fieldgroup__subgroup">
+		<label for="cache_specific_urls_only">
+			<input name="cache_specific_urls_only" id="cache_specific_urls_only" class="cache-settings" type="checkbox" value="true" disabled>
+			<?php esc_html_e('Cache Specific URLs Only', 'wp-optimize'); ?>
+		</label>
+		<span tabindex="0" data-tooltip="<?php esc_attr_e('Enable or disable caching for specific URLs only.', 'wp-optimize');?>"><span class="dashicons dashicons-editor-help"></span> </span>
+	</div>
+	<p><a href="<?php echo esc_url(WP_Optimize()->premium_version_link); ?>&utm_content=cache_ignore_query_variables" target="_blank"><?php esc_html_e('Upgrade to WP-Optimize Premium to unlock this feature.', 'wp-optimize'); ?></a></p>
+	<p>
+		<?php // Translators: %s is an example path. ?>
+		<label for="cache_include_urls"><?php echo wp_kses_post(sprintf(__('List paths (e.g. %s) that should be cached (one per line)', 'wp-optimize'), '<code>'.esc_html_x('/sample-page', 'an example path', 'wp-optimize').'</code>')); ?> </label>
+		<textarea name="cache_include_urls" id="cache_include_urls" class="cache-settings" placeholder="/members/*" disabled></textarea>
+	</p>
+
+	<span>
+		<?php
+		esc_html_e('Use the wildcard * to include child URLs.', 'wp-optimize');
+		echo ' ';
+		// Translators: %s are examples of path using the wildcard *
+		echo wp_kses_post(sprintf(_x('e.g. %1$s or %2$s', '%s are examples of path using the wildcard *', 'wp-optimize'), '<code>'.esc_html_x('/shop/*', 'an example path with the wildcard (*)', 'wp-optimize').'</code>', '<code>'.esc_html_x('*sample-path*', 'a second example path using the wildcard (*) twice', 'wp-optimize').'</code>'));
+		?>
+	</span>
+</div>
+
 <h3 class="wpo-first-child"><?php esc_html_e('URLs to exclude from caching', 'wp-optimize'); ?></h3>
 
 <div class="wpo-fieldgroup">

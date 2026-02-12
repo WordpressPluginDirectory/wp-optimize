@@ -219,8 +219,10 @@ class WP_Optimize_Page_Cache_Preloader extends WP_Optimize_Preloader {
 
 			$this->log(__('Creating tasks for preload site urls.', 'wp-optimize'));
 
+			$wpo_cache_specific_urls_only = wpo_cache_specific_urls_only();
+
 			foreach ($urls as $url) {
-				if (wpo_url_in_exceptions($url)) continue;
+				if (!$wpo_cache_specific_urls_only && wpo_url_in_exceptions($url)) continue;
 
 				if ($this->url_is_already_cached($url, $type)) {
 					continue;
@@ -519,8 +521,9 @@ class WP_Optimize_Page_Cache_Preloader extends WP_Optimize_Preloader {
 	 * @return void
 	 */
 	public function create_tasks_for_auto_preload_urls() {
+		$wpo_cache_specific_urls_only = wpo_cache_specific_urls_only();
 		foreach ($this->url_preload_list as $url) {
-			if (wpo_url_in_exceptions($url)) continue;
+			if (!$wpo_cache_specific_urls_only && wpo_url_in_exceptions($url)) continue;
 
 			$description = 'Preload - '.$url;
 			$options = array('url' => $url, 'preload_type' => 'manual', 'anonymous_user_allowed' => (defined('DOING_CRON') && DOING_CRON) || (defined('WP_CLI') && WP_CLI));

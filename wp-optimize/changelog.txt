@@ -1,5 +1,26 @@
 == Changelog ==
 
+= 4.5.0 - 11/Feb/2026 =
+
+* FEATURE: Premium - Cache – Added ability to cache only selected URLs
+* FEATURE: Premium - Minify - Host Google Fonts locally
+* FEATURE: Premium - Option to enhance page performance by applying Capo.js rules
+* FIX: Cache - fixed sitemap caching issue 
+* FIX: Improved compatibility with WordPress versions earlier than 6.1
+* FIX: Reset WebP conversion failure no longer appears in the popup
+* FIX: Resolved issues with detecting WebP conversion availability
+* FIX: Smush – Fixed missing tooltip in the 'Compress' pop-up in Media Library
+* FIX: Stop initialization of page optimizer for non-HTML requests
+* FIX: Remove marcusschwarz/lessc lib from autoload
+* TWEAK: Added support for bypassing WPO features via a URL query parameter defined by the WPO_DISABLE_MODE_URL_PARAM constant
+* TWEAK: Allow some database records cleanup for Kinsta users
+* TWEAK: Clear cache of archived pages when a related post is updated
+* TWEAK: Disabled CSS/JS merging by default.
+* TWEAK: Enhanced 404 detector compatibility with plain permalinks
+* TWEAK: WP_Optimize_Options::auto_option_settings() is not called in Premium version
+* TWEAK: Improved timestamp handling to prevent fatal errors on WordPress 4.9
+* TWEAK: Improved Minify settings UI so JavaScript options correctly show/hide when JS minification is enabled/disabled
+
 = 4.4.1 - 08/Jan/2026 =
 
 * FIX: Onboarding wizard RTL issue

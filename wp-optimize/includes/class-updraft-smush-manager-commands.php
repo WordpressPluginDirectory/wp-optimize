@@ -283,7 +283,7 @@ class Updraft_Smush_Manager_Commands extends Updraft_Task_Manager_Commands_1_0 {
 		// Only run checks when trying to enable WebP
 		if ($options['webp_conversion']) {
 			//Run checks if we are enabling webp conversion
-			if (!$webp_instance->shell_functions_available()) {
+			if ($this->is_only_shell_converters_available() && !$webp_instance->shell_functions_available()) {
 				$webp_instance->disable_webp_conversion();
 				$webp_instance->log("Required WebP shell functions are not available on the server, disabling WebP conversion");
 				return new WP_Error('update_failed_no_shell_functions', __('Required WebP shell functions are not available on the server.', 'wp-optimize'));
@@ -338,6 +338,20 @@ class Updraft_Smush_Manager_Commands extends Updraft_Task_Manager_Commands_1_0 {
 		$response['summary'] = __('WebP options updated successfully.', 'wp-optimize');
 
 		return $response;
+	}
+
+	/**
+	 * Checks if only shell converters available for WebP conversion.
+	 *
+	 * @return boolean
+	 */
+	private function is_only_shell_converters_available() {
+		$available_converters = WP_Optimize()->get_options()->get_option('webp_converters');
+		$available_converters = is_array($available_converters) ? $available_converters : array();
+		$converters_with_shell = WPO_WebP_Test_Run::get_converters_with_shell();
+		$available_with_shell = array_intersect($available_converters, $converters_with_shell);
+
+		return count($available_converters) > 0 && count($available_converters) === count($available_with_shell);
 	}
 
 	/**
@@ -638,11 +652,7 @@ class Updraft_Smush_Manager_Commands extends Updraft_Task_Manager_Commands_1_0 {
 	public function reset_webp_serving_method() {
 		$webp_instance = WP_Optimize()->get_webp_instance();
 		//Run checks before calling reset_webp_serving_method
-		if (!$webp_instance->shell_functions_available()) {
-			$webp_instance->disable_webp_conversion();
-			$webp_instance->log("The WebP serving method cannot be reset because required WebP shell functions are not available on the server");
-			return new WP_Error('reset_failed_no_shell_functions', __('The WebP serving method cannot be reset because required WebP shell functions are not available on the server', 'wp-optimize'));
-		} elseif (!$webp_instance->is_webp_conversion_enabled()) {
+		if (!$webp_instance->is_webp_conversion_enabled()) {
 			$webp_instance->disable_webp_conversion();
 			$webp_instance->log("The WebP serving method cannot be reset because WebP conversion is currently disabled");
 			return new WP_Error('reset_failed_webp_conversion_disabled', __('The WebP serving method cannot be reset because WebP conversion is currently disabled', 'wp-optimize'));

@@ -114,6 +114,55 @@ class WP_Optimize_Utils {
 	}
 
 	/**
+	 * Returns folder staticstics - size and file count
+	 *
+	 * @param string $folder
+	 * @return array
+	 */
+	public static function get_folder_stats($folder, $files_to_ignore = array()) {
+		clearstatcache();
+
+		$size = 0;
+		$file_count = 0;
+
+		if (is_dir($folder)) {
+			try {
+				$dir = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($folder, FilesystemIterator::SKIP_DOTS));
+				
+				foreach ($dir as $file) {
+					if (!empty($files_to_ignore) && is_array($files_to_ignore) && in_array($file->getFilename(), $files_to_ignore)) continue;
+					$size += $file->getSize();
+					$file_count++;
+				}
+			} catch (UnexpectedValueException $e) {
+				error_log($e->getMessage()); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Catching exception for debugging purpose
+			}
+		}
+
+		return array(
+			'size' => $size,
+			'file_count' => $file_count,
+		);
+	}
+
+	/**
+	 * Fetches the content of a remote file via HTTP request.
+	 *
+	 * @param string $url  The URL of the remote file to retrieve.
+	 * @param array $args Request arguments passed to wp_remote_get()
+	 * @return string|false The content of the remote file on success, or false on failure.
+	 */
+	public static function get_remote_file_content($url, $args = array()) {
+		$response = wp_safe_remote_get($url, $args);
+		if (is_wp_error($response) || 200 !== wp_remote_retrieve_response_code($response)) return false;
+		
+		$body = wp_remote_retrieve_body($response);
+		if (empty($body)) return false;
+		
+		return $body;
+	}
+
+	/**
 	 * Parse tag attributes and return array with them.
 	 *
 	 * @param string $tag
@@ -255,6 +304,36 @@ class WP_Optimize_Utils {
 		$line   = $debug_backtrace[1]['line'] ?? 'N/A';
 
 		return sprintf('C:%s|F:%s()|L:%s', $class, $function, $line);
+	}
+
+	/**
+	 * Check if the server is using HTTP/1.x
+	 *
+	 * @return bool
+	 */
+	public static function is_request_protocol_http1(): bool {
+		$protocol = isset($_SERVER['SERVER_PROTOCOL']) ? sanitize_text_field(wp_unslash($_SERVER['SERVER_PROTOCOL'])) : '';
+		return stripos($protocol, 'HTTP/1.') !== false;
+	}
+
+	/**
+	 * Wrapper for wp_delete_file() to ensure compatibility with WordPress versions prior to 6.1.
+	 *
+	 * In WordPress versions earlier than 6.1, wp_delete_file() returns void, in that case we check
+	 * if the file is actually deleted or not to determine the boolean value to return
+	 *
+	 * @param string $file
+	 * @return bool
+	 */
+	public static function wp_delete_file($file) {
+		$wp_delete_file_result = wp_delete_file($file);
+
+		// when wp_delete_file() returns void we check if the file is deleted
+		if (null === $wp_delete_file_result) {
+			$wp_delete_file_result = false === is_file($file);
+		}
+
+		return $wp_delete_file_result;
 	}
 
 	/**

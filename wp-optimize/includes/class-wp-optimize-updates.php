@@ -93,11 +93,13 @@ class WP_Optimize_Updates {
 	 * Disable cache directories viewing.
 	 */
 	private static function disable_cache_directories_viewing() {
-
 		if (!function_exists('wpo_disable_cache_directories_viewing')) {
 			include_once WPO_PLUGIN_MAIN_PATH . 'cache/file-based-page-cache-functions.php';
 		}
-		
+		// Check if it's not a new installation
+		if (self::is_new_install()) {
+			return;
+		}
 		wpo_disable_cache_directories_viewing();
 	}
 	

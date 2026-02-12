@@ -29,6 +29,7 @@ class WP_Optimize_Minify_Admin {
 		add_action('wpo_minify_settings_tabs', array($this, 'output_assets_preload_placeholder'));
 
 		add_action('wp_optimize_register_admin_content', array($this, 'register_content'));
+		add_action('wpo_after_minify_javascript_options', array($this, 'output_capo_js_settings'));
 	}
 
 	/**
@@ -45,6 +46,19 @@ class WP_Optimize_Minify_Admin {
 		add_action('wp_optimize_admin_page_wpo_minify_css', array($this, 'output_css_settings'), 20);
 		add_action('wp_optimize_admin_page_wpo_minify_js', array($this, 'output_js_settings'), 20);
 		add_action('wp_optimize_admin_page_wpo_minify_preload', array($this, 'output_preload_settings'), 20);
+	}
+
+	/**
+	 * Output Capo JS settings
+	 *
+	 * @return void
+	 */
+	public function output_capo_js_settings() {
+		$wpo_minify_options = wp_optimize_minify_config()->get();
+		$extract = array(
+			'enable_capo_js' => $wpo_minify_options['enable_capo_js'] ?? false,
+		);
+		WP_Optimize()->include_template('minify/capo-js.php', false, $extract);
 	}
 
 	/**
@@ -145,11 +159,13 @@ class WP_Optimize_Minify_Admin {
 	 */
 	public function output_font_settings() {
 		$wpo_minify_options = wp_optimize_minify_config()->get();
+		
 		WP_Optimize()->include_template(
 			'minify/font-settings-tab.php',
 			false,
 			array(
-				'wpo_minify_options' => $wpo_minify_options
+				'wpo_minify_options' => $wpo_minify_options,
+				'fonts_cache_size' => WP_Optimize()::is_premium() ? WP_Optimize_Host_Google_Fonts::instance()->get_cache_stats() : '',
 			)
 		);
 	}
@@ -177,19 +193,76 @@ class WP_Optimize_Minify_Admin {
 	}
 
 	/**
+	 * Minify - Get the output settings for the CSS or JS settings tabs
+	 *
+	 * @param string $type - css or js
+	 *
+	 * @return array
+	 */
+	private function get_output_setting($type) {
+		$wpo_minify_options = wp_optimize_minify_config()->get();
+		$is_http1 = WP_Optimize_Utils::is_request_protocol_http1();
+		$protocol = $is_http1 ? 'HTTP/1.x' : 'HTTP/2/3';
+
+		$merge_enabled = !empty($wpo_minify_options['enable_merging_of_'.$type]);
+
+		// Determine if the notice should be shown
+		$should_show_notice = (($is_http1 && !$merge_enabled) || (!$is_http1 && $merge_enabled));
+		$user_dismissed = get_user_meta(get_current_user_id(), 'wpo_hide_'.$type.'_merging_notice', true);
+
+		// Only show if a user hasn't dismissed yet
+		$show_section_notice = $should_show_notice && !$user_dismissed;
+		$is_enabled_minification = $wpo_minify_options['enable_'.$type.'_minification'];
+
+		$label = 'js' === $type ? 'JavaScript' : 'CSS';
+
+		// Notice text
+		$notice_text = sprintf(
+		/* translators: 1: File type (CSS/JS), 2: HTTP protocol */
+			__('Merging %1$s files may improve performance on HTTP/1.1, but could reduce speed on HTTP/2/3.<br><b>Note:</b> Your site is currently using %2$s.', 'wp-optimize'),
+			$label,
+			$protocol
+		);
+
+		// Tooltip parts
+		$tooltip_parts = array(
+			sprintf(
+			/* translators: %s: File type (CSS/JS) */
+				__('Combines multiple %s files into one to reduce HTTP requests.', 'wp-optimize'),
+				$label
+			),
+			__('May improve performance on HTTP/1.1, but could reduce speed on HTTP/2/3.', 'wp-optimize'),
+			__('Disable this option if your site experiences issues.', 'wp-optimize'),
+			sprintf(
+			/* translators: %s: HTTP protocol */
+				__('Note: Your site is currently using %s.', 'wp-optimize'),
+				$protocol
+			),
+		);
+		$tooltip = implode(' ', $tooltip_parts);
+
+		return array(
+			'protocol' => $protocol,
+			'show_section_notice' => $show_section_notice,
+			'wpo_minify_options' => $wpo_minify_options,
+			'is_enabled_minification' => $is_enabled_minification,
+			'notice_text' => $notice_text,
+			'tooltip' => $tooltip,
+		);
+	}
+
+	/**
 	 * Minify - Outputs the CSS settings tab
 	 *
 	 * @return void
 	 */
 	public function output_css_settings() {
-		$wpo_minify_options = wp_optimize_minify_config()->get();
+		$template_args = $this->get_output_setting('css');
+		$template_args['show_unused_css'] = WP_Optimize::is_premium() && $template_args['is_enabled_minification'];
 		WP_Optimize()->include_template(
 			'minify/css-settings-tab.php',
 			false,
-			array(
-				'wpo_minify_options' => $wpo_minify_options,
-				'show_unused_css' => WP_Optimize()::is_premium() && $wpo_minify_options['enable_css_minification']
-			)
+			$template_args
 		);
 	}
 
@@ -199,13 +272,11 @@ class WP_Optimize_Minify_Admin {
 	 * @return void
 	 */
 	public function output_js_settings() {
-		$wpo_minify_options = wp_optimize_minify_config()->get();
+		$template_args = $this->get_output_setting('js');
 		WP_Optimize()->include_template(
 			'minify/js-settings-tab.php',
 			false,
-			array(
-				'wpo_minify_options' => $wpo_minify_options
-			)
+			$template_args
 		);
 	}
 

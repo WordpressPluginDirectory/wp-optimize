@@ -320,15 +320,12 @@ class WP_Optimize_WebP {
 	 * Resets webp serving method by running self test, if needed purges cache and empties `uploads/.htaccess` file
 	 */
 	public function reset_webp_serving_method() {
-		if ($this->shell_functions_available() && $this->_should_use_webp) {
+		if ($this->_should_use_webp) {
 			$this->reset_webp_options();
 			$this->run_self_test();
 			list($old_redirection_possible, $new_redirection_possible) = $this->get_old_and_new_redirection_possibility();
 			$this->maybe_purge_cache($old_redirection_possible, $new_redirection_possible);
 			$this->maybe_empty_htaccess_file($new_redirection_possible);
-		} else {
-			$this->disable_webp_conversion();
-			$this->log("Reset WebP Serving method failed, disabling WebP conversion");
 		}
 	}
 	

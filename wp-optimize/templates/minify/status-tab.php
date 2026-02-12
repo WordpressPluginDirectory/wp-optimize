@@ -14,7 +14,7 @@
 		</div>
 		<div id="wpo_settings_warnings"></div>
 		<?php if ($show_information_notice) : ?>
-			<div class="notice notice-warning wpo-warning is-dismissible below-h2 wp-optimize-minify-status-information-notice wpo-show">
+			<div class="notice notice-warning wpo-warning is-dismissible below-h2 wpo_section_notice_minify wpo-show">
 				<p>
 					<span class="dashicons dashicons-shield"></span>
 					<strong><?php esc_html_e('CSS, JavaScript and HTML minification is an advanced feature.', 'wp-optimize'); ?></strong><br>

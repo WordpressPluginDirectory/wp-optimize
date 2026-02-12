@@ -430,20 +430,11 @@ class WP_Optimize_Minify_Cache_Functions {
 	 * @return string
 	 */
 	public static function get_cachestats($folder) {
-		clearstatcache();
-		if (is_dir($folder)) {
-			$dir = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($folder, FilesystemIterator::SKIP_DOTS));
-			$size = 0;
-			$file_count = 0;
-			foreach ($dir as $file) {
-				$size += $file->getSize();
-				$file_count++;
-			}
-			return WP_Optimize()->format_size($size) . ' ('.$file_count.' files)';
-		} else {
-			// translators: %s is a folder path
-			return sprintf(__('Error: %s is not a directory!', 'wp-optimize'), $folder);
-		}
+		$stats = WP_Optimize_Utils::get_folder_stats($folder);
+
+		// Translators: %s: number of files.
+		$translated_file_count = sprintf(_n('%s file', '%s files', $stats['file_count'], 'wp-optimize'), number_format_i18n($stats['file_count']));
+		return WP_Optimize()->format_size($stats['size']) . ' (' . $translated_file_count . ')';
 	}
 
 	/**

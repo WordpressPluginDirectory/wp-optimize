@@ -66,17 +66,23 @@ class WP_Optimize_404_Detector {
 	 * @return void
 	 */
 	public function handle_request() {
-		$now = current_datetime()->getTimestamp();
+		$now = time();
 		$request_timestamp = $now - ($now % 3600);
 
 		$url_data = isset($_SERVER['REQUEST_URI']) ? $this->parse_url(esc_url_raw(wp_unslash($_SERVER['REQUEST_URI']))) : false;
 
-		if (!$url_data || !isset($url_data['path']) || ('/' === $url_data['path'])) {
+		if (!$url_data || !isset($url_data['path'])) {
 			return;
 		}
 
-		$url = home_url($url_data['path']);
+		$is_plain_structure = $this->is_plain_permalink_structure();
+
+		if (($is_plain_structure && empty($url_data['query'])) || (!$is_plain_structure && '/' === $url_data['path'])) {
+			return;
+		}
 		
+		$url = $is_plain_structure ? home_url('?' . $url_data['query']) : home_url($url_data['path']);
+			
 		$this->save_request_hour_row($request_timestamp, $url);
 	}
 
@@ -474,6 +480,15 @@ class WP_Optimize_404_Detector {
 			return $parsed;
 		}
 		return (-1 === $component) ? array() : '';
+	}
+
+	/**
+	 * Check if the plain permalink structure is currently set
+	 *
+	 * @return bool
+	 */
+	private function is_plain_permalink_structure(): bool {
+		return "" === get_option('permalink_structure');
 	}
 }
 

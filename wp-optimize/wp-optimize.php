@@ -3,7 +3,7 @@
 Plugin Name: WP-Optimize - Clean, Compress, Cache
 Plugin URI: https://teamupdraft.com/wp-optimize
 Description: WP-Optimize makes your site fast and efficient. It cleans the database, compresses images and caches pages. Fast sites attract more traffic and users.
-Version: 4.4.1
+Version: 4.5.0
 Requires at least: 4.9
 Requires PHP: 7.2
 Update URI: https://wordpress.org/plugins/wp-optimize/
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) die('No direct access allowed');
 
 // Check to make sure if WP_Optimize is already call and returns.
 if (!class_exists('WP_Optimize')) :
-define('WPO_VERSION', '4.4.1');
+define('WPO_VERSION', '4.5.0');
 define('WPO_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('WPO_PLUGIN_MAIN_PATH', plugin_dir_path(__FILE__));
 define('WPO_PLUGIN_SLUG', plugin_basename(__FILE__));
@@ -26,7 +26,6 @@ define('WPO_PREMIUM_NOTIFICATION', false);
 define('WPO_REQUIRED_PHP_VERSION', '7.2');
 define('WPO_REQUIRED_WP_VERSION', '4.9');
 if (!defined('WPO_USE_WEBP_CONVERSION')) define('WPO_USE_WEBP_CONVERSION', true);
-if (!defined('WPO_DISABLE_CAPOJS_RULES')) define('WPO_DISABLE_CAPOJS_RULES', true);
 require_once(WPO_PLUGIN_MAIN_PATH.'includes/fragments/input-processing.php');
 
 class WP_Optimize {
@@ -40,11 +39,43 @@ class WP_Optimize {
 	protected $_cache_init_status = null;
 
 	/**
+	 * An array of schedule types
+	 *
+	 * @param boolean $placeholder Determines whether a placeholder select option should be included or not
+	 *
+	 * @return array An array of schedule types
+	 */
+	public static function get_schedule_types($placeholder = false) {
+		$schedule_types = array(
+			'wpo_daily' => __('Daily', 'wp-optimize'),
+			'wpo_weekly' => __('Weekly', 'wp-optimize'),
+			'wpo_fortnightly' => __('Fortnightly', 'wp-optimize'),
+			'wpo_monthly' => __('Monthly', 'wp-optimize'),
+		);
+
+		$schedule_types = apply_filters('wp_optimize_schedule_types', $schedule_types);
+		if (true === $placeholder) {
+			$schedule_types = array_merge(array('' => __('Select schedule', 'wp-optimize')), $schedule_types);
+		}
+		return $schedule_types;
+	}
+
+	/**
 	 * Class constructor
 	 */
 	public function __construct() {
 
 		spl_autoload_register(array($this, 'loader'));
+
+		$bypass_instance = $this->get_bypass_instance();
+		if ($bypass_instance->should_bypass()) {
+			// Show bypass notice in admin bar
+			$bypass_instance->show_admin_notice();
+			if (!headers_sent()) {
+				header('WPO-Bypass-Mode: active');
+			}
+			return;
+		}
 
 		// Checks if premium is installed along with plugins needed.
 		add_action('plugins_loaded', array($this, 'plugins_loaded'), 1);
@@ -64,10 +95,6 @@ class WP_Optimize {
 		add_filter('cron_schedules', array($this, 'cron_schedules'));
 
 		if (!$this->get_options()->get_option('installed-for', false)) $this->get_options()->update_option('installed-for', time());
-
-		if (!self::is_premium()) {
-			add_action('auto_option_settings', array($this->get_options(), 'auto_option_settings'));
-		}
 
 		add_action('admin_footer-upload.php', array($this, 'add_smush_popup_template'));
 
@@ -115,6 +142,32 @@ class WP_Optimize {
 		}
 		add_action('wpo_update_record_count_event', array($this->get_db_info(), 'wpo_update_record_count'));
 
+		add_action('wpo_reset_stats_counter', array($this, 'reset_stats_counters'));
+
+		$this->schedule_reset_stats_counters_event();
+
+	}
+
+	/**
+	 * Reset stats counter at the start of each month
+	 */
+	public function reset_stats_counters() {
+		// Save current total cleaned as previous month data
+		$options = $this->get_options();
+		$last_month_total_cleaned = $options->get_option('total-cleaned-current-month');
+		$options->update_option('total-cleaned-previous-month', $last_month_total_cleaned);
+		$options->update_option('total-cleaned-current-month', '0');
+		$this->schedule_reset_stats_counters_event();
+	}
+
+	/**
+	 * Schedule the reset of stat's counter at the start of each month
+	 */
+	private function schedule_reset_stats_counters_event() {
+		if (!wp_next_scheduled('wpo_reset_stats_counter')) {
+			$next_reset = strtotime('first day of next month midnight');
+			wp_schedule_single_event($next_reset, 'wpo_reset_stats_counter');
+		}
 	}
 
 	/**
@@ -223,6 +276,15 @@ class WP_Optimize {
 	 */
 	private function load_admin() {
 		$this->get_admin_instance();
+	}
+
+	/**
+	 * Returns Bypass class instance
+	 *
+	 * @return WP_Optimize_Bypass
+	 */
+	private function get_bypass_instance() {
+		return WP_Optimize_Bypass::instance();
 	}
 
 	/**
@@ -395,7 +457,7 @@ class WP_Optimize {
 	 *
 	 * @return bool Returns true if it is Kinsta platform, otherwise returns false
 	 */
-	private function is_kinsta() {
+	private function is_kinsta(): bool {
 		return isset($_SERVER['KINSTA_CACHE_ZONE']);
 	}
 
@@ -404,7 +466,7 @@ class WP_Optimize {
 	 *
 	 * @return bool
 	 */
-	public function does_server_handles_cache() {
+	public function does_server_handles_cache(): bool {
 		return $this->is_kinsta();
 	}
 
@@ -418,7 +480,7 @@ class WP_Optimize {
 	 *
 	 * @return bool
 	 */
-	public function does_server_allows_table_optimization() {
+	public function does_server_allows_table_optimization(): bool {
 		return !$this->is_kinsta();
 	}
 
@@ -427,7 +489,7 @@ class WP_Optimize {
 	 *
 	 * @return bool
 	 */
-	private function does_server_allows_local_webp_conversion() {
+	private function does_server_allows_local_webp_conversion(): bool {
 		return !$this->is_kinsta();
 	}
 
@@ -662,6 +724,10 @@ class WP_Optimize {
 		// Run Premium loader if it exists
 		if (file_exists(WPO_PLUGIN_MAIN_PATH.'premium.php') && !class_exists('WP_Optimize_Premium')) {
 			include_once(WPO_PLUGIN_MAIN_PATH.'premium.php');
+		}
+
+		if (!self::is_premium()) {
+			add_action('auto_option_settings', array($this->get_options(), 'auto_option_settings'));
 		}
 
 		// load defaults
@@ -1750,11 +1816,11 @@ class WP_Optimize {
 	}
 
 	/**
-	 * Returns true if current user can run optimizations.
+	 * Returns true if the current user can run optimizations.
 	 *
 	 * @return bool
 	 */
-	public function can_run_optimizations() {
+	public function can_run_optimizations(): bool {
 		// we don't check permissions for cron jobs.
 		if (defined('DOING_CRON') && DOING_CRON) return true;
 
